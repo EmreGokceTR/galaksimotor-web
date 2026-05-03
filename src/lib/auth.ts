@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/giris",
   },
