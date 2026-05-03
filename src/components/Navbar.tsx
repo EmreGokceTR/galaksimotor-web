@@ -31,17 +31,17 @@ export type NavSettings = {
 const R = ["/"];
 
 export function Navbar({ settings }: { settings: NavSettings }) {
-  const { data: session } = useSession();
+  const { data: session } = use	Session();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const NAV_LINKS = [
+const NAV_LINKS = [
     { href: "/", settingKey: "nav_home", label: settings.navHome },
     { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler },
     { href: "/motosikletler", settingKey: "nav_motosikletler", label: settings.navMotosikletler },
-    href: "/kategori/motosiklet-yedek-parcalari"
-    href: "/kategori/bakim-ve-tamir-urunleri"
+    { href: "/kategori/motosiklet-yedek-parcalari", settingKey: "nav_yedek_parca", label: settings.navYedekParca },
+    { href: "/kategori/bakim-ve-tamir-urunleri", settingKey: "nav_bakim", label: settings.navBakim },
     { href: "/randevu", settingKey: "nav_randevu", label: settings.navRandevu },
   ];
 
