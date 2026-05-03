@@ -31,12 +31,12 @@ export type NavSettings = {
 const R = ["/"];
 
 export function Navbar({ settings }: { settings: NavSettings }) {
-  const { data: session } = use	Session();
+  const { data: session } = useSession();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-const NAV_LINKS = [
+  const NAV_LINKS = [
     { href: "/", settingKey: "nav_home", label: settings.navHome },
     { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler },
     { href: "/motosikletler", settingKey: "nav_motosikletler", label: settings.navMotosikletler },
