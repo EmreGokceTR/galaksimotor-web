@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { DangerZone } from "./DangerZone";
 
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
@@ -131,6 +132,8 @@ export default async function AdminDashboard() {
           )}
         </Panel>
       </div>
+
+      <DangerZone />
     </div>
   );
 }

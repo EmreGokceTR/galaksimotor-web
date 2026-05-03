@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { updateProduct } from "./actions";
 
@@ -86,13 +87,21 @@ export function ProductRow(p: Props) {
         </button>
       </td>
       <td className="px-4 py-3 text-right">
-        <button
-          onClick={save}
-          disabled={!dirty || pending}
-          className="rounded-full bg-brand-yellow px-4 py-1 text-xs font-semibold text-brand-black disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
-        >
-          {pending ? "..." : savedAt ? "✓ Kaydedildi" : "Kaydet"}
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href={`/admin/urunler/${p.id}/fitments`}
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-white/70 hover:border-brand-yellow/40 hover:text-brand-yellow"
+          >
+            Uyumluluk
+          </Link>
+          <button
+            onClick={save}
+            disabled={!dirty || pending}
+            className="rounded-full bg-brand-yellow px-4 py-1 text-xs font-semibold text-brand-black disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
+          >
+            {pending ? "..." : savedAt ? "✓ Kaydedildi" : "Kaydet"}
+          </button>
+        </div>
       </td>
     </tr>
   );
