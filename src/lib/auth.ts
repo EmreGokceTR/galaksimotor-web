@@ -5,6 +5,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
+const useSecureCookies = (process.env.NEXTAUTH_URL ?? "").startsWith("https://");
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
@@ -12,6 +15,34 @@ export const authOptions: NextAuthOptions = {
   debug: true,
   pages: {
     signIn: "/giris",
+  },
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}next-auth.callback-url`,
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    csrfToken: {
+      name: `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
   },
   providers: [
     GoogleProvider({
@@ -71,10 +102,14 @@ export const authOptions: NextAuthOptions = {
         token.role !== "ADMIN"
       ) {
         if (token.id) {
-          await prisma.user.update({
-            where: { id: token.id },
-            data: { role: "ADMIN" },
-          });
+          try {
+            await prisma.user.update({
+              where: { id: token.id },
+              data: { role: "ADMIN" },
+            });
+          } catch (e) {
+            console.error("[auth] admin promotion failed:", e);
+          }
         }
         token.role = "ADMIN";
       }
