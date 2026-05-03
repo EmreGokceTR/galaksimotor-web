@@ -40,8 +40,8 @@ export function Navbar({ settings }: { settings: NavSettings }) {
     { href: "/", settingKey: "nav_home", label: settings.navHome },
     { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler },
     { href: "/motosikletler", settingKey: "nav_motosikletler", label: settings.navMotosikletler },
-    { href: "/kategori/motosiklet-yedek-parcalari", settingKey: "nav_yedek_parca", label: settings.navYedekParca },
-    { href: "/kategori/bakim-ve-tamir-urunleri", settingKey: "nav_bakim", label: settings.navBakim },
+    { href: "/yedek-parca", settingKey: "nav_yedek_parca", label: settings.navYedekParca },
+    { href: "/bakim", settingKey: "nav_bakim", label: settings.navBakim },
     { href: "/randevu", settingKey: "nav_randevu", label: settings.navRandevu },
   ];
 
