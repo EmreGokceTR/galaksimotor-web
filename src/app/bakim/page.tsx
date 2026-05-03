@@ -1,1 +1,0 @@
-﻿export default function Bakim() { return <div>Bakim Sayfasi Yakinda!</div> }

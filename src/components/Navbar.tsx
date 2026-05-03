@@ -161,7 +161,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
           <CartButton />
           {session?.user ? (
             <>
-              {(session.user as { role?: string }).role === "ADMIN" && (
+              {session.user.role === "ADMIN" && (
                 <Link
                   href="/admin"
                   className="inline-flex items-center gap-1.5 rounded-full border border-brand-yellow/30 bg-brand-yellow/10 px-3 py-1 text-xs font-medium text-brand-yellow hover:bg-brand-yellow/20"

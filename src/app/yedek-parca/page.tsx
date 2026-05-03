@@ -1,1 +1,0 @@
-﻿export default function YedekParca() { return <div>Yedek Parca Yakinda!</div> }
