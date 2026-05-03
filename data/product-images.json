@@ -1,0 +1,35 @@
+{
+  "_doc": "Bu dosyayı düzenleyip 'npm run images' komutunu çalıştır — DB'deki ürün görselleri güncellensin. Slug → resim URL listesi.",
+  "_example": "Görseller /public/urunler/cvt.jpg konumuna koyulmuşsa URL '/urunler/cvt.jpg' olur. Dış URL de geçerlidir (https://...)",
+
+  "cvt-kayisi-kymco-dtx": [
+    "https://picsum.photos/seed/cvt/600/400"
+  ],
+  "fren-balatasi-on-bajaj-pulsar": [
+    "https://picsum.photos/seed/balata/600/400"
+  ],
+  "varyator-rulmani-honda-pcx": [
+    "https://picsum.photos/seed/varyator/600/400"
+  ],
+  "motor-yagi-10w40-1l": [
+    "https://picsum.photos/seed/yag/600/400"
+  ],
+  "zincir-spreyi-400ml": [
+    "https://picsum.photos/seed/zincir/600/400"
+  ],
+  "fren-hidrolik-dot4": [
+    "https://picsum.photos/seed/hidrolik/600/400"
+  ],
+  "koruma-demiri-bajaj-pulsar": [
+    "https://picsum.photos/seed/koruma/600/400"
+  ],
+  "gidon-agirligi": [
+    "https://picsum.photos/seed/gidon/600/400"
+  ],
+  "telefon-tutucu-su-gecirmez": [
+    "https://picsum.photos/seed/telefon/600/400"
+  ],
+  "kask-modular-l": [
+    "https://picsum.photos/seed/kask/600/400"
+  ]
+}
