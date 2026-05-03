@@ -298,6 +298,15 @@ function LoginForm() {
             <GlassInput type="email" placeholder="E-posta" value={email} onChange={setEmail} required autoComplete="email" />
             <GlassInput type="password" placeholder="Şifre" value={password} onChange={setPassword} required autoComplete="current-password" />
 
+            <div className="text-right">
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-white/55 transition hover:text-brand-yellow"
+              >
+                Şifremi unuttum
+              </Link>
+            </div>
+
             <AnimatePresence>
               {error && (
                 <motion.p className="text-xs text-red-400 px-1"

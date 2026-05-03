@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-// ─── Sipariş onay e-postası (mevcut stub, değişmedi) ─────────────────────────
+// ─── Sipariş onay e-postası (mevcut stub) ─────────────────────────────────────
 
 type OrderEmailPayload = {
   to: string;
@@ -36,19 +36,30 @@ function createTransport() {
   });
 }
 
-export async function sendAdminMail(subject: string, html: string) {
+/**
+ * Belirli bir alıcıya SMTP üzerinden e-posta gönderir.
+ * SMTP yapılandırması eksikse konsola log düşürür.
+ */
+export async function sendMail(to: string, subject: string, html: string) {
   const transport = createTransport();
-  const adminEmail = process.env.ADMIN_EMAIL;
-
-  if (!transport || !adminEmail) {
-    console.log(`📧 [MAIL STUB] Konu: "${subject}" → ${adminEmail ?? "(ADMIN_EMAIL tanımsız)"}`);
+  if (!transport) {
+    console.log(`📧 [MAIL STUB] "${subject}" → ${to}`);
     return;
   }
-
   await transport.sendMail({
     from: `"Galaksi Motor" <${process.env.SMTP_USER}>`,
-    to: adminEmail,
+    to,
     subject,
     html,
   });
+}
+
+/** Admin'e (ADMIN_EMAIL) gönderir. */
+export async function sendAdminMail(subject: string, html: string) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) {
+    console.log(`📧 [MAIL STUB] Admin maili atlandı (ADMIN_EMAIL yok): ${subject}`);
+    return;
+  }
+  return sendMail(adminEmail, subject, html);
 }
