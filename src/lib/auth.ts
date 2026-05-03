@@ -60,6 +60,23 @@ export const authOptions: NextAuthOptions = {
           token.role = dbUser.role;
         }
       }
+
+      // Otomatik admin yükseltme: ADMIN_EMAIL ile eşleşen kullanıcı her giriş/yenilemede admin olur.
+      const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+      if (
+        adminEmail &&
+        token.email?.toLowerCase() === adminEmail &&
+        token.role !== "ADMIN"
+      ) {
+        if (token.id) {
+          await prisma.user.update({
+            where: { id: token.id },
+            data: { role: "ADMIN" },
+          });
+        }
+        token.role = "ADMIN";
+      }
+
       return token;
     },
     async session({ session, token }) {

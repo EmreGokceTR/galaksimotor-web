@@ -51,7 +51,9 @@
       "Bash(grep -E \"\\\\.ts$|\\\\.tsx$\")",
       "Bash(node -e \"require\\('nodemailer'\\)\")",
       "Bash(xargs ls *)",
-      "Bash(awk '$5 < 100 {print $5, $NF}')"
+      "Bash(awk '$5 < 100 {print $5, $NF}')",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
