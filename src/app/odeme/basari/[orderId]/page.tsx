@@ -113,6 +113,19 @@ export default async function OrderSuccessPage({
 
       {/* CTAs */}
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        {order.invoicePdfUrl && (
+          <a
+            href={order.invoicePdfUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-6 py-3 text-sm font-medium text-emerald-200 hover:bg-emerald-500/15"
+          >
+            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v8M4 8l4 4 4-4M3 14h10" />
+            </svg>
+            Faturayı İndir
+          </a>
+        )}
         <Link
           href="/hesabim/siparislerim"
           className="rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-white hover:border-brand-yellow/50 hover:text-brand-yellow"

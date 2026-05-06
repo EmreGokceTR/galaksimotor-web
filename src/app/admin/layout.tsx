@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/randevular", label: "Randevular", icon: "📅" },
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
+  { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
 ];
 
 export default async function AdminLayout({

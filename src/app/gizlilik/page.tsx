@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
 import { SITE } from "@/config/site";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = { title: "Gizlilik Politikası - Galaksi Motor" };
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/gizlilik", {
+    title: "Gizlilik Politikası - Galaksi Motor",
+    description:
+      "Galaksi Motor gizlilik politikası, KVKK aydınlatma metni ve veri sahibi hakları.",
+  });
+}
 
 export default function GizlilikPage() {
   return (

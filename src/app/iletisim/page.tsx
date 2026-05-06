@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
 import { SITE, whatsappLink } from "@/config/site";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = { title: "İletişim - Galaksi Motor" };
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/iletisim", {
+    title: "İletişim - Galaksi Motor",
+    description:
+      "Galaksi Motor iletişim bilgileri, adres, telefon ve çalışma saatleri.",
+  });
+}
 
 export default function IletisimPage() {
   return (

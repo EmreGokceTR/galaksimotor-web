@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = { title: "İade Koşulları - Galaksi Motor" };
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/iade", {
+    title: "İade Koşulları - Galaksi Motor",
+    description: "Tüketici hakları, iade ve değişim koşulları.",
+  });
+}
 
 export default function IadePage() {
   return (

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSettings, st } from "@/lib/site-settings";
@@ -9,8 +10,17 @@ import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { EditableWrapper } from "@/components/EditableWrapper";
 import { FAQS } from "@/config/faq";
+import { SITE } from "@/config/site";
+import { buildPageMetadata } from "@/lib/page-meta";
 
 const R = ["/"];
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/", {
+    title: `${SITE.name} - Yedek Parça, Aksesuar ve Servis`,
+    description: SITE.description,
+  });
+}
 
 export default async function HomePage() {
   // Categories first — need slugs for dynamic icon setting keys

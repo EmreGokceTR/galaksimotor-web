@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DangerZone } from "./DangerZone";
+import { getLowStockThreshold } from "@/lib/stock";
+import { EditableWrapper } from "@/components/EditableWrapper";
 
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
 export default async function AdminDashboard() {
+  const lowStockThreshold = await getLowStockThreshold();
   const [
     pendingOrders,
     totalOrders,
@@ -26,9 +29,9 @@ export default async function AdminDashboard() {
       where: { status: { not: "CANCELLED" } },
     }),
     prisma.product.findMany({
-      where: { isActive: true, stock: { lte: 5 } },
+      where: { isActive: true, stock: { lte: lowStockThreshold } },
       orderBy: { stock: "asc" },
-      take: 5,
+      take: 8,
       select: { id: true, name: true, slug: true, stock: true },
     }),
     prisma.order.findMany({
@@ -102,6 +105,27 @@ export default async function AdminDashboard() {
         </Panel>
 
         <Panel title="Stok Uyarısı" link="/admin/urunler" accent="rose">
+          <div className="mb-3">
+            <EditableWrapper
+              table="siteSetting"
+              id="low_stock_threshold"
+              field="value"
+              value={String(lowStockThreshold)}
+              label="Kritik Stok Eşiği"
+              fieldType="number"
+              revalidatePaths={["/admin"]}
+              as="div"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-white/60"
+            >
+              <span>
+                Eşik:{" "}
+                <span className="font-semibold text-white">
+                  {lowStockThreshold}
+                </span>{" "}
+                ve altı
+              </span>
+            </EditableWrapper>
+          </div>
           {lowStock.length === 0 ? (
             <Empty>Tüm ürünlerde stok yeterli 👍</Empty>
           ) : (

@@ -1,11 +1,19 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettings, st } from "@/lib/site-settings";
 import { AppointmentClient } from "./AppointmentClient";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = { title: "Servis Randevusu - Galaksi Motor" };
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/randevu", {
+    title: "Servis Randevusu - Galaksi Motor",
+    description:
+      "Motosikletiniz için online servis randevusu alın — bakım, onarım, kontrol.",
+  });
+}
 
 export default async function RandevuPage() {
   const session = await getServerSession(authOptions);

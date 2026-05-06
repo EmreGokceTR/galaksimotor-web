@@ -1,13 +1,19 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getSettings, st } from "@/lib/site-settings";
 import { EditableWrapper } from "@/components/EditableWrapper";
 import { MotorcycleCard } from "@/components/MotorcycleCard";
 import { AnimatedSection, AnimatedItem } from "@/components/AnimatedSection";
+import { AddRecordButton } from "@/components/AddRecordButton";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = {
-  title: "Satılık Motosikletler - Galaksi Motor",
-  description: "Galaksi Motor'da satışa sunulan ikinci el ve sıfır motosikletler.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/motosikletler", {
+    title: "Satılık Motosikletler - Galaksi Motor",
+    description:
+      "Galaksi Motor'da satışa sunulan ikinci el ve sıfır motosikletler.",
+  });
+}
 
 const R = ["/motosikletler"];
 
@@ -40,6 +46,9 @@ export default async function MotorcyclesPage() {
     <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Header */}
       <AnimatedSection as="div" className="mb-10">
+        <div className="mb-4 flex justify-end">
+          <AddRecordButton kind="motorcycle" label="Yeni İlan" />
+        </div>
         <EditableWrapper
           table="siteSetting"
           id="moto_page_eyebrow"

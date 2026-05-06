@@ -1,12 +1,16 @@
+import type { Metadata } from "next";
 import { InfoPageHero } from "@/components/InfoPageHero";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { FAQS } from "@/config/faq";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = {
-  title: "Sıkça Sorulan Sorular",
-  description:
-    "Kargo, iade, ödeme, randevu ve uyumluluk hakkında sıkça sorulan sorular.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/sss", {
+    title: "Sıkça Sorulan Sorular",
+    description:
+      "Kargo, iade, ödeme, randevu ve uyumluluk hakkında sıkça sorulan sorular.",
+  });
+}
 
 export default function SSSPage() {
   // FAQ JSON-LD for SEO rich results

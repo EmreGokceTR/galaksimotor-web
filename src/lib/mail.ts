@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getSettings, st } from "@/lib/site-settings";
 
 // ─── Sipariş onay e-postası (mevcut stub) ─────────────────────────────────────
 
@@ -58,8 +59,55 @@ export async function sendMail(to: string, subject: string, html: string) {
 export async function sendAdminMail(subject: string, html: string) {
   const adminEmail = process.env.ADMIN_EMAIL;
   if (!adminEmail) {
-    console.log(`📧 [MAIL STUB] Admin maili atlandı (ADMIN_EMAIL yok): ${subject}`);
+    console.log(
+      `📧 [MAIL STUB] Admin maili atlandı (ADMIN_EMAIL yok): ${subject}`
+    );
     return;
   }
   return sendMail(adminEmail, subject, html);
+}
+
+// ─── Şablon Sistemi ───────────────────────────────────────────────────────────
+
+/** {{key}} şeklindeki yer tutucuları değişkenlerle değiştirir. */
+export function renderTemplate(
+  template: string,
+  vars: Record<string, string | number>
+): string {
+  return Object.entries(vars).reduce(
+    (acc, [k, v]) =>
+      acc.replace(new RegExp(`{{\\s*${k}\\s*}}`, "g"), String(v ?? "")),
+    template
+  );
+}
+
+export type EmailTemplate = { subject: string; body: string };
+
+/**
+ * siteSetting tablosundan şablonu çeker.
+ * Anahtar adlandırması: email_{key}_subject, email_{key}_body
+ */
+export async function getEmailTemplate(
+  key: string,
+  fallback: EmailTemplate
+): Promise<EmailTemplate> {
+  const subjectKey = `email_${key}_subject`;
+  const bodyKey = `email_${key}_body`;
+  const bag = await getSettings([subjectKey, bodyKey]);
+  return {
+    subject: st(bag, subjectKey, fallback.subject),
+    body: st(bag, bodyKey, fallback.body),
+  };
+}
+
+/** Şablonu çek + render et + admin'e gönder. */
+export async function sendTemplatedAdminMail(
+  key: string,
+  fallback: EmailTemplate,
+  vars: Record<string, string | number>
+): Promise<void> {
+  const tpl = await getEmailTemplate(key, fallback);
+  const subject = renderTemplate(tpl.subject, vars);
+  const body = renderTemplate(tpl.body, vars);
+  await sendAdminMail(subject, body);
 }

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { assertAdmin } from "@/lib/admin";
+import { assertAdminContext } from "@/lib/admin";
+import { logActivity } from "@/lib/activity-log";
 
 const DELEGATE_MAP = {
   product: () => prisma.product,
@@ -22,12 +23,12 @@ export async function updateField(
   paths: string[] = [],
   settingType = "text"
 ): Promise<void> {
-  await assertAdmin();
+  const { email } = await assertAdminContext();
 
   if (table === "siteSetting") {
     await prisma.siteSetting.upsert({
       where: { key: id },
-      update: { value: String(value ?? "") },
+      update: { value: String(value ?? ""), type: settingType },
       create: { key: id, value: String(value ?? ""), type: settingType },
     });
   } else {
@@ -41,6 +42,15 @@ export async function updateField(
       data: { [field]: value },
     });
   }
+
+  const preview =
+    typeof value === "string" && value.length > 120
+      ? value.slice(0, 120) + "…"
+      : value;
+
+  await logActivity(email, "update", `${table}:${id}:${field}`, {
+    value: preview,
+  });
 
   for (const path of paths) revalidatePath(path);
 }

@@ -22,10 +22,17 @@ export type CartItem = {
 
 type AddPayload = Omit<CartItem, "key" | "quantity"> & { quantity?: number };
 
+export type AppliedCoupon = {
+  code: string;
+  type: "PERCENT" | "FIXED";
+  discount: number;
+};
+
 type CartState = {
   items: CartItem[];
   isOpen: boolean;
   hasHydrated: boolean;
+  appliedCoupon: AppliedCoupon | null;
   open: () => void;
   close: () => void;
   toggle: () => void;
@@ -35,6 +42,8 @@ type CartState = {
   inc: (key: string) => void;
   dec: (key: string) => void;
   clear: () => void;
+  applyCoupon: (c: AppliedCoupon) => void;
+  removeCoupon: () => void;
   /** total quantity of items (for badge) */
   count: () => number;
   subtotal: () => number;
@@ -49,6 +58,7 @@ export const useCart = create<CartState>()(
       items: [],
       isOpen: false,
       hasHydrated: false,
+      appliedCoupon: null,
 
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
@@ -108,7 +118,10 @@ export const useCart = create<CartState>()(
         else get().setQuantity(key, it.quantity - 1);
       },
 
-      clear: () => set({ items: [] }),
+      clear: () => set({ items: [], appliedCoupon: null }),
+
+      applyCoupon: (c) => set({ appliedCoupon: c }),
+      removeCoupon: () => set({ appliedCoupon: null }),
 
       count: () => get().items.reduce((acc, i) => acc + i.quantity, 0),
 
@@ -127,7 +140,10 @@ export const useCart = create<CartState>()(
               removeItem: () => undefined,
             }
       ),
-      partialize: (s) => ({ items: s.items }),
+      partialize: (s) => ({
+        items: s.items,
+        appliedCoupon: s.appliedCoupon,
+      }),
       skipHydration: true,
       onRehydrateStorage: () => () => {
         // Hydration only happens on client; mark ready after rehydrate

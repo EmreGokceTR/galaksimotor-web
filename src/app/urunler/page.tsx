@@ -1,10 +1,15 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { AddRecordButton } from "@/components/AddRecordButton";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = {
-  title: "Tüm Ürünler - Galaksi Motor",
-  description: "Motosiklet yedek parça, bakım ürünleri ve aksesuarları.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/urunler", {
+    title: "Tüm Ürünler - Galaksi Motor",
+    description: "Motosiklet yedek parça, bakım ürünleri ve aksesuarları.",
+  });
+}
 
 export default async function ProductsPage() {
   const [brands, categories] = await Promise.all([
@@ -15,17 +20,24 @@ export default async function ProductsPage() {
     }),
     prisma.category.findMany({
       orderBy: { name: "asc" },
-      select: { slug: true, name: true },
+      select: { id: true, slug: true, name: true },
     }),
   ]);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
-      <h1 className="mb-6 text-3xl font-bold text-brand-yellow">Tüm Ürünler</h1>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold text-brand-yellow">Tüm Ürünler</h1>
+        <AddRecordButton
+          kind="product"
+          categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+          label="Yeni Ürün"
+        />
+      </div>
       <ProductCatalog
         brands={brands.map((b) => b.brand!).filter(Boolean)}
         showCategoryFilter
-        categories={categories}
+        categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
       />
     </div>
   );

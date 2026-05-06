@@ -2,41 +2,62 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/stores/cart";
-import { computeShipping, SITE } from "@/config/site";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
+import type { ShippingConfig } from "@/lib/shipping";
+import { computeShippingFromConfig } from "@/lib/shipping";
+import { initPaymentForOrder } from "@/app/_actions/payment";
 
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
 type Delivery = "CARGO" | "PICKUP";
+type PayMethod = "ONLINE" | "DOOR";
 
 export function CheckoutClient({
   defaultName,
+  shipping,
+  iyzicoEnabled,
 }: {
   defaultName: string;
   defaultEmail: string;
+  shipping: ShippingConfig;
+  iyzicoEnabled: boolean;
 }) {
   const router = useRouter();
   const items = useCart((s) => s.items);
   const subtotal = useCart((s) => s.subtotal());
   const hydrated = useCart((s) => s.hasHydrated);
+  const appliedCoupon = useCart((s) => s.appliedCoupon);
 
   const [name, setName] = useState(defaultName);
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [delivery, setDelivery] = useState<Delivery>("CARGO");
+
+  // Fatura
+  const [invoiceFullName, setInvoiceFullName] = useState("");
+  const [invoiceTcNo, setInvoiceTcNo] = useState("");
+  const [invoiceAddress, setInvoiceAddress] = useState("");
+  const [sameAsShipping, setSameAsShipping] = useState(true);
+
+  const [payMethod, setPayMethod] = useState<PayMethod>(
+    iyzicoEnabled ? "ONLINE" : "DOOR"
+  );
   const [submitting, setSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const shippingInfo = computeShipping(subtotal);
+  const shippingInfo = computeShippingFromConfig(subtotal, shipping);
   const shippingFee = delivery === "CARGO" ? shippingInfo.fee : 0;
-  const total = subtotal + shippingFee;
+  const discount = appliedCoupon
+    ? Math.min(appliedCoupon.discount, subtotal)
+    : 0;
+  const total = Math.max(0, subtotal + shippingFee - discount);
 
-  // If cart hydrated empty, redirect back to /sepet
   useEffect(() => {
     if (hydrated && items.length === 0) {
       router.replace("/sepet");
@@ -59,6 +80,12 @@ export function CheckoutClient({
           })),
           deliveryType: delivery,
           shipping: { name, phone, address, city },
+          invoice: {
+            fullName: sameAsShipping ? name : invoiceFullName,
+            tcNo: invoiceTcNo,
+            address: sameAsShipping ? address : invoiceAddress,
+          },
+          couponCode: appliedCoupon?.code,
         }),
       });
       const data = await res.json();
@@ -67,6 +94,22 @@ export function CheckoutClient({
         setSubmitting(false);
         return;
       }
+
+      // Online ödeme: Iyzico Checkout Form'a yönlendir
+      if (payMethod === "ONLINE" && iyzicoEnabled) {
+        startTransition(async () => {
+          const init = await initPaymentForOrder(data.id);
+          if (!init.ok) {
+            setError(init.error);
+            setSubmitting(false);
+            return;
+          }
+          window.location.href = init.paymentPageUrl;
+        });
+        return;
+      }
+
+      // Kapıda ödeme: doğrudan başarı sayfası
       router.push(`/odeme/basari/${data.id}`);
     } catch {
       setError("Beklenmeyen bir hata oluştu.");
@@ -91,18 +134,20 @@ export function CheckoutClient({
         </h1>
       </header>
 
-      <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        {/* LEFT: form */}
+      <form
+        onSubmit={handleSubmit}
+        className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]"
+      >
         <div className="space-y-6">
-          {/* Delivery type */}
+          {/* Teslimat */}
           <Section title="Teslimat Yöntemi" icon="🚚">
             <div className="grid gap-3 sm:grid-cols-2">
               <DeliveryOption
                 active={delivery === "CARGO"}
                 onClick={() => setDelivery("CARGO")}
                 title="Kargo"
-                desc="Adresine teslim · 1-3 iş günü"
-                fee={shippingInfo.free ? "Ücretsiz" : fmt(SITE.shipping.fee)}
+                desc={`Adresine teslim · ${shipping.estimatedDays} iş günü`}
+                fee={shippingInfo.free ? "Ücretsiz" : fmt(shipping.fee)}
               />
               <DeliveryOption
                 active={delivery === "PICKUP"}
@@ -114,7 +159,7 @@ export function CheckoutClient({
             </div>
           </Section>
 
-          {/* Contact */}
+          {/* İletişim */}
           <Section title="İletişim" icon="✉">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field
@@ -135,7 +180,7 @@ export function CheckoutClient({
             </div>
           </Section>
 
-          {/* Address — only when cargo */}
+          {/* Adres */}
           <AnimatePresence initial={false}>
             {delivery === "CARGO" && (
               <motion.div
@@ -169,25 +214,84 @@ export function CheckoutClient({
             )}
           </AnimatePresence>
 
-          {/* Payment placeholder */}
+          {/* Fatura */}
+          <Section title="Fatura Bilgileri" icon="🧾">
+            <div className="grid gap-3">
+              <Field
+                label="TC Kimlik No (fatura için)"
+                value={invoiceTcNo}
+                onChange={(v) => setInvoiceTcNo(v.replace(/\D/g, "").slice(0, 11))}
+                placeholder="11 hane"
+                autoComplete="off"
+              />
+              <label className="flex items-center gap-2 text-xs text-white/65">
+                <input
+                  type="checkbox"
+                  className="accent-brand-yellow"
+                  checked={sameAsShipping}
+                  onChange={(e) => setSameAsShipping(e.target.checked)}
+                />
+                Fatura adresi teslimat adresi ile aynı
+              </label>
+              <AnimatePresence initial={false}>
+                {!sameAsShipping && (
+                  <motion.div
+                    key="inv"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="grid gap-3 overflow-hidden"
+                  >
+                    <Field
+                      label="Fatura Adı"
+                      value={invoiceFullName}
+                      onChange={setInvoiceFullName}
+                      placeholder="Şirket veya kişi adı"
+                    />
+                    <Field
+                      label="Fatura Adresi"
+                      value={invoiceAddress}
+                      onChange={setInvoiceAddress}
+                      textarea
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </Section>
+
+          {/* Ödeme yöntemi */}
           <Section title="Ödeme" icon="💳">
-            <div className="rounded-xl border border-white/10 bg-white/[0.025] p-5 text-sm text-white/70">
-              <p className="font-medium text-white">
-                Şimdilik <span className="text-brand-yellow">Kapıda Ödeme</span> seçildi.
-              </p>
-              <p className="mt-1.5 text-xs text-white/55">
-                Online ödeme entegrasyonu yakında devrede. Şu an için siparişin alınır,
-                ödemeyi teslimat sırasında yaparsın.
-              </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <DeliveryOption
+                active={payMethod === "ONLINE"}
+                onClick={() => iyzicoEnabled && setPayMethod("ONLINE")}
+                title="Online (Iyzico)"
+                desc={
+                  iyzicoEnabled
+                    ? "Kredi/Banka kartı · 3D Secure"
+                    : "Yapılandırma bekleniyor"
+                }
+                fee={iyzicoEnabled ? "Hemen ödeme" : "—"}
+              />
+              <DeliveryOption
+                active={payMethod === "DOOR"}
+                onClick={() => setPayMethod("DOOR")}
+                title="Kapıda Ödeme"
+                desc="Teslimat sırasında nakit/kart"
+                fee="Tahsilat anında"
+              />
             </div>
           </Section>
         </div>
 
-        {/* RIGHT: summary */}
+        {/* Özet */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md">
             <div className="border-b border-white/10 bg-gradient-to-br from-brand-yellow/10 via-transparent to-brand-yellow/5 p-5">
-              <h2 className="text-base font-semibold text-white">Sipariş Özeti</h2>
+              <h2 className="text-base font-semibold text-white">
+                Sipariş Özeti
+              </h2>
               <p className="mt-1 text-xs text-white/50">
                 {items.length} farklı ürün ·{" "}
                 {items.reduce((a, i) => a + i.quantity, 0)} adet
@@ -203,7 +307,11 @@ export function CheckoutClient({
                   <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black/30">
                     {it.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={it.image} alt={it.name} className="h-full w-full object-cover" />
+                      <img
+                        src={it.image}
+                        alt={it.name}
+                        className="h-full w-full object-cover"
+                      />
                     ) : null}
                     <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand-yellow text-[10px] font-bold text-brand-black">
                       {it.quantity}
@@ -231,7 +339,18 @@ export function CheckoutClient({
                 </div>
               )}
               <Row label="Ara toplam" value={fmt(subtotal)} />
-              <Row label="Kargo" value={shippingFee === 0 ? "Ücretsiz" : fmt(shippingFee)} />
+              <Row
+                label="Kargo"
+                value={shippingFee === 0 ? "Ücretsiz" : fmt(shippingFee)}
+              />
+              {discount > 0 && (
+                <Row
+                  label={`Kupon (${appliedCoupon?.code})`}
+                  value={
+                    <span className="text-emerald-300">-{fmt(discount)}</span>
+                  }
+                />
+              )}
               <div className="my-2 h-px bg-white/10" />
               <div className="flex items-end justify-between">
                 <span className="text-sm text-white/60">Toplam</span>
@@ -252,21 +371,47 @@ export function CheckoutClient({
 
               <button
                 type="submit"
-                disabled={submitting || items.length === 0}
+                disabled={submitting || isPending || items.length === 0}
                 className="group mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand-yellow py-3.5 text-sm font-semibold text-brand-black shadow-[0_18px_40px_-12px_rgba(255,215,0,0.7)] transition hover:shadow-[0_24px_50px_-10px_rgba(255,215,0,0.9)] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
               >
-                {submitting ? (
+                {submitting || isPending ? (
                   <>
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity={0.25} strokeWidth={3} />
-                      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth={3} strokeLinecap="round" />
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeOpacity={0.25}
+                        strokeWidth={3}
+                      />
+                      <path
+                        d="M22 12a10 10 0 0 1-10 10"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                      />
                     </svg>
-                    Gönderiliyor...
+                    {payMethod === "ONLINE"
+                      ? "Ödemeye yönlendiriliyor..."
+                      : "Sipariş alınıyor..."}
                   </>
                 ) : (
                   <>
-                    Siparişi Tamamla
-                    <svg viewBox="0 0 16 16" className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                    {payMethod === "ONLINE" ? "Ödemeye Geç" : "Siparişi Tamamla"}
+                    <svg
+                      viewBox="0 0 16 16"
+                      className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M3 8h10M9 4l4 4-4 4" />
                     </svg>
                   </>
@@ -385,7 +530,15 @@ function DeliveryOption({
         }`}
       >
         {active && (
-          <svg viewBox="0 0 12 12" className="h-3 w-3 text-brand-black" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 12 12"
+            className="h-3 w-3 text-brand-black"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m2 6 3 3 5-7" />
           </svg>
         )}

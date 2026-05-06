@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sendAdminMail } from "@/lib/mail";
+import { sendTemplatedAdminMail } from "@/lib/mail";
 import { SITE } from "@/config/site";
 
 type Input = {
@@ -15,9 +15,7 @@ type Input = {
   note?: string;
 };
 
-type Result =
-  | { ok: true; id: string }
-  | { ok: false; error: string };
+type Result = { ok: true; id: string } | { ok: false; error: string };
 
 export async function createAppointment(input: Input): Promise<Result> {
   const session = await getServerSession(authOptions);
@@ -80,42 +78,58 @@ export async function createAppointment(input: Input): Promise<Result> {
   });
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const motoLabel = [motoBrand, motoModel].filter(Boolean).join(" ") || "—";
+  const customerName = session.user.name ?? session.user.email ?? "Müşteri";
 
-  sendAdminMail(
-    `Yeni Randevu: ${service.name} — ${dateLabel}`,
-    `
+  const fallbackBody = `
     <div style="font-family:sans-serif;max-width:520px;color:#1a1a1a">
       <h2 style="margin:0 0 16px">Yeni Randevu Talebi</h2>
       <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.6">
         <tr>
           <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Müşteri</td>
-          <td style="padding:6px 0"><strong>${session.user.name ?? session.user.email}</strong></td>
+          <td style="padding:6px 0"><strong>{{customerName}}</strong></td>
         </tr>
         <tr>
           <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Servis</td>
-          <td style="padding:6px 0"><strong>${service.name}</strong> (${service.duration} dk)</td>
+          <td style="padding:6px 0"><strong>{{serviceName}}</strong> ({{duration}} dk)</td>
         </tr>
         <tr>
           <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Tarih / Saat</td>
-          <td style="padding:6px 0"><strong>${dateLabel}</strong></td>
+          <td style="padding:6px 0"><strong>{{dateLabel}}</strong></td>
         </tr>
         <tr>
           <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Motor</td>
-          <td style="padding:6px 0">${[motoBrand, motoModel].filter(Boolean).join(" ") || "—"}</td>
+          <td style="padding:6px 0">{{motoLabel}}</td>
         </tr>
         <tr>
           <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Not</td>
-          <td style="padding:6px 0">${note || "—"}</td>
+          <td style="padding:6px 0">{{note}}</td>
         </tr>
       </table>
       <p style="margin-top:24px">
-        <a href="${siteUrl}/admin/randevular"
+        <a href="{{adminUrl}}"
            style="display:inline-block;background:#FFD700;color:#000;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:14px">
           Admin Panelinde Gör →
         </a>
       </p>
     </div>
-    `
+  `;
+
+  sendTemplatedAdminMail(
+    "appt",
+    {
+      subject: "Yeni Randevu: {{serviceName}} — {{dateLabel}}",
+      body: fallbackBody,
+    },
+    {
+      customerName,
+      serviceName: service.name,
+      duration: service.duration,
+      dateLabel,
+      motoLabel,
+      note: note || "—",
+      adminUrl: `${siteUrl}/admin/randevular`,
+    }
   ).catch(console.error);
 
   return { ok: true, id: appointment.id };

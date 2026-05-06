@@ -3,8 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { DeliveryType } from "@prisma/client";
-import { computeShipping } from "@/config/site";
-import { sendOrderConfirmation } from "@/lib/mail";
+import { getShippingConfig, computeShippingFromConfig } from "@/lib/shipping";
+import { logActivity } from "@/lib/activity-log";
+import { notifyLowStockIfCrossed } from "@/lib/stock";
+import { validateCoupon } from "@/lib/coupon";
 
 type IncomingItem = {
   productId: string;
@@ -21,6 +23,12 @@ type IncomingBody = {
     address?: string;
     city?: string;
   };
+  invoice?: {
+    fullName?: string;
+    tcNo?: string;
+    address?: string;
+  };
+  couponCode?: string;
 };
 
 function generateOrderNumber() {
@@ -68,14 +76,21 @@ export async function POST(req: Request) {
     );
   }
 
-  // Fetch fresh products from DB to get authoritative prices + stock
+  // TCKN doğrulama (opsiyonel ama doluysa 11 hane olmalı)
+  if (body.invoice?.tcNo && !/^\d{11}$/.test(body.invoice.tcNo.trim())) {
+    return NextResponse.json(
+      { error: "TC Kimlik Numarası 11 haneli olmalı." },
+      { status: 400 }
+    );
+  }
+
+  // Authoritative product lookup
   const productIds = Array.from(new Set(body.items.map((i) => i.productId)));
   const products = await prisma.product.findMany({
     where: { id: { in: productIds }, isActive: true },
   });
   const productMap = new Map(products.map((p) => [p.id, p]));
 
-  // Validate each line
   type ResolvedLine = {
     productId: string;
     variantId: string | null;
@@ -134,13 +149,26 @@ export async function POST(req: Request) {
   }
 
   const subtotal = resolved.reduce((s, l) => s + l.price * l.quantity, 0);
-  const shippingFee =
-    body.deliveryType === "CARGO" ? computeShipping(subtotal).fee : 0;
-  const total = subtotal + shippingFee;
+  const shippingCfg = await getShippingConfig();
+  const shippingInfo = computeShippingFromConfig(subtotal, shippingCfg);
+  const shippingFee = body.deliveryType === "CARGO" ? shippingInfo.fee : 0;
 
-  // Create order + items + decrement stock atomically
+  // Kupon uygula (varsa)
+  let appliedCouponCode: string | null = null;
+  let discountAmount = 0;
+  if (body.couponCode?.trim()) {
+    const v = await validateCoupon(body.couponCode, subtotal);
+    if (!v.ok) {
+      return NextResponse.json({ error: v.error }, { status: 400 });
+    }
+    appliedCouponCode = v.coupon.code;
+    discountAmount = v.discount;
+  }
+
+  const total = subtotal + shippingFee - discountAmount;
+
+  // Atomic order create + stock decrement
   const order = await prisma.$transaction(async (tx) => {
-    // Decrement stock with a per-row check (race-safe)
     for (const line of resolved) {
       const updated = await tx.product.updateMany({
         where: { id: line.productId, stock: { gte: line.quantity } },
@@ -156,7 +184,9 @@ export async function POST(req: Request) {
         orderNumber: generateOrderNumber(),
         userId: session.user!.id,
         deliveryType:
-          body.deliveryType === "PICKUP" ? DeliveryType.PICKUP : DeliveryType.CARGO,
+          body.deliveryType === "PICKUP"
+            ? DeliveryType.PICKUP
+            : DeliveryType.CARGO,
         subtotal,
         shippingFee,
         total,
@@ -164,6 +194,13 @@ export async function POST(req: Request) {
         shippingPhone: body.shipping.phone,
         shippingAddress: body.shipping.address ?? null,
         shippingCity: body.shipping.city ?? null,
+        invoiceTcNo: body.invoice?.tcNo?.trim() || null,
+        invoiceFullName:
+          body.invoice?.fullName?.trim() || body.shipping.name,
+        invoiceAddress:
+          body.invoice?.address?.trim() || body.shipping.address || null,
+        couponCode: appliedCouponCode,
+        discountAmount: discountAmount > 0 ? discountAmount : null,
         items: {
           create: resolved.map((l) => ({
             productId: l.productId,
@@ -179,14 +216,32 @@ export async function POST(req: Request) {
     });
   });
 
-  // Onay e-postası (stub — şu an konsola log)
-  void sendOrderConfirmation({
-    to: session.user.email ?? "",
-    orderNumber: order.orderNumber,
-    customerName: body.shipping.name,
-    total,
-    itemCount: resolved.length,
-  });
+  await logActivity(
+    session.user.email ?? "system",
+    "order_create",
+    `order:${order.id}`,
+    {
+      orderNumber: order.orderNumber,
+      total,
+      itemCount: resolved.length,
+      coupon: appliedCouponCode,
+    }
+  );
+
+  // Kupon kullanım sayacını arttır
+  if (appliedCouponCode) {
+    prisma.coupon
+      .update({
+        where: { code: appliedCouponCode },
+        data: { timesUsed: { increment: 1 } },
+      })
+      .catch(console.error);
+  }
+
+  // Stok eşiği altına düşen ürünler için admin'e bildirim
+  notifyLowStockIfCrossed(resolved.map((l) => l.productId)).catch(
+    console.error
+  );
 
   return NextResponse.json(order, { status: 201 });
 }

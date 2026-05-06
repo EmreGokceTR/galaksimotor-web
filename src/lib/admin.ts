@@ -34,3 +34,19 @@ export async function assertAdmin() {
   }
   return session.user.id;
 }
+
+/** assertAdmin'in genişletilmiş hali; audit log için email döner. */
+export async function assertAdminContext() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("Yetkisiz");
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, role: true, email: true },
+  });
+  if (!user || user.role !== "ADMIN") {
+    throw new Error("Admin yetkisi yok");
+  }
+  return { id: user.id, email: user.email };
+}

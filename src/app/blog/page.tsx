@@ -1,12 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { InfoPageHero } from "@/components/InfoPageHero";
+import { AddRecordButton } from "@/components/AddRecordButton";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = {
-  title: "Blog & Rehber",
-  description:
-    "Motosiklet bakım rehberleri, teknik yazılar ve sektör haberleri.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/blog", {
+    title: "Blog & Rehber",
+    description:
+      "Motosiklet bakım rehberleri, teknik yazılar ve sektör haberleri.",
+  });
+}
 
 export default async function BlogListPage() {
   const posts = await prisma.blogPost.findMany({
@@ -27,6 +32,9 @@ export default async function BlogListPage() {
       />
 
       <div className="mx-auto max-w-7xl px-6 py-14">
+        <div className="mb-6 flex justify-end">
+          <AddRecordButton kind="blog" label="Yeni Yazı" />
+        </div>
         {posts.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-10 text-center text-sm text-white/45">
             Henüz blog yazısı yok.
@@ -69,7 +77,14 @@ export default async function BlogListPage() {
                   )}
                   <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-xs text-white/55 transition group-hover:text-brand-yellow">
                     Devamını oku
-                    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+                    <svg
+                      viewBox="0 0 16 16"
+                      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.2}
+                      strokeLinecap="round"
+                    >
                       <path d="M3 8h10M9 4l4 4-4 4" />
                     </svg>
                   </span>

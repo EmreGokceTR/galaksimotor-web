@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = { title: "Kargo & Teslimat - Galaksi Motor" };
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/kargo", {
+    title: "Kargo & Teslimat - Galaksi Motor",
+    description:
+      "Kargo süreleri, ücretsiz kargo şartları ve teslimat detayları.",
+  });
+}
 
 export default function KargoPage() {
   return (

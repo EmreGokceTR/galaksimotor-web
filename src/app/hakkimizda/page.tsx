@@ -1,10 +1,14 @@
+import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
 import { SITE } from "@/config/site";
+import { buildPageMetadata } from "@/lib/page-meta";
 
-export const metadata = {
-  title: "Hakkımızda",
-  description: `${SITE.name} - Küçükçekmece İnönü Mahallesi'nde 10+ yıllık tecrübeyle motosiklet yedek parça, aksesuar ve servis.`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("/hakkimizda", {
+    title: "Hakkımızda",
+    description: `${SITE.name} - Küçükçekmece İnönü Mahallesi'nde 10+ yıllık tecrübeyle motosiklet yedek parça, aksesuar ve servis.`,
+  });
+}
 
 export default function HakkimizdaPage() {
   return (

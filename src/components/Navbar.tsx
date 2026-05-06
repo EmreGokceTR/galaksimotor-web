@@ -10,6 +10,7 @@ import { CartDrawer } from "./CartDrawer";
 import { CartHydration } from "./CartHydration";
 import { GarageSelector } from "./GarageSelector";
 import { EditableWrapper } from "./EditableWrapper";
+import { PageMetaEditor } from "./PageMetaEditor";
 
 export type NavSettings = {
   logoPart1: string;
@@ -161,6 +162,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
           <CartButton />
           {session?.user ? (
             <>
+              {session.user.role === "ADMIN" && <PageMetaEditor />}
               {session.user.role === "ADMIN" && (
                 <Link
                   href="/admin"
