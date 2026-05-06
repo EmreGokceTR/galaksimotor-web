@@ -1,14 +1,55 @@
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DangerZone } from "./DangerZone";
 import { getLowStockThreshold } from "@/lib/stock";
 import { EditableWrapper } from "@/components/EditableWrapper";
 
+// Recharts SSR ağır; client-only dynamic import
+const RevenueChart = dynamic(
+  () => import("./DashboardCharts").then((m) => m.RevenueChart),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const TopProductsChart = dynamic(
+  () => import("./DashboardCharts").then((m) => m.TopProductsChart),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const AppointmentsHeatmap = dynamic(
+  () => import("./DashboardCharts").then((m) => m.AppointmentsHeatmap),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
+const fmtCompact = (n: number) =>
+  n >= 1000000
+    ? `${(n / 1000000).toFixed(1)}M ₺`
+    : n >= 1000
+    ? `${(n / 1000).toFixed(1)}K ₺`
+    : `${n} ₺`;
+
+const TR_DAYS = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+
+function dayShort(d: Date): string {
+  return `${d.getDate()} ${
+    ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][
+      d.getMonth()
+    ]
+  }`;
+}
+
 export default async function AdminDashboard() {
   const lowStockThreshold = await getLowStockThreshold();
+  const now = new Date();
+  const start30 = new Date(now);
+  start30.setDate(start30.getDate() - 29);
+  start30.setHours(0, 0, 0, 0);
+
+  const future14 = new Date(now);
+  future14.setDate(future14.getDate() + 13);
+  future14.setHours(23, 59, 59, 999);
+
   const [
     pendingOrders,
     totalOrders,
@@ -16,8 +57,14 @@ export default async function AdminDashboard() {
     totalProducts,
     activeProducts,
     revenue,
+    revenue30,
+    customerCount,
+    activeCoupons,
     lowStock,
     recentOrders,
+    ordersLast30,
+    topItemsRaw,
+    upcomingAppointments,
   ] = await Promise.all([
     prisma.order.count({ where: { status: "PENDING" } }),
     prisma.order.count(),
@@ -28,6 +75,15 @@ export default async function AdminDashboard() {
       _sum: { total: true },
       where: { status: { not: "CANCELLED" } },
     }),
+    prisma.order.aggregate({
+      _sum: { total: true },
+      where: {
+        status: { not: "CANCELLED" },
+        createdAt: { gte: start30 },
+      },
+    }),
+    prisma.user.count({ where: { role: "USER" } }),
+    prisma.coupon.count({ where: { isActive: true } }),
     prisma.product.findMany({
       where: { isActive: true, stock: { lte: lowStockThreshold } },
       orderBy: { stock: "asc" },
@@ -39,29 +95,107 @@ export default async function AdminDashboard() {
       take: 5,
       include: { user: { select: { name: true, email: true } } },
     }),
+    prisma.order.findMany({
+      where: {
+        status: { not: "CANCELLED" },
+        createdAt: { gte: start30 },
+      },
+      select: { createdAt: true, total: true },
+    }),
+    prisma.orderItem.groupBy({
+      by: ["productId", "name"],
+      _sum: { quantity: true, price: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: 5,
+      where: { order: { status: { not: "CANCELLED" } } },
+    }),
+    prisma.appointment.findMany({
+      where: {
+        scheduledAt: { gte: now, lte: future14 },
+        status: { not: "CANCELLED" },
+      },
+      select: { scheduledAt: true },
+    }),
   ]);
+
+  // 30 günlük günlük ciro serisi
+  const revenueSeries: { date: string; revenue: number; orders: number }[] = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(start30);
+    d.setDate(d.getDate() + i);
+    revenueSeries.push({ date: dayShort(d), revenue: 0, orders: 0 });
+  }
+  for (const o of ordersLast30) {
+    const idx = Math.floor(
+      (o.createdAt.getTime() - start30.getTime()) / 86400000
+    );
+    if (idx >= 0 && idx < 30) {
+      revenueSeries[idx].revenue += Number(o.total);
+      revenueSeries[idx].orders += 1;
+    }
+  }
+
+  // Top 5 ürünler
+  const topProducts = topItemsRaw.map((t) => ({
+    name: t.name,
+    sold: t._sum.quantity ?? 0,
+    revenue: Number(t._sum.price ?? 0) * (t._sum.quantity ?? 1),
+  }));
+
+  // 14 günlük randevu yoğunluğu
+  const apptSeries: { date: string; count: number }[] = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + i);
+    d.setHours(0, 0, 0, 0);
+    apptSeries.push({
+      date: `${TR_DAYS[d.getDay()]} ${d.getDate()}`,
+      count: 0,
+    });
+  }
+  for (const a of upcomingAppointments) {
+    const idx = Math.floor(
+      (a.scheduledAt.getTime() - new Date(now.toDateString()).getTime()) /
+        86400000
+    );
+    if (idx >= 0 && idx < 14) apptSeries[idx].count += 1;
+  }
 
   return (
     <div className="space-y-6">
+      {/* Hızlı stat kartları */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat
+          label="Toplam Ciro"
+          value={fmtCompact(Number(revenue._sum.total ?? 0))}
+          sub="İptal hariç"
+          accent
+        />
+        <Stat
+          label="Son 30 Gün"
+          value={fmtCompact(Number(revenue30._sum.total ?? 0))}
+          sub={`${ordersLast30.length} sipariş`}
+          accent
+        />
         <Stat
           label="Bekleyen Sipariş"
           value={pendingOrders}
           sub={`Toplam ${totalOrders}`}
-          accent
           href="/admin/siparisler"
         />
+        <Stat
+          label="Müşteri"
+          value={customerCount}
+          sub={`${activeCoupons} aktif kupon`}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Bekleyen Randevu"
           value={pendingAppointments}
           sub="Onayını bekliyor"
-          accent
           href="/admin/randevular"
-        />
-        <Stat
-          label="Toplam Ciro"
-          value={fmt(Number(revenue._sum.total ?? 0))}
-          sub="İptal hariç"
         />
         <Stat
           label="Aktif Ürün"
@@ -69,8 +203,41 @@ export default async function AdminDashboard() {
           sub={`Toplam ${totalProducts}`}
           href="/admin/urunler"
         />
+        <Stat
+          label="Stok Uyarısı"
+          value={lowStock.length}
+          sub={`Eşik: ${lowStockThreshold}`}
+          accent={lowStock.length > 0}
+        />
+        <Stat
+          label="Yedek / Bakım"
+          value="🛠"
+          sub="Veri yedekle / log temizle"
+          href="/admin/yedek"
+        />
       </div>
 
+      {/* Ana grafik: 30 günlük ciro */}
+      <Panel title="Son 30 Gün — Ciro" subtitle="Günlük toplam">
+        <RevenueChart data={revenueSeries} />
+      </Panel>
+
+      {/* İkinci sıra: top ürünler + randevu yoğunluğu */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Panel title="En Çok Satan Ürünler" link="/admin/urunler">
+          {topProducts.length === 0 ? (
+            <Empty>Henüz satış verisi yok.</Empty>
+          ) : (
+            <TopProductsChart data={topProducts} />
+          )}
+        </Panel>
+
+        <Panel title="Randevu Yoğunluğu" link="/admin/randevular" subtitle="Önümüzdeki 14 gün">
+          <AppointmentsHeatmap data={apptSeries} />
+        </Panel>
+      </div>
+
+      {/* Alt: son siparişler + stok uyarısı */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Son Siparişler" link="/admin/siparisler">
           {recentOrders.length === 0 ? (
@@ -162,6 +329,8 @@ export default async function AdminDashboard() {
   );
 }
 
+// ─── Yardımcı bileşenler ─────────────────────────────────────────────────────
+
 function Stat({
   label,
   value,
@@ -198,11 +367,13 @@ function Panel({
   link,
   children,
   accent,
+  subtitle,
 }: {
   title: string;
   link?: string;
   children: React.ReactNode;
   accent?: "rose";
+  subtitle?: string;
 }) {
   return (
     <div
@@ -213,9 +384,14 @@ function Panel({
       }`}
     >
       <header className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
-          {title}
-        </h3>
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="mt-0.5 text-[11px] text-white/45">{subtitle}</p>
+          )}
+        </div>
         {link && (
           <Link
             href={link}
@@ -235,5 +411,13 @@ function Empty({ children }: { children: React.ReactNode }) {
     <p className="rounded-lg border border-white/5 bg-white/[0.02] p-4 text-center text-xs text-white/45">
       {children}
     </p>
+  );
+}
+
+function ChartSkeleton() {
+  return (
+    <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-white/5 bg-white/[0.02]">
+      <div className="h-1 w-32 animate-pulse rounded-full bg-brand-yellow/30" />
+    </div>
   );
 }

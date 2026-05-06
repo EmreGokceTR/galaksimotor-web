@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Fuse from "fuse.js";
 import { ProductCard, ProductCardData } from "./ProductCard";
 import { useGarage } from "@/stores/garage";
 
@@ -35,6 +36,7 @@ export function ProductCatalog({
     if (!activeBike && filterByMyBike) setFilterByMyBike(false);
   }, [activeBike, filterByMyBike]);
 
+  // Search artık client-side fuse ile yapılıyor; query'den çıkarıldı
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
     if (categorySlug) p.set("category", categorySlug);
@@ -42,11 +44,32 @@ export function ProductCatalog({
     if (minPrice) p.set("minPrice", minPrice);
     if (maxPrice) p.set("maxPrice", maxPrice);
     if (inStock) p.set("inStock", "true");
-    if (search) p.set("search", search);
     if (filterByMyBike && activeBike)
       p.set("motoId", activeBike.motorcycleId);
     return p.toString();
-  }, [categorySlug, brand, minPrice, maxPrice, inStock, search, filterByMyBike, activeBike]);
+  }, [categorySlug, brand, minPrice, maxPrice, inStock, filterByMyBike, activeBike]);
+
+  // Fuzzy search index — yeni products geldiğinde yeniden inşa
+  const fuse = useMemo(
+    () =>
+      new Fuse(products, {
+        keys: [
+          { name: "name", weight: 0.7 },
+          { name: "brand", weight: 0.2 },
+          { name: "sku", weight: 0.1 },
+        ],
+        threshold: 0.4,
+        ignoreLocation: true,
+        minMatchCharLength: 2,
+      }),
+    [products]
+  );
+
+  const visibleProducts = useMemo(() => {
+    const q = search.trim();
+    if (!q) return products;
+    return fuse.search(q).map((r) => r.item);
+  }, [search, fuse, products]);
 
   useEffect(() => {
     setLoading(true);
@@ -184,17 +207,23 @@ export function ProductCatalog({
       <section>
         <div className="mb-4 flex items-center justify-between text-sm text-white/60">
           <span>
-            {loading ? "Yükleniyor..." : `${products.length} ürün bulundu`}
+            {loading
+              ? "Yükleniyor..."
+              : search.trim()
+              ? `${visibleProducts.length} sonuç (${products.length} ürün içinde)`
+              : `${visibleProducts.length} ürün bulundu`}
           </span>
         </div>
 
-        {!loading && products.length === 0 ? (
+        {!loading && visibleProducts.length === 0 ? (
           <div className="rounded-lg border border-white/10 bg-white/5 p-10 text-center text-white/60">
-            Filtrelere uygun ürün bulunamadı.
+            {search.trim()
+              ? `"${search}" için sonuç bulunamadı.`
+              : "Filtrelere uygun ürün bulunamadı."}
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p, i) => (
+            {visibleProducts.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))}
           </div>

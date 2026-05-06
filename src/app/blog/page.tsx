@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { InfoPageHero } from "@/components/InfoPageHero";
 import { AddRecordButton } from "@/components/AddRecordButton";
 import { buildPageMetadata } from "@/lib/page-meta";
+import { BlogList, type BlogListItem } from "./BlogList";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/blog", {
@@ -18,6 +18,15 @@ export default async function BlogListPage() {
     where: { isPublished: true },
     orderBy: { publishedAt: "desc" },
   });
+
+  const items: BlogListItem[] = posts.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.excerpt,
+    coverUrl: p.coverUrl,
+    publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
+  }));
 
   return (
     <>
@@ -35,64 +44,7 @@ export default async function BlogListPage() {
         <div className="mb-6 flex justify-end">
           <AddRecordButton kind="blog" label="Yeni Yazı" />
         </div>
-        {posts.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-10 text-center text-sm text-white/45">
-            Henüz blog yazısı yok.
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map((p) => (
-              <Link
-                key={p.id}
-                href={`/blog/${p.slug}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md transition hover:-translate-y-1 hover:border-brand-yellow/40 hover:shadow-[0_0_0_1px_rgba(255,215,0,0.25),0_30px_60px_-20px_rgba(255,215,0,0.25)]"
-              >
-                <div className="aspect-[16/9] overflow-hidden bg-black/30">
-                  {p.coverUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.coverUrl}
-                      alt={p.title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : null}
-                </div>
-                <div className="flex flex-1 flex-col gap-2 p-5">
-                  <span className="text-[11px] uppercase tracking-wider text-brand-yellow/70">
-                    {p.publishedAt
-                      ? new Date(p.publishedAt).toLocaleDateString("tr-TR", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "—"}
-                  </span>
-                  <h2 className="text-lg font-bold leading-snug text-white transition-colors group-hover:text-brand-yellow">
-                    {p.title}
-                  </h2>
-                  {p.excerpt && (
-                    <p className="line-clamp-3 text-sm text-white/60">
-                      {p.excerpt}
-                    </p>
-                  )}
-                  <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-xs text-white/55 transition group-hover:text-brand-yellow">
-                    Devamını oku
-                    <svg
-                      viewBox="0 0 16 16"
-                      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2.2}
-                      strokeLinecap="round"
-                    >
-                      <path d="M3 8h10M9 4l4 4-4 4" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <BlogList posts={items} />
       </div>
     </>
   );

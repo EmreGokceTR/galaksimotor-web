@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
   { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
+  { href: "/admin/yedek", label: "Yedek & Bakım", icon: "💾" },
 ];
 
 export default async function AdminLayout({

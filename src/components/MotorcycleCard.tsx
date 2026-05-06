@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { AdminMotorcycleEditButton, type MotorcycleSnapshot } from "./AdminMotorcycleEditButton";
 
@@ -63,11 +64,14 @@ export function MotorcycleCard({
         {/* image */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-white/[0.04] to-black/30">
           {moto.gorsel ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={moto.gorsel}
               alt={`${moto.marka} ${moto.model}`}
-              className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading={index < 3 ? "eager" : "lazy"}
+              priority={index < 3}
+              className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-white/20">

@@ -24,6 +24,7 @@
     "@tiptap/starter-kit": "^3.22.5",
     "bcryptjs": "2.4.3",
     "framer-motion": "^12.38.0",
+    "fuse.js": "^7.3.0",
     "iyzipay": "2.0.61",
     "next": "14.2.5",
     "next-auth": "4.24.7",
@@ -31,6 +32,7 @@
     "pdfkit": "^0.18.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "recharts": "^3.8.1",
     "zustand": "4.5.4"
   },
   "devDependencies": {
