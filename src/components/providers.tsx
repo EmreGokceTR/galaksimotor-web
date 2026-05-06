@@ -1,8 +1,13 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
+import { EditModeProvider } from "@/context/EditModeContext";
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider>
+      <EditModeProvider>{children}</EditModeProvider>
+    </SessionProvider>
+  );
 }

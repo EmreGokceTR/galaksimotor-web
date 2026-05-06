@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { EditModeToggle } from "@/components/EditModeToggle";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
 
@@ -14,42 +16,78 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE.url),
-  title: {
-    default: `${SITE.name} - Yedek Parça, Aksesuar ve Servis`,
-    template: `%s · ${SITE.name}`,
-  },
-  description: SITE.description,
-  keywords: [
-    "motosiklet yedek parça",
-    "motosiklet aksesuar",
-    "motor servisi",
-    "Küçükçekmece motor",
-    "İstanbul motosiklet",
-    "CVT kayışı",
-    "fren balatası",
-  ],
-  authors: [{ name: SITE.name }],
-  openGraph: {
-    type: "website",
-    locale: "tr_TR",
-    url: SITE.url,
-    siteName: SITE.name,
-    title: SITE.name,
-    description: SITE.description,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE.name,
-    description: SITE.description,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
-  },
-};
+// Tek sorguda tüm ayarları çek; cache() ile aynı request içinde dedup yapar
+const fetchSettings = cache(() =>
+  getSettings([
+    "site_title",
+    "site_description",
+    "logo_name_part1",
+    "logo_name_part2",
+    "logo_image_url",
+    "nav_home",
+    "nav_urunler",
+    "nav_motosikletler",
+    "nav_yedek_parca",
+    "nav_bakim",
+    "nav_randevu",
+    "nav_auth_account",
+    "nav_auth_logout",
+    "nav_auth_login",
+    "nav_auth_register",
+    "nav_auth_admin",
+    "wa_phone",
+    "wa_prefill",
+    "wa_tooltip_title",
+    "wa_tooltip_sub",
+  ])
+);
+
+export async function generateMetadata(): Promise<Metadata> {
+  const bag = await fetchSettings();
+  const title = st(
+    bag,
+    "site_title",
+    `${SITE.name} - Yedek Parça, Aksesuar ve Servis`
+  );
+  const description = st(bag, "site_description", SITE.description);
+
+  return {
+    metadataBase: new URL(SITE.url),
+    title: {
+      default: title,
+      template: `%s · ${SITE.name}`,
+    },
+    description,
+    keywords: [
+      "motosiklet yedek parça",
+      "motosiklet aksesuar",
+      "motor servisi",
+      "Küçükçekmece motor",
+      "İstanbul motosiklet",
+      "CVT kayışı",
+      "fren balatası",
+    ],
+    authors: [{ name: SITE.name }],
+    openGraph: {
+      type: "website",
+      locale: "tr_TR",
+      url: SITE.url,
+      siteName: SITE.name,
+      title,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    },
+  };
+}
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
@@ -94,26 +132,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const bag = await getSettings([
-    "logo_name_part1",
-    "logo_name_part2",
-    "logo_image_url",
-    "nav_home",
-    "nav_urunler",
-    "nav_motosikletler",
-    "nav_yedek_parca",
-    "nav_bakim",
-    "nav_randevu",
-    "nav_auth_account",
-    "nav_auth_logout",
-    "nav_auth_login",
-    "nav_auth_register",
-    "nav_auth_admin",
-    "wa_phone",
-    "wa_prefill",
-    "wa_tooltip_title",
-    "wa_tooltip_sub",
-  ]);
+  const bag = await fetchSettings();
 
   const navSettings = {
     logoPart1: st(bag, "logo_name_part1", "Galaksi"),
@@ -136,7 +155,11 @@ export default async function RootLayout({
     phone: st(bag, "wa_phone", SITE.whatsapp),
     prefillMsg: st(bag, "wa_prefill", SITE.whatsappPrefilled),
     tooltipTitle: st(bag, "wa_tooltip_title", "Yardım lazım mı?"),
-    tooltipSub: st(bag, "wa_tooltip_sub", "WhatsApp'tan dakikalar içinde dönüş."),
+    tooltipSub: st(
+      bag,
+      "wa_tooltip_sub",
+      "WhatsApp'tan dakikalar içinde dönüş."
+    ),
   };
 
   return (
@@ -144,7 +167,9 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(localBusinessJsonLd),
+          }}
         />
       </head>
       <body className="min-h-screen bg-brand-black font-sans text-white antialiased">
@@ -153,6 +178,7 @@ export default async function RootLayout({
           <main className="relative">{children}</main>
           <Footer />
           <WhatsAppButton settings={waSettings} />
+          <EditModeToggle />
         </Providers>
       </body>
     </html>
