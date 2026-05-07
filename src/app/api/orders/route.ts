@@ -31,6 +31,7 @@ type IncomingBody = {
     address?: string;
   };
   couponCode?: string;
+  legalAccepted?: boolean;
 };
 
 function generateOrderNumber() {
@@ -65,6 +66,15 @@ export async function POST(req: Request) {
   if (!body.shipping?.name || !body.shipping?.phone) {
     return NextResponse.json(
       { error: "İsim ve telefon zorunlu." },
+      { status: 400 }
+    );
+  }
+  if (!body.legalAccepted) {
+    return NextResponse.json(
+      {
+        error:
+          "Mesafeli Satış Sözleşmesi ve İptal/İade Koşulları onaylanmadan sipariş oluşturulamaz.",
+      },
       { status: 400 }
     );
   }

@@ -47,6 +47,7 @@ export function CheckoutClient({
   const [payMethod, setPayMethod] = useState<PayMethod>(
     iyzicoEnabled ? "ONLINE" : "DOOR"
   );
+  const [agreedTerms, setAgreedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +68,14 @@ export function CheckoutClient({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!agreedTerms) {
+      setError(
+        "Lütfen Mesafeli Satış Sözleşmesi ve İptal Koşullarını onaylayın."
+      );
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/orders", {
@@ -86,6 +95,7 @@ export function CheckoutClient({
             address: sameAsShipping ? address : invoiceAddress,
           },
           couponCode: appliedCoupon?.code,
+          legalAccepted: agreedTerms,
         }),
       });
       const data = await res.json();
@@ -359,6 +369,42 @@ export function CheckoutClient({
                 </span>
               </div>
 
+              {/* Yasal onay — tüm online ödemeler için zorunlu */}
+              <label
+                className={`mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 text-xs leading-relaxed transition ${
+                  agreedTerms
+                    ? "border-brand-yellow/40 bg-brand-yellow/[0.06] text-white/85"
+                    : "border-white/10 bg-white/[0.02] text-white/65 hover:border-white/20"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-yellow"
+                  checked={agreedTerms}
+                  onChange={(e) => setAgreedTerms(e.target.checked)}
+                />
+                <span>
+                  <a
+                    href="/mesafeli-satis-sozlesmesi"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-yellow underline-offset-2 hover:underline"
+                  >
+                    Mesafeli Satış Sözleşmesi
+                  </a>
+                  &apos;ni ve{" "}
+                  <a
+                    href="/iptal-iade-kosullari"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-yellow underline-offset-2 hover:underline"
+                  >
+                    İptal & İade Koşulları
+                  </a>
+                  &apos;nı okudum, onaylıyorum.
+                </span>
+              </label>
+
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
@@ -371,7 +417,9 @@ export function CheckoutClient({
 
               <button
                 type="submit"
-                disabled={submitting || isPending || items.length === 0}
+                disabled={
+                  submitting || isPending || items.length === 0 || !agreedTerms
+                }
                 className="group mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand-yellow py-3.5 text-sm font-semibold text-brand-black shadow-[0_18px_40px_-12px_rgba(255,215,0,0.7)] transition hover:shadow-[0_24px_50px_-10px_rgba(255,215,0,0.9)] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
               >
                 {submitting || isPending ? (
@@ -418,8 +466,20 @@ export function CheckoutClient({
                 )}
               </button>
 
-              <p className="mt-3 text-center text-[11px] text-white/40">
-                Devam ederek satış sözleşmesini kabul etmiş olursun.
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] text-white/40">
+                <svg
+                  viewBox="0 0 16 16"
+                  className="h-3 w-3 text-emerald-300"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.4}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="7" width="10" height="7" rx="1" />
+                  <path d="M5 7V5a3 3 0 0 1 6 0v2" />
+                </svg>
+                256-bit SSL · iyzico 3D Secure ile güvenli ödeme
               </p>
             </div>
           </div>

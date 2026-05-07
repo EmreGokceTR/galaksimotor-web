@@ -56,10 +56,17 @@ export async function Footer() {
       items: [
         { key: "footer_col3_l1", label: st(bag, "footer_col3_l1", "İletişim"), href: "/iletisim" },
         { key: "footer_col3_l2", label: st(bag, "footer_col3_l2", "Kargo & Teslimat"), href: "/kargo" },
-        { key: "footer_col3_l3", label: st(bag, "footer_col3_l3", "İade Koşulları"), href: "/iade" },
-        { key: "footer_col3_l4", label: st(bag, "footer_col3_l4", "Gizlilik"), href: "/gizlilik" },
+        { key: "footer_col3_l3", label: st(bag, "footer_col3_l3", "İade Koşulları"), href: "/iptal-iade-kosullari" },
+        { key: "footer_col3_l4", label: st(bag, "footer_col3_l4", "SSS"), href: "/sss" },
       ],
     },
+  ];
+
+  const legalLinks = [
+    { label: "KVKK", href: "/kvkk" },
+    { label: "Gizlilik Politikası", href: "/gizlilik-politikasi" },
+    { label: "Mesafeli Satış Sözleşmesi", href: "/mesafeli-satis-sozlesmesi" },
+    { label: "İptal & İade Koşulları", href: "/iptal-iade-kosullari" },
   ];
 
   const copyright = st(bag, "footer_copyright", `© ${new Date().getFullYear()} Galaksi Motor. Tüm hakları saklıdır.`);
@@ -136,7 +143,27 @@ export async function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row">
+        {/* Yasal linkler — KVKK, mesafeli satış, gizlilik, iptal/iade */}
+        <nav
+          aria-label="Yasal Bilgiler"
+          className="mt-12 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-white/10 pt-6 text-[11px] text-white/55 sm:justify-start"
+        >
+          {legalLinks.map((l, i) => (
+            <span key={l.href} className="flex items-center gap-x-5">
+              <Link
+                href={l.href}
+                className="transition-colors hover:text-brand-yellow"
+              >
+                {l.label}
+              </Link>
+              {i < legalLinks.length - 1 && (
+                <span className="hidden h-1 w-1 rounded-full bg-white/20 sm:inline-block" />
+              )}
+            </span>
+          ))}
+        </nav>
+
+        <div className="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-white/40 sm:flex-row">
           <EditableWrapper table="siteSetting" id="footer_copyright" field="value" value={copyright} label="Footer Telif Hakkı" revalidatePaths={R} as="span">
             {copyright}
           </EditableWrapper>
