@@ -263,8 +263,7 @@ export function AppointmentClient({
                 })}
               </div>
               <p className="mt-3 text-xs text-white/45">
-                Çalışma saatleri: {SITE.hours.weekdays} · Cmt:{" "}
-                {SITE.hours.saturday} · Paz: {SITE.hours.sunday}
+                Pzt - Cmt: {SITE.hours.weekdays} · Pazar: {SITE.hours.sunday}
               </p>
             </Section>
 

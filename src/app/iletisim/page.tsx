@@ -57,34 +57,19 @@ export default function IletisimPage() {
                 external
                 accent
               />
-              <ContactCard
-                icon="📷"
-                label="Instagram"
-                value="@galaksimotor"
-                href={SITE.social.instagram}
-                external
-              />
             </div>
 
             <InfoCard title="Çalışma Saatleri">
-              <ul className="grid gap-2 sm:grid-cols-3">
+              <ul className="grid gap-2 sm:grid-cols-2">
                 <li className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                   <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    Hafta İçi
+                    Pazartesi - Cumartesi
                   </div>
                   <div className="text-sm text-white">
                     {SITE.hours.weekdays}
                   </div>
                 </li>
-                <li className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    Cumartesi
-                  </div>
-                  <div className="text-sm text-white">
-                    {SITE.hours.saturday}
-                  </div>
-                </li>
-                <li className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <li className="rounded-lg border border-rose-400/20 bg-rose-500/[0.04] p-3">
                   <div className="text-[11px] uppercase tracking-wider text-white/40">
                     Pazar
                   </div>

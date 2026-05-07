@@ -113,18 +113,19 @@ const localBusinessJsonLd = {
   openingHoursSpecification: [
     {
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      opens: "09:00",
-      closes: "18:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Saturday",
-      opens: "10:00",
-      closes: "17:00",
+      dayOfWeek: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
+      opens: "08:30",
+      closes: "20:00",
     },
   ],
-  sameAs: [SITE.social.instagram, SITE.social.facebook, SITE.social.youtube],
+  sameAs: [SITE.social.facebook, SITE.social.youtube],
 };
 
 export default async function RootLayout({

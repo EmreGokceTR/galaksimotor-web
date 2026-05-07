@@ -7,45 +7,45 @@ export const SITE = {
   url: "https://galaksimotor.com",
   tagline: "Motorunun tüm ihtiyacı, tek adreste",
   description:
-    "Motosiklet yedek parça, aksesuar ve servis. Küçükçekmece İnönü Mahallesi merkezimizde uzman ekibimizle hizmetinizdeyiz.",
+    "Motosiklet yedek parça, aksesuar ve servis. Küçükçekmece İnönü Mahallesi Alp Sokak'taki merkezimizde uzman ekibimizle hizmetinizdeyiz.",
 
   // İletişim
-  phone: "+90 (212) 000 00 00",
-  /** WhatsApp için sadece rakam, ülke kodu dahil. ÖRN: 905330000000 */
-  whatsapp: "905330000000",
+  phone: "+90 553 573 29 29",
+  /** WhatsApp için sadece rakam, ülke kodu dahil. */
+  whatsapp: "905535732929",
   /** WhatsApp tıklandığında açılacak hazır mesaj */
   whatsappPrefilled: "Merhaba, Galaksi Motor sitesinden ulaşıyorum.",
   email: "info@galaksimotor.com",
 
   // Adres
   address: {
-    line: "İnönü Mahallesi, Atatürk Cd. No:123",
+    line: "İnönü Mahallesi, Alp Sokak No:3-5",
     district: "Küçükçekmece",
     city: "İstanbul",
-    postalCode: "34295",
+    postalCode: "34303",
     country: "TR",
     /** Google Maps gömme URL'i (iframe src) */
     mapEmbed:
-      "https://www.google.com/maps?q=Küçükçekmece+İnönü+Mahallesi&output=embed",
-    /** LocalBusiness şeması için koordinatlar */
-    latitude: 41.005,
-    longitude: 28.79,
+      "https://www.google.com/maps?q=İnönü+Mahallesi+Alp+Sokak+No+3+Küçükçekmece+İstanbul&output=embed",
+    /** LocalBusiness şeması için koordinatlar (İnönü Mah. Alp Sk., Küçükçekmece) */
+    latitude: 41.0089,
+    longitude: 28.7747,
   },
 
   // Çalışma saatleri (randevu sayfası ve iletişimde kullanılır)
   hours: {
-    weekdays: "09:00 - 18:00",
-    saturday: "10:00 - 17:00",
+    /** Pazartesi-Cuma görüntülenen metin */
+    weekdays: "08:30 - 20:00",
+    saturday: "08:30 - 20:00",
     sunday: "Kapalı",
-    /** Randevu için kullanılan saat aralığı */
+    /** Randevu için kullanılan saat aralığı (integer) */
     appointmentStart: 9,
-    appointmentEnd: 18,
+    appointmentEnd: 20,
     appointmentSlotMinutes: 30,
   },
 
-  // Sosyal
+  // Sosyal — Instagram henüz hazır değil, eklendiğinde buraya konur.
   social: {
-    instagram: "https://instagram.com/galaksimotor",
     facebook: "https://facebook.com/galaksimotor",
     youtube: "https://youtube.com/@galaksimotor",
   },
