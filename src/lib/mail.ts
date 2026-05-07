@@ -1,75 +1,157 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import { getSettings, st } from "@/lib/site-settings";
+import { logActivity } from "@/lib/activity-log";
 
-// ─── Sipariş onay e-postası (mevcut stub) ─────────────────────────────────────
+// ─── Sabitler ────────────────────────────────────────────────────────────────
 
-type OrderEmailPayload = {
-  to: string;
-  orderNumber: string;
-  customerName: string;
-  total: number;
-  itemCount: number;
-};
+/** Tüm giden mailler bu adresten çıkar (Brevo + Zoho doğrulamalı). */
+export const FROM_ADDRESS = "info@galaksimotor.com";
+export const FROM_NAME = "Galaksi Motor";
 
-export async function sendOrderConfirmation(p: OrderEmailPayload) {
-  console.log("📧 [MAIL STUB] Sipariş onay e-postası");
-  console.log(`   Alıcı: ${p.to}`);
-  console.log(`   Sipariş: #${p.orderNumber}`);
-  console.log(`   Müşteri: ${p.customerName}`);
-  console.log(`   Tutar: ${p.total} ₺ · ${p.itemCount} ürün`);
-  return { sent: false, reason: "stub" };
-}
+const FROM = `"${FROM_NAME}" <${FROM_ADDRESS}>`;
 
-// ─── SMTP transport (Nodemailer) ──────────────────────────────────────────────
-// Gerekli .env değişkenleri:
-//   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, ADMIN_EMAIL
+// ─── Transport (singleton) ───────────────────────────────────────────────────
 
-function createTransport() {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) return null;
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+let _transport: Transporter | null = null;
+let _transportTried = false;
+
+function getTransport(): Transporter | null {
+  if (_transportTried) return _transport;
+  _transportTried = true;
+
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  // Brevo: SMTP_PASSWORD; legacy: SMTP_PASS
+  const pass = process.env.SMTP_PASSWORD ?? process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    console.warn(
+      "[mail] SMTP_HOST/SMTP_USER/SMTP_PASSWORD eksik — stub modda çalışıyor."
+    );
+    return null;
+  }
+
+  _transport = nodemailer.createTransport({
+    host,
     port: Number(process.env.SMTP_PORT ?? 587),
     secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    auth: { user, pass },
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 50,
   });
+
+  return _transport;
 }
+
+export function isSmtpConfigured(): boolean {
+  return Boolean(
+    process.env.SMTP_HOST &&
+      process.env.SMTP_USER &&
+      (process.env.SMTP_PASSWORD || process.env.SMTP_PASS)
+  );
+}
+
+// ─── Çekirdek sendEmail (audit log + error handling) ─────────────────────────
+
+export type SendEmailInput = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  /** Audit log'a etiket için. */
+  category?: string;
+  /** Cevap adresini özelleştirmek için (örn. iletişim formundan gelen kullanıcı). */
+  replyTo?: string;
+  /** Ek dosyalar (PDF fatura vb.). */
+  attachments?: { filename: string; path?: string; content?: Buffer; contentType?: string }[];
+  /** Audit log için aktör bilgisi (yoksa "system"). */
+  actor?: string;
+};
+
+export type SendEmailResult =
+  | { ok: true; messageId: string | null; sent: true }
+  | { ok: true; messageId: null; sent: false; reason: "stub" }
+  | { ok: false; error: string };
 
 /**
- * Belirli bir alıcıya SMTP üzerinden e-posta gönderir.
- * SMTP yapılandırması eksikse konsola log düşürür.
+ * Tüm sistem genelinde ortak mail gönderim fonksiyonu.
+ * - SMTP yoksa stub modda çalışır (akış bloklanmaz).
+ * - Başarı/hata ActivityLog'a `email_sent` / `email_failed` olarak yazılır.
  */
-export async function sendMail(to: string, subject: string, html: string) {
-  const transport = createTransport();
+export async function sendEmail(
+  input: SendEmailInput
+): Promise<SendEmailResult> {
+  const recipients = Array.isArray(input.to) ? input.to : [input.to];
+  const cleanRecipients = recipients.filter(Boolean).join(", ");
+  const actor = input.actor ?? "system";
+  const category = input.category ?? "general";
+
+  if (!cleanRecipients) {
+    return { ok: false, error: "Alıcı boş." };
+  }
+
+  const transport = getTransport();
   if (!transport) {
-    console.log(`📧 [MAIL STUB] "${subject}" → ${to}`);
-    return;
+    console.log(`📧 [MAIL STUB] [${category}] "${input.subject}" → ${cleanRecipients}`);
+    await logActivity(actor, "email_stub", `email:${category}`, {
+      to: cleanRecipients,
+      subject: input.subject,
+    });
+    return { ok: true, messageId: null, sent: false, reason: "stub" };
   }
-  await transport.sendMail({
-    from: `"Galaksi Motor" <${process.env.SMTP_USER}>`,
-    to,
-    subject,
-    html,
-  });
+
+  try {
+    const info = await transport.sendMail({
+      from: FROM,
+      to: cleanRecipients,
+      subject: input.subject,
+      html: input.html,
+      text: input.text,
+      replyTo: input.replyTo,
+      attachments: input.attachments,
+    });
+
+    await logActivity(actor, "email_sent", `email:${category}`, {
+      to: cleanRecipients,
+      subject: input.subject,
+      messageId: info.messageId,
+    });
+
+    return { ok: true, messageId: info.messageId ?? null, sent: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Bilinmeyen mail hatası";
+    console.error(`[mail] gönderim hatası (${category}):`, e);
+    await logActivity(actor, "email_failed", `email:${category}`, {
+      to: cleanRecipients,
+      subject: input.subject,
+      error: msg,
+    });
+    return { ok: false, error: msg };
+  }
 }
 
-/** Admin'e (ADMIN_EMAIL) gönderir. */
-export async function sendAdminMail(subject: string, html: string) {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) {
-    console.log(
-      `📧 [MAIL STUB] Admin maili atlandı (ADMIN_EMAIL yok): ${subject}`
-    );
-    return;
-  }
-  return sendMail(adminEmail, subject, html);
+// ─── Geriye dönük uyumluluk: eski API ────────────────────────────────────────
+
+export async function sendMail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> {
+  await sendEmail({ to, subject, html });
 }
 
-// ─── Şablon Sistemi ───────────────────────────────────────────────────────────
+export async function sendAdminMail(
+  subject: string,
+  html: string
+): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL ?? FROM_ADDRESS;
+  await sendEmail({ to: adminEmail, subject, html, category: "admin" });
+}
 
-/** {{key}} şeklindeki yer tutucuları değişkenlerle değiştirir. */
+// ─── Şablon sistemi (siteSetting tabanlı, mevcut akışla uyumlu) ──────────────
+
+/** {{key}} placeholder'larını render eder. */
 export function renderTemplate(
   template: string,
   vars: Record<string, string | number>
@@ -83,10 +165,7 @@ export function renderTemplate(
 
 export type EmailTemplate = { subject: string; body: string };
 
-/**
- * siteSetting tablosundan şablonu çeker.
- * Anahtar adlandırması: email_{key}_subject, email_{key}_body
- */
+/** siteSetting'dan email_{key}_subject ve email_{key}_body okur. */
 export async function getEmailTemplate(
   key: string,
   fallback: EmailTemplate
@@ -100,7 +179,7 @@ export async function getEmailTemplate(
   };
 }
 
-/** Şablonu çek + render et + admin'e gönder. */
+/** Şablonu çek + render et + admin'e gönder (mevcut sistem uyumluluğu). */
 export async function sendTemplatedAdminMail(
   key: string,
   fallback: EmailTemplate,
@@ -109,5 +188,28 @@ export async function sendTemplatedAdminMail(
   const tpl = await getEmailTemplate(key, fallback);
   const subject = renderTemplate(tpl.subject, vars);
   const body = renderTemplate(tpl.body, vars);
-  await sendAdminMail(subject, body);
+  const adminEmail = process.env.ADMIN_EMAIL ?? FROM_ADDRESS;
+  await sendEmail({
+    to: adminEmail,
+    subject,
+    html: body,
+    category: `templated:${key}`,
+  });
+}
+
+// ─── Sipariş onay (eski stub uyumluluğu) ─────────────────────────────────────
+
+type OrderEmailPayload = {
+  to: string;
+  orderNumber: string;
+  customerName: string;
+  total: number;
+  itemCount: number;
+};
+
+export async function sendOrderConfirmation(p: OrderEmailPayload) {
+  console.log(
+    `📧 [legacy] sendOrderConfirmation çağrıldı (${p.orderNumber}) → sendOrderReceiptEmail kullanın.`
+  );
+  return { sent: false, reason: "legacy" };
 }

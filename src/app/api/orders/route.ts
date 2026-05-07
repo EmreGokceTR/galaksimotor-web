@@ -7,6 +7,8 @@ import { getShippingConfig, computeShippingFromConfig } from "@/lib/shipping";
 import { logActivity } from "@/lib/activity-log";
 import { notifyLowStockIfCrossed } from "@/lib/stock";
 import { validateCoupon } from "@/lib/coupon";
+import { sendEmail } from "@/lib/mail";
+import { orderConfirmationTemplate } from "@/lib/email-templates";
 
 type IncomingItem = {
   productId: string;
@@ -242,6 +244,34 @@ export async function POST(req: Request) {
   notifyLowStockIfCrossed(resolved.map((l) => l.productId)).catch(
     console.error
   );
+
+  // ── Müşteriye sipariş onay e-postası ────────────────────────────────────
+  if (session.user.email) {
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ??
+      new URL(req.url).origin;
+    const tpl = orderConfirmationTemplate({
+      customerName: body.shipping.name,
+      orderNumber: order.orderNumber,
+      items: resolved.map((r) => ({
+        name: r.name,
+        quantity: r.quantity,
+        price: r.price,
+      })),
+      subtotal,
+      shippingFee,
+      discount: discountAmount > 0 ? discountAmount : undefined,
+      total,
+      trackOrderUrl: `${siteUrl}/odeme/basari/${order.id}`,
+    });
+    sendEmail({
+      to: session.user.email,
+      subject: tpl.subject,
+      html: tpl.html,
+      category: "order_confirmation",
+      actor: session.user.email,
+    }).catch(console.error);
+  }
 
   return NextResponse.json(order, { status: 201 });
 }

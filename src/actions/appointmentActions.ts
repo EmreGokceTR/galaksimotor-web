@@ -4,7 +4,12 @@ import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sendTemplatedAdminMail } from "@/lib/mail";
+import { sendEmail, FROM_ADDRESS } from "@/lib/mail";
+import {
+  appointmentConfirmationTemplate,
+  appointmentAdminAlertTemplate,
+} from "@/lib/email-templates";
+import { logActivity } from "@/lib/activity-log";
 import { SITE } from "@/config/site";
 
 type Input = {
@@ -69,68 +74,68 @@ export async function createAppointment(input: Input): Promise<Result> {
   revalidatePath("/admin/randevular");
   revalidatePath("/admin");
 
-  const dateLabel = date.toLocaleString("tr-TR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const motoLabel = [motoBrand, motoModel].filter(Boolean).join(" ") || "—";
+  // ── Bildirim e-postaları ──────────────────────────────────────────────────
   const customerName = session.user.name ?? session.user.email ?? "Müşteri";
+  const customerEmail = session.user.email ?? "";
+  const motoLabel = [motoBrand, motoModel].filter(Boolean).join(" ") || undefined;
+  const adminEmail = process.env.ADMIN_EMAIL ?? FROM_ADDRESS;
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ??
+    "http://localhost:3000";
 
-  const fallbackBody = `
-    <div style="font-family:sans-serif;max-width:520px;color:#1a1a1a">
-      <h2 style="margin:0 0 16px">Yeni Randevu Talebi</h2>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.6">
-        <tr>
-          <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Müşteri</td>
-          <td style="padding:6px 0"><strong>{{customerName}}</strong></td>
-        </tr>
-        <tr>
-          <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Servis</td>
-          <td style="padding:6px 0"><strong>{{serviceName}}</strong> ({{duration}} dk)</td>
-        </tr>
-        <tr>
-          <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Tarih / Saat</td>
-          <td style="padding:6px 0"><strong>{{dateLabel}}</strong></td>
-        </tr>
-        <tr>
-          <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Motor</td>
-          <td style="padding:6px 0">{{motoLabel}}</td>
-        </tr>
-        <tr>
-          <td style="padding:6px 12px 6px 0;color:#555;white-space:nowrap">Not</td>
-          <td style="padding:6px 0">{{note}}</td>
-        </tr>
-      </table>
-      <p style="margin-top:24px">
-        <a href="{{adminUrl}}"
-           style="display:inline-block;background:#FFD700;color:#000;padding:10px 22px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:14px">
-          Admin Panelinde Gör →
-        </a>
-      </p>
-    </div>
-  `;
-
-  sendTemplatedAdminMail(
-    "appt",
-    {
-      subject: "Yeni Randevu: {{serviceName}} — {{dateLabel}}",
-      body: fallbackBody,
-    },
-    {
+  // Müşteriye markalı teyit
+  if (customerEmail) {
+    const tpl = appointmentConfirmationTemplate({
       customerName,
       serviceName: service.name,
       duration: service.duration,
-      dateLabel,
+      scheduledAt: date,
       motoLabel,
-      note: note || "—",
-      adminUrl: `${siteUrl}/admin/randevular`,
+      note: note?.trim() || undefined,
+    });
+    sendEmail({
+      to: customerEmail,
+      subject: tpl.subject,
+      html: tpl.html,
+      category: "appointment_customer",
+      actor: customerEmail,
+    }).catch(console.error);
+  }
+
+  // Admin'e operasyonel uyarı (kullanıcının telefonunu DB'den çek)
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { phone: true },
+  });
+  const adminTpl = appointmentAdminAlertTemplate({
+    customerName,
+    customerEmail: customerEmail || "—",
+    customerPhone: dbUser?.phone ?? undefined,
+    serviceName: service.name,
+    duration: service.duration,
+    scheduledAt: date,
+    motoLabel,
+    note: note?.trim() || undefined,
+    adminUrl: `${siteUrl}/admin/randevular`,
+  });
+  sendEmail({
+    to: adminEmail,
+    subject: adminTpl.subject,
+    html: adminTpl.html,
+    replyTo: customerEmail || undefined,
+    category: "appointment_admin",
+    actor: customerEmail || "anon",
+  }).catch(console.error);
+
+  await logActivity(
+    customerEmail || "anon",
+    "appointment_create",
+    `appointment:${appointment.id}`,
+    {
+      service: service.name,
+      scheduledAt: date.toISOString(),
     }
-  ).catch(console.error);
+  );
 
   return { ok: true, id: appointment.id };
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
 import { SITE, whatsappLink } from "@/config/site";
 import { buildPageMetadata } from "@/lib/page-meta";
+import { ContactForm } from "./ContactForm";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/iletisim", {
@@ -93,14 +94,17 @@ export default function IletisimPage() {
             </InfoCard>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md">
-            <iframe
-              src={SITE.address.mapEmbed}
-              className="h-full min-h-[420px] w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Konum"
-            />
+          <div className="space-y-6">
+            <ContactForm />
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md">
+              <iframe
+                src={SITE.address.mapEmbed}
+                className="h-[320px] w-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Konum"
+              />
+            </div>
           </div>
         </div>
       </div>
