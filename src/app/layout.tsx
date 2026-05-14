@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { Inter } from "next/font/google";
+import { Inter, Poppins, Roboto } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/Navbar";
@@ -18,11 +18,27 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const poppins = Poppins({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-poppins",
+});
+
+const roboto = Roboto({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "700", "900"],
+  display: "swap",
+  variable: "--font-roboto",
+});
+
 // Tek sorguda tüm ayarları çek; cache() ile aynı request içinde dedup yapar
 const fetchSettings = cache(() =>
   getSettings([
     "site_title",
     "site_description",
+    "theme_font",
+    "theme_font_scale",
     "logo_name_part1",
     "logo_name_part2",
     "logo_image_url",
@@ -183,9 +199,26 @@ export default async function RootLayout({
     ),
   };
 
+  const themeFont = st(bag, "theme_font", "inter");
+  const themeFontScale = st(bag, "theme_font_scale", "100");
+
+  // Active font variable name based on selection
+  const fontVar =
+    themeFont === "poppins"
+      ? "var(--font-poppins)"
+      : themeFont === "roboto"
+      ? "var(--font-roboto)"
+      : "var(--font-inter)";
+
+  const themeStyle = `
+    :root { --font-body: ${fontVar}; }
+    html  { font-size: ${themeFontScale}%; }
+  `;
+
   return (
-    <html lang="tr" className={inter.variable}>
+    <html lang="tr" className={`${inter.variable} ${poppins.variable} ${roboto.variable}`}>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

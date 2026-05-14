@@ -17,6 +17,8 @@ const NAV = [
   { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },
   { href: "/admin/ayarlar/sss", label: "SSS İçeriği", icon: "❓" },
   { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
+  { href: "/admin/ayarlar/seo", label: "SEO Meta Bilgileri", icon: "🔍" },
+  { href: "/admin/ayarlar/tasarim", label: "Yazı Tipi & Boyut", icon: "🎨" },
   { href: "/admin/yedek", label: "Yedek & Bakım", icon: "💾" },
 ];
 
