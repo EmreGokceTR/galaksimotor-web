@@ -88,6 +88,9 @@ export async function generateMetadata(): Promise<Metadata> {
       follow: true,
       googleBot: { index: true, follow: true, "max-image-preview": "large" },
     },
+    verification: {
+      google: "S2Gy91RZISU1b3VBFxpnVr6sBf3JTfn9TUM2B79w0bg",
+    },
   };
 }
 
