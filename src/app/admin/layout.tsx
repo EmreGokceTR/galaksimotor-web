@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin · Galaksi Motor" };
 
 const NAV = [
