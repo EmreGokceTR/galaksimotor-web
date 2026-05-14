@@ -7,6 +7,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { EditModeToggle } from "@/components/EditModeToggle";
+import { CookieConsent } from "@/components/CookieConsent";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
 
@@ -180,6 +182,8 @@ export default async function RootLayout({
           <Footer />
           <WhatsAppButton settings={waSettings} />
           <EditModeToggle />
+          <CookieConsent />
+          <GoogleAnalytics />
         </Providers>
       </body>
     </html>
