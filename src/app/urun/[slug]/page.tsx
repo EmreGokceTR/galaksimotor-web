@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -6,14 +7,38 @@ import { ProductPurchasePanel } from "@/components/ProductPurchasePanel";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewSection } from "@/components/ReviewSection";
 import { AdminEditButton } from "@/components/AdminEditButton";
+import { SITE } from "@/config/site";
 
 type Props = { params: { slug: string } };
 
-export async function generateMetadata({ params }: Props) {
-  const p = await prisma.product.findUnique({ where: { slug: params.slug } });
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const p = await prisma.product.findUnique({
+    where: { slug: params.slug },
+    select: { name: true, description: true, images: { take: 1, orderBy: { position: "asc" } } },
+  });
+  if (!p) return { title: "Ürün bulunamadı" };
+  const title = `${p.name} - ${SITE.name}`;
+  const description = p.description ?? `${p.name} — ${SITE.name}'da satın al.`;
+  const image = p.images[0]?.url;
   return {
-    title: p ? `${p.name} - Galaksi Motor` : "Ürün",
-    description: p?.description ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `${SITE.url}/urun/${params.slug}` },
+    openGraph: {
+      type: "website",
+      locale: "tr_TR",
+      url: `${SITE.url}/urun/${params.slug}`,
+      siteName: SITE.name,
+      title,
+      description,
+      ...(image ? { images: [{ url: image, alt: p.name }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
   };
 }
 

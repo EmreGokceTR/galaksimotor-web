@@ -1,22 +1,38 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { EditableWrapper } from "@/components/EditableWrapper";
+import { SITE } from "@/config/site";
 
 type Props = { params: { slug: string } };
 
-export async function generateMetadata({ params }: Props) {
-  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = await prisma.blogPost.findUnique({
+    where: { slug: params.slug },
+    select: { title: true, excerpt: true, coverUrl: true, publishedAt: true },
+  });
   if (!post) return { title: "Yazı bulunamadı" };
+  const description = post.excerpt ?? undefined;
   return {
     title: post.title,
-    description: post.excerpt ?? undefined,
+    description,
+    alternates: { canonical: `${SITE.url}/blog/${params.slug}` },
     openGraph: {
-      title: post.title,
-      description: post.excerpt ?? undefined,
-      images: post.coverUrl ? [post.coverUrl] : [],
       type: "article",
-      publishedTime: post.publishedAt?.toISOString(),
+      locale: "tr_TR",
+      url: `${SITE.url}/blog/${params.slug}`,
+      siteName: SITE.name,
+      title: post.title,
+      description,
+      ...(post.coverUrl ? { images: [{ url: post.coverUrl, alt: post.title }] } : {}),
+      ...(post.publishedAt ? { publishedTime: post.publishedAt.toISOString() } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      ...(post.coverUrl ? { images: [post.coverUrl] } : {}),
     },
   };
 }

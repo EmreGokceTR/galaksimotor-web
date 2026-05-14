@@ -1,16 +1,32 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { SITE } from "@/config/site";
 
 type Props = { params: { slug: string } };
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cat = await prisma.category.findUnique({
     where: { slug: params.slug },
+    select: { name: true, description: true },
   });
+  if (!cat) return { title: "Kategori bulunamadı" };
+  const title = `${cat.name} - ${SITE.name}`;
+  const description = cat.description ?? `${cat.name} kategorisindeki tüm motosiklet yedek parça ve aksesuarlar.`;
   return {
-    title: cat ? `${cat.name} - Galaksi Motor` : "Kategori",
-    description: cat?.description ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `${SITE.url}/kategori/${params.slug}` },
+    openGraph: {
+      type: "website",
+      locale: "tr_TR",
+      url: `${SITE.url}/kategori/${params.slug}`,
+      siteName: SITE.name,
+      title,
+      description,
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

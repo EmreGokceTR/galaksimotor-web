@@ -1,15 +1,41 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { AdminMotorcycleEditButton } from "@/components/AdminMotorcycleEditButton";
+import { SITE } from "@/config/site";
 
 type Props = { params: { id: string } };
 
-export async function generateMetadata({ params }: Props) {
-  const m = await prisma.motorcycleListing.findUnique({ where: { id: params.id } });
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const m = await prisma.motorcycleListing.findUnique({
+    where: { id: params.id },
+    select: { marka: true, model: true, yil: true, cc: true, fiyat: true, aciklama: true, gorsel: true },
+  });
+  if (!m) return { title: "Motosiklet bulunamadı" };
+  const title = `${m.marka} ${m.model} (${m.yil}) - ${SITE.name}`;
+  const description =
+    m.aciklama ??
+    `${m.yil} model ${m.marka} ${m.model}${m.cc ? ` ${m.cc}cc` : ""} satılık — ${SITE.name}.`;
   return {
-    title: m ? `${m.marka} ${m.model} (${m.yil}) - Galaksi Motor` : "Motosiklet",
-    description: m?.aciklama ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `${SITE.url}/motosikletler/${params.id}` },
+    openGraph: {
+      type: "website",
+      locale: "tr_TR",
+      url: `${SITE.url}/motosikletler/${params.id}`,
+      siteName: SITE.name,
+      title,
+      description,
+      ...(m.gorsel ? { images: [{ url: m.gorsel, alt: `${m.marka} ${m.model}` }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(m.gorsel ? { images: [m.gorsel] } : {}),
+    },
   };
 }
 

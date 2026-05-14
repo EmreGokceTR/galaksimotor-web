@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getSettings, st } from "@/lib/site-settings";
+import { SITE } from "@/config/site";
 
 /**
  * Path → siteSetting key dönüşümü.
@@ -43,14 +44,21 @@ export async function buildPageMetadata(
   fallback: PageMetaFallback
 ): Promise<Metadata> {
   const meta = await getPageMeta(path, fallback);
+  const canonicalUrl = `${SITE.url}${path === "/" ? "" : path}`;
   return {
     title: meta.title,
     description: meta.description,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
+      type: "website",
+      locale: "tr_TR",
+      url: canonicalUrl,
+      siteName: SITE.name,
       title: meta.title,
       description: meta.description,
     },
     twitter: {
+      card: "summary_large_image",
       title: meta.title,
       description: meta.description,
     },
