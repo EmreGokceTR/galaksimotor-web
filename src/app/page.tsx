@@ -67,6 +67,8 @@ export default async function HomePage() {
       "t3_name", "t3_bike", "t3_rating", "t3_text",
       "t4_name", "t4_bike", "t4_rating", "t4_text",
       "t5_name", "t5_bike", "t5_rating", "t5_text",
+      // Atölye
+      "workshop_photo_url", "workshop_caption", "workshop_badge",
     ]),
   ]);
 
@@ -225,6 +227,42 @@ export default async function HomePage() {
         </div>
       </AnimatedSection>
 
+      {/* ── Atölyemizden ── */}
+      <AnimatedSection as="section" className="mx-auto max-w-7xl px-6 py-12">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.025]">
+          {/* Fotoğraf */}
+          <div className="relative aspect-[21/9] w-full overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={st(bag, "workshop_photo_url", "/images/workshop.jpg")}
+              alt="Galaksi Motor Atölyesi"
+              className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
+            />
+            {/* Koyu gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            {/* Badge + Altyazı */}
+            <div className="absolute bottom-0 left-0 p-6 md:p-10">
+              <EditableWrapper table="siteSetting" id="workshop_badge" field="value" value={st(bag,"workshop_badge","· Atölyemizden")} label="Atölye Badge" revalidatePaths={R}>
+                <span className="mb-2 inline-block text-xs font-medium uppercase tracking-[0.25em] text-brand-yellow/90">
+                  {st(bag,"workshop_badge","· Atölyemizden")}
+                </span>
+              </EditableWrapper>
+              <EditableWrapper table="siteSetting" id="workshop_caption" field="value" value={st(bag,"workshop_caption","Deneyimli ekibimiz, her motosiklete aynı özenle yaklaşıyor.")} label="Atölye Altyazı" fieldType="textarea" revalidatePaths={R}>
+                <p className="max-w-lg text-lg font-semibold leading-snug text-white md:text-2xl">
+                  {st(bag,"workshop_caption","Deneyimli ekibimiz, her motosiklete aynı özenle yaklaşıyor.")}
+                </p>
+              </EditableWrapper>
+            </div>
+            {/* Admin: Fotoğraf URL değiştirme butonu */}
+            <div className="absolute right-4 top-4">
+              <EditableWrapper table="siteSetting" id="workshop_photo_url" field="value" value={st(bag,"workshop_photo_url","/images/workshop.jpg")} label="Atölye Fotoğraf URL" revalidatePaths={R}>
+                <span />
+              </EditableWrapper>
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+
       {/* ── Yorumlar ── */}
       <AnimatedSection as="section" className="mx-auto max-w-7xl px-6 py-20">
         <div className="mb-10 text-center">
@@ -312,6 +350,76 @@ export default async function HomePage() {
             </EditableWrapper>
             <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
           </Link>
+        </div>
+      </AnimatedSection>
+
+      {/* ── Güvenlik Güvencemiz ── */}
+      <AnimatedSection as="section" className="mx-auto max-w-7xl px-6 pb-10 pt-4">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.025] px-6 py-6 backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            {[
+              {
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2 4 5v6c0 5.5 3.5 10 8 11 4.5-1 8-5.5 8-11V5l-8-3Z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                ),
+                label: "256-bit SSL",
+                sub: "Şifrelenmiş bağlantı",
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <path d="M2 10h20" />
+                  </svg>
+                ),
+                label: "3D Secure Ödeme",
+                sub: "Güvenli ödeme altyapısı",
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4l3 3" />
+                  </svg>
+                ),
+                label: "7/24 Destek",
+                sub: "Sorun yaşarsan yanındayız",
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z" />
+                    <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2Z" />
+                    <path d="m12 12 1 1 3-3" />
+                  </svg>
+                ),
+                label: "KVKK Uyumlu",
+                sub: "Verileriniz güvende",
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
+                  </svg>
+                ),
+                label: "Faturalı Alışveriş",
+                sub: "Her siparişe yasal fatura",
+              },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-3 text-left">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-yellow/10 text-brand-yellow ring-1 ring-brand-yellow/20">
+                  {item.icon}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-white">{item.label}</div>
+                  <div className="text-xs text-white/45">{item.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AnimatedSection>
 
