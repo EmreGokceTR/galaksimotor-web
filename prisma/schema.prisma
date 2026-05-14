@@ -250,11 +250,20 @@ model Order {
   couponCode     String?
   discountAmount Decimal? @db.Decimal(10, 2)
 
+  // Ardışık fatura numarası (örn: 2026/001)
+  invoiceNumber String? @unique
+
   items     OrderItem[]
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
   @@index([userId])
+}
+
+/// Yıl başına ardışık fatura sırası
+model InvoiceCounter {
+  year    Int @id
+  lastSeq Int @default(0)
 }
 
 model OrderItem {

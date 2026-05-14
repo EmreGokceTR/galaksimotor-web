@@ -12,6 +12,8 @@ const NAV = [
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
   { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
+  { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },
+  { href: "/admin/ayarlar/sss", label: "SSS İçeriği", icon: "❓" },
   { href: "/admin/yedek", label: "Yedek & Bakım", icon: "💾" },
 ];
 

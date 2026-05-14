@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getIyzico, isIyzicoConfigured } from "@/lib/iyzico";
 import { logActivity } from "@/lib/activity-log";
-import { generateAndStoreInvoice, mailInvoice } from "@/lib/invoice";
+import { createInvoice } from "@/lib/e-invoice";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -276,15 +276,42 @@ export async function verifyPaymentCallback(
     }
   );
 
-  // Fatura üret + müşteriye gönder (hata durumunda akışı bloklama)
+  // Fatura URL'sini oluştur / e-fatura gönder (hata akışı bloklamaz)
   try {
-    const pdfPath = await generateAndStoreInvoice(updated);
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { invoicePdfUrl: pdfPath },
-    });
-    if (updated.user.email) {
-      await mailInvoice(updated, pdfPath);
+    const invoiceResult = await createInvoice(
+      {
+        invoiceNumber: updated.invoiceNumber ?? `TEMP-${updated.orderNumber}`,
+        orderId: updated.id,
+        orderNumber: updated.orderNumber,
+        issuedAt: new Date(),
+        customer: {
+          name: updated.invoiceFullName ?? updated.shippingName ?? updated.user.name ?? "—",
+          email: updated.user.email,
+          phone: updated.shippingPhone ?? updated.user.phone ?? null,
+          address: updated.invoiceAddress ?? updated.shippingAddress ?? null,
+          city: updated.shippingCity ?? null,
+          tcNo: updated.invoiceTcNo ?? null,
+        },
+        lines: updated.items.map((it) => ({
+          name: it.name,
+          sku: it.sku,
+          quantity: it.quantity,
+          unitPrice: Number(it.price) / 1.2, // KDV hariç
+          vatRate: 20,
+        })),
+        subtotal: Number(updated.subtotal),
+        shippingFee: Number(updated.shippingFee),
+        discountAmount: updated.discountAmount ? Number(updated.discountAmount) : undefined,
+        total: Number(updated.total),
+        currency: "TRY",
+      },
+      updated.id
+    );
+    if (invoiceResult.ok) {
+      await prisma.order.update({
+        where: { id: updated.id },
+        data: { invoicePdfUrl: invoiceResult.pdfUrl },
+      });
     }
   } catch (e) {
     console.error("[Invoice] hata:", e);

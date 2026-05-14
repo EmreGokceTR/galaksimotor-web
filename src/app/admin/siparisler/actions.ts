@@ -12,6 +12,7 @@ import {
   retrievePaymentItems,
   isIyzicoConfigured,
 } from "@/lib/iyzico";
+import { createInvoice } from "@/lib/e-invoice";
 
 async function getOrderWithUser(orderId: string) {
   return prisma.order.findUnique({
@@ -57,7 +58,7 @@ export async function updatePaymentStatus(
   const { email } = await assertAdminContext();
   const before = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { paymentStatus: true, orderNumber: true },
+    select: { paymentStatus: true, orderNumber: true, invoicePdfUrl: true },
   });
   if (!before) throw new Error("Sipariş bulunamadı.");
 
@@ -72,7 +73,58 @@ export async function updatePaymentStatus(
     orderNumber: before.orderNumber,
   });
 
+  // Ödeme onaylandığında ve henüz fatura kesilmediyse fatura oluştur
+  if (paymentStatus === PaymentStatus.PAID && !before.invoicePdfUrl) {
+    triggerInvoice(orderId).catch(console.error);
+  }
+
   revalidatePath("/admin/siparisler");
+}
+
+/** Arka planda fatura oluştur ve invoicePdfUrl güncelle */
+async function triggerInvoice(orderId: string): Promise<void> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { user: true, items: true },
+  });
+  if (!order || !order.invoiceNumber) return;
+
+  const result = await createInvoice(
+    {
+      invoiceNumber: order.invoiceNumber,
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      issuedAt: new Date(),
+      customer: {
+        name: order.invoiceFullName ?? order.shippingName ?? order.user.name ?? "—",
+        email: order.user.email,
+        phone: order.shippingPhone ?? order.user.phone ?? null,
+        address: order.invoiceAddress ?? order.shippingAddress ?? null,
+        city: order.shippingCity ?? null,
+        tcNo: order.invoiceTcNo ?? null,
+      },
+      lines: order.items.map((item) => ({
+        name: item.name,
+        sku: item.sku,
+        quantity: item.quantity,
+        unitPrice: Number(item.price) / 1.2, // KDV dahil → hariç
+        vatRate: 20,
+      })),
+      subtotal: Number(order.subtotal),
+      shippingFee: Number(order.shippingFee),
+      discountAmount: order.discountAmount ? Number(order.discountAmount) : undefined,
+      total: Number(order.total),
+      currency: "TRY",
+    },
+    orderId
+  );
+
+  if (result.ok) {
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { invoicePdfUrl: result.pdfUrl },
+    });
+  }
 }
 
 export async function setTrackingNumber(

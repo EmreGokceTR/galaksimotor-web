@@ -15,6 +15,7 @@ export default async function AdminOrdersPage() {
   const serialized: OrderRow[] = orders.map((o) => ({
     id: o.id,
     orderNumber: o.orderNumber,
+    invoiceNumber: o.invoiceNumber ?? null,
     status: o.status,
     paymentStatus: o.paymentStatus,
     total: o.total.toString(),

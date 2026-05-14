@@ -191,9 +191,19 @@ export async function POST(req: Request) {
       }
     }
 
+    // ── Ardışık fatura numarası (2026/001) ──
+    const year = new Date().getFullYear();
+    const counter = await tx.invoiceCounter.upsert({
+      where: { year },
+      update: { lastSeq: { increment: 1 } },
+      create: { year, lastSeq: 1 },
+    });
+    const invoiceNumber = `${year}/${String(counter.lastSeq).padStart(3, "0")}`;
+
     return tx.order.create({
       data: {
         orderNumber: generateOrderNumber(),
+        invoiceNumber,
         userId: session.user!.id,
         deliveryType:
           body.deliveryType === "PICKUP"

@@ -18,6 +18,7 @@ const fmt = (n: string | number) =>
 export type OrderRow = {
   id: string;
   orderNumber: string;
+  invoiceNumber: string | null;
   status: string;
   paymentStatus: string;
   total: string;
@@ -191,6 +192,11 @@ export function OrdersClient({ orders }: { orders: OrderRow[] }) {
                       <div className="font-semibold text-brand-yellow">
                         #{o.orderNumber}
                       </div>
+                      {o.invoiceNumber && (
+                        <div className="text-[11px] text-white/60 font-mono">
+                          Fatura: {o.invoiceNumber}
+                        </div>
+                      )}
                       <div className="text-[11px] text-white/45">
                         {o.items.length} kalem ·{" "}
                         {o.deliveryType === "CARGO" ? "Kargo" : "Mağaza"}
