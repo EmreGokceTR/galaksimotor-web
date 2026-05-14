@@ -13,6 +13,17 @@ import { initPaymentForOrder } from "@/app/_actions/payment";
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
+function validateTCKN(value: string): boolean {
+  if (!/^\d{11}$/.test(value) || value[0] === "0") return false;
+  const d = value.split("").map(Number);
+  const sumOdd = d[0] + d[2] + d[4] + d[6] + d[8];
+  const sumEven = d[1] + d[3] + d[5] + d[7];
+  const d10 = ((sumOdd * 7) - sumEven) % 10;
+  if (d10 < 0 || d[9] !== d10) return false;
+  const d11 = d.slice(0, 10).reduce((a, b) => a + b, 0) % 10;
+  return d[10] === d11;
+}
+
 type Delivery = "CARGO" | "PICKUP";
 type PayMethod = "ONLINE" | "DOOR";
 
@@ -233,6 +244,7 @@ export function CheckoutClient({
                 onChange={(v) => setInvoiceTcNo(v.replace(/\D/g, "").slice(0, 11))}
                 placeholder="11 hane"
                 autoComplete="off"
+                error={invoiceTcNo.length === 11 && !validateTCKN(invoiceTcNo) ? "Geçersiz TC Kimlik No" : undefined}
               />
               <label className="flex items-center gap-2 text-xs text-white/65">
                 <input
@@ -521,6 +533,7 @@ function Field({
   autoComplete,
   placeholder,
   textarea,
+  error,
 }: {
   label: string;
   value: string;
@@ -529,6 +542,7 @@ function Field({
   autoComplete?: string;
   placeholder?: string;
   textarea?: boolean;
+  error?: string;
 }) {
   const cls =
     "input-glass w-full rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 outline-none";
@@ -555,6 +569,7 @@ function Field({
           className={cls}
         />
       )}
+      {error && <span className="mt-1 block text-xs text-rose-400">{error}</span>}
     </label>
   );
 }

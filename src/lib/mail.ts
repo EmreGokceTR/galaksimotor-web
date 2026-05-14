@@ -5,8 +5,8 @@ import { logActivity } from "@/lib/activity-log";
 // ─── Sabitler ────────────────────────────────────────────────────────────────
 
 /** Tüm giden mailler bu adresten çıkar (Brevo + Zoho doğrulamalı). */
-export const FROM_ADDRESS = "info@galaksimotor.com";
-const FROM_NAME = "Galaksi Motor";
+export const FROM_ADDRESS = process.env.EMAIL_FROM ?? "info@galaksimotor.com";
+const FROM_NAME = process.env.EMAIL_FROM_NAME ?? "Galaksi Motor";
 
 const FROM = `"${FROM_NAME}" <${FROM_ADDRESS}>`;
 

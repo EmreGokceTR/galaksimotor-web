@@ -18,6 +18,8 @@ export function FaqAccordion({
     <ul className="space-y-3">
       {items.map((it, i) => {
         const isOpen = open === i;
+        const panelId = `faq-panel-${i}`;
+        const btnId = `faq-btn-${i}`;
         return (
           <li
             key={i}
@@ -28,7 +30,10 @@ export function FaqAccordion({
             }`}
           >
             <button
+              id={btnId}
               type="button"
+              aria-expanded={isOpen}
+              aria-controls={panelId}
               onClick={() => setOpen(isOpen ? -1 : i)}
               className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
             >
@@ -54,6 +59,9 @@ export function FaqAccordion({
             <AnimatePresence initial={false}>
               {isOpen && (
                 <motion.div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={btnId}
                   key="content"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}

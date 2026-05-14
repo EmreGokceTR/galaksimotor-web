@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import NextImage from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 
 type Props = {
@@ -71,11 +72,12 @@ export function ProductGallery({ images }: Props) {
                   : "ring-1 ring-white/10 opacity-60 hover:opacity-100"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <NextImage
                 src={img.url}
                 alt={img.alt}
-                className="h-full w-full object-cover"
+                fill
+                sizes="64px"
+                className="object-cover"
               />
             </button>
           ))}

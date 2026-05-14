@@ -46,10 +46,10 @@ export async function POST(req: Request) {
   });
 }
 
-// GET ile direkt erişimde admin debug
+// GET istekleri için 405 Method Not Allowed
 export async function GET() {
-  return NextResponse.json({
-    ok: true,
-    note: "Iyzico callback endpoint — POST ile kullanılır.",
+  return new Response(null, {
+    status: 405,
+    headers: { Allow: "POST" },
   });
 }

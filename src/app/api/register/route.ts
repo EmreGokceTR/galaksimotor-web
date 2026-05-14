@@ -17,9 +17,21 @@ export async function POST(request: Request) {
   try {
     const { name, email, password } = await request.json();
 
-    if (!email || !password || password.length < 6) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: "Geçerli bir e-posta ve en az 6 karakterli şifre giriniz." },
+        { error: "E-posta ve şifre zorunludur." },
+        { status: 400 }
+      );
+    }
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: "Şifre en az 8 karakter olmalıdır." },
+        { status: 400 }
+      );
+    }
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json(
+        { error: "Şifre en az bir büyük harf ve bir rakam içermelidir." },
         { status: 400 }
       );
     }
