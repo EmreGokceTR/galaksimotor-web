@@ -6,6 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { logActivity } from "@/lib/activity-log";
 import { sendOrderStatusMail } from "@/lib/notifications";
+import {
+  cancelPayment,
+  refundPayment,
+  retrievePaymentItems,
+  isIyzicoConfigured,
+} from "@/lib/iyzico";
 
 async function getOrderWithUser(orderId: string) {
   return prisma.order.findUnique({
@@ -106,4 +112,92 @@ export async function setTrackingNumber(
 
   revalidatePath("/admin/siparisler");
   revalidatePath("/hesabim/siparislerim");
+}
+
+// ─── İyzico İade (Refund / Cancel) ──────────────────────────────────────────
+
+export type RefundResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/**
+ * Admin tarafından başlatılan iyzico iadesi.
+ * Önce cancel dener (aynı gün işlemler), başarısız olursa refund dener (T+1+).
+ */
+export async function refundOrder(orderId: string): Promise<RefundResult> {
+  const { email } = await assertAdminContext();
+
+  if (!isIyzicoConfigured) {
+    return { ok: false, error: "Iyzico yapılandırılmamış (env eksik)." };
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { user: true },
+  });
+
+  if (!order) return { ok: false, error: "Sipariş bulunamadı." };
+  if (order.paymentStatus !== "PAID") {
+    return { ok: false, error: "Sadece ödenmiş (PAID) siparişler iade edilebilir." };
+  }
+  if (!order.iyzicoPaymentId) {
+    return { ok: false, error: "İyzico ödeme ID'si bulunamadı. Manuel işlem gerekebilir." };
+  }
+
+  const convId = `refund-${order.id}-${Date.now().toString(36)}`;
+  const total = Number(order.total).toFixed(2);
+  let method: "cancel" | "refund" = "cancel";
+
+  // 1️⃣ Önce cancel dene
+  let result = await cancelPayment({
+    paymentId: order.iyzicoPaymentId,
+    conversationId: convId,
+    ip: "127.0.0.1",
+  });
+
+  // 2️⃣ Cancel başarısız → refund dene (T+1)
+  if (!result.ok) {
+    method = "refund";
+    try {
+      const items = await retrievePaymentItems(order.iyzicoPaymentId);
+      if (!items.length) {
+        return { ok: false, error: "İade için ödeme kalemleri bulunamadı." };
+      }
+      // İlk transaction üzerinden tam tutar iade
+      result = await refundPayment({
+        paymentTransactionId: items[0].paymentTransactionId,
+        price: total,
+        conversationId: convId,
+        ip: "127.0.0.1",
+      });
+    } catch (e: unknown) {
+      return {
+        ok: false,
+        error: e instanceof Error ? e.message : "İade işlemi başarısız.",
+      };
+    }
+  }
+
+  if (!result.ok) {
+    return { ok: false, error: result.error };
+  }
+
+  // ✅ İade başarılı — sipariş durumunu güncelle
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { paymentStatus: PaymentStatus.REFUNDED, status: OrderStatus.CANCELLED },
+  });
+
+  await logActivity(email, "order_refund", `order:${orderId}`, {
+    orderNumber: order.orderNumber,
+    total: Number(order.total),
+    method,
+    iyzicoPaymentId: order.iyzicoPaymentId,
+  });
+
+  revalidatePath("/admin/siparisler");
+  revalidatePath("/admin");
+  revalidatePath("/hesabim/siparislerim");
+
+  return { ok: true };
 }

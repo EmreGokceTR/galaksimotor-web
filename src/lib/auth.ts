@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { rateLimit } from "./rate-limit";
 
 const useSecureCookies = (process.env.NEXTAUTH_URL ?? "").startsWith("https://");
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
@@ -58,8 +59,18 @@ export const authOptions: NextAuthOptions = {
         email: { label: "E-posta", type: "email" },
         password: { label: "Şifre", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
+
+        // Rate limit: IP başına 15 dakikada en fazla 10 giriş denemesi
+        const fwd = req?.headers?.["x-forwarded-for"];
+        const ip = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(",")[0]?.trim()
+          ?? (req?.headers?.["x-real-ip"] as string)
+          ?? "anon";
+        const rl = rateLimit(`login:${ip}`, { limit: 10, windowMs: 15 * 60 * 1000 });
+        if (!rl.ok) {
+          throw new Error(`Çok fazla giriş denemesi. ${rl.retryAfterSec} saniye bekleyin.`);
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
