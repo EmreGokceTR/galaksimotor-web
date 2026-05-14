@@ -19,18 +19,26 @@ export function GoogleAnalytics() {
 
   if (!GA_ID || !consented) return null;
 
+  const gaId = GA_ID; // narrowed string — script template'e güvenle geçer
+
   return (
     <>
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
         strategy="afterInteractive"
       />
-      <Script id="ga-init" strategy="afterInteractive">{`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${GA_ID}', { page_path: window.location.pathname });
-      `}</Script>
+      <Script
+        id="ga-init"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gaId}', { page_path: window.location.pathname });
+          `,
+        }}
+      />
     </>
   );
 }

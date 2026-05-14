@@ -25,14 +25,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: SITE.name,
       title: post.title,
       description,
-      ...(post.coverUrl ? { images: [{ url: post.coverUrl, alt: post.title }] } : {}),
-      ...(post.publishedAt ? { publishedTime: post.publishedAt.toISOString() } : {}),
+      images: post.coverUrl ? [{ url: post.coverUrl, alt: post.title }] : undefined,
+      publishedTime: post.publishedAt?.toISOString(),
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description,
-      ...(post.coverUrl ? { images: [post.coverUrl] } : {}),
+      images: post.coverUrl ? [post.coverUrl] : undefined,
     },
   };
 }

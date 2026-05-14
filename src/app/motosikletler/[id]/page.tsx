@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: SITE.name,
       title,
       description,
-      ...(m.gorsel ? { images: [{ url: m.gorsel, alt: `${m.marka} ${m.model}` }] } : {}),
+      images: m.gorsel ? [{ url: m.gorsel, alt: `${m.marka} ${m.model}` }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(m.gorsel ? { images: [m.gorsel] } : {}),
+      images: m.gorsel ? [m.gorsel] : undefined,
     },
   };
 }
