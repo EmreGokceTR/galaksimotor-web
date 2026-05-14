@@ -12,7 +12,7 @@ export const SITE = {
   // Ticari kimlik (yasal sayfalar ve iyzico POS için)
   owner: "Adem İmece",
   taxNo: "4740398598",
-  taxOffice: "Küçükçekmece",
+  taxOffice: "Halkalı",
 
   // İletişim
   phone: "+90 553 573 29 29",
