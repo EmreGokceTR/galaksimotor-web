@@ -75,7 +75,7 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     doc.font(USE_BOLD).fontSize(14).fillColor(DARK)
       .text("Galaksi Motor", 0, 50, { align: "right" });
     doc.font(USE_FONT).fontSize(9).fillColor(GREY)
-      .text("İnönü Mahallesi, Alp Sokak No:3-5", { align: "right" })
+      .text("İnönü Mahallesi, Alp Sokak No:3-5B", { align: "right" })
       .text("Küçükçekmece, İstanbul 34303", { align: "right" })
       .text("Tel: +90 553 573 29 29", { align: "right" })
       .text("info@galaksimotor.com", { align: "right" });
@@ -198,7 +198,7 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
         50, footerY + 6, { width: W, align: "center" }
       )
       .text(
-        "Galaksi Motor · İnönü Mah., Alp Sk. No:3-5, Küçükçekmece / İstanbul · www.galaksimotor.com",
+        "Galaksi Motor · İnönü Mah., Alp Sk. No:3-5B, Küçükçekmece / İstanbul · www.galaksimotor.com",
         50, footerY + 18, { width: W, align: "center" }
       );
 

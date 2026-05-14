@@ -9,6 +9,7 @@ export async function Footer() {
   const bag = await getSettings([
     "logo_name_part1",
     "logo_name_part2",
+    "logo_image_url",
     "footer_brand_desc",
     "footer_col1_title",
     "footer_col1_l1", "footer_col1_l2", "footer_col1_l3", "footer_col1_l4",
@@ -23,6 +24,7 @@ export async function Footer() {
 
   const logoPart1 = st(bag, "logo_name_part1", "Galaksi");
   const logoPart2 = st(bag, "logo_name_part2", "Motor");
+  const logoImageUrl = st(bag, "logo_image_url", "/logos/galaksi-motor-logo.jpg");
   const brandDesc = st(bag, "footer_brand_desc", "Küçükçekmece İnönü Mahallesi'nde motosikletinizin ihtiyacı olan orijinal yedek parça, bakım ürünü ve aksesuarlar — uzman servis ekibiyle.");
 
   const col1Title = st(bag, "footer_col1_title", "Mağaza");
@@ -82,13 +84,22 @@ export async function Footer() {
           {/* Brand block */}
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-yellow text-brand-black shadow-[0_0_18px_-2px_rgba(255,215,0,0.5)]">
-                <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                  <path
-                    d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-7-3 4-7h-3l-1 2H7l5 5Z"
-                    fill="currentColor"
-                  />
-                </svg>
+              <span className={`flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden ${
+                logoImageUrl
+                  ? "ring-1 ring-white/10 shadow-[0_0_18px_-2px_rgba(255,215,0,0.3)]"
+                  : "bg-brand-yellow text-brand-black shadow-[0_0_18px_-2px_rgba(255,215,0,0.5)]"
+              }`}>
+                {logoImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logoImageUrl} alt="Galaksi Motor logo" className="h-full w-full object-cover" />
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                    <path
+                      d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-7-3 4-7h-3l-1 2H7l5 5Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                )}
               </span>
               <span className="text-lg font-bold text-white">
                 <EditableWrapper table="siteSetting" id="logo_name_part1" field="value" value={logoPart1} label="Logo Ad 1" revalidatePaths={R} as="span">

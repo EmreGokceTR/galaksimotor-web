@@ -70,6 +70,10 @@ export async function generateMetadata(): Promise<Metadata> {
       "fren balatası",
     ],
     authors: [{ name: SITE.name }],
+    icons: {
+      icon: "/logos/galaksi-motor-logo.jpg",
+      apple: "/logos/galaksi-motor-logo.jpg",
+    },
     openGraph: {
       type: "website",
       locale: "tr_TR",
@@ -77,11 +81,20 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: SITE.name,
       title,
       description,
+      images: [
+        {
+          url: `${SITE.url}/logos/galaksi-motor-logo.jpg`,
+          width: 1024,
+          height: 1024,
+          alt: "Galaksi Motor",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [`${SITE.url}/logos/galaksi-motor-logo.jpg`],
     },
     robots: {
       index: true,
@@ -130,6 +143,8 @@ const localBusinessJsonLd = {
       closes: "20:00",
     },
   ],
+  logo: `${SITE.url}/logos/galaksi-motor-logo.jpg`,
+  image: `${SITE.url}/logos/galaksi-motor-logo.jpg`,
   sameAs: [SITE.social.facebook, SITE.social.youtube],
 };
 
@@ -143,7 +158,7 @@ export default async function RootLayout({
   const navSettings = {
     logoPart1: st(bag, "logo_name_part1", "Galaksi"),
     logoPart2: st(bag, "logo_name_part2", "Motor"),
-    logoImageUrl: st(bag, "logo_image_url", ""),
+    logoImageUrl: st(bag, "logo_image_url", "/logos/galaksi-motor-logo.jpg"),
     navHome: st(bag, "nav_home", "Anasayfa"),
     navUrunler: st(bag, "nav_urunler", "Ürünler"),
     navMotosikletler: st(bag, "nav_motosikletler", "Motosikletler"),

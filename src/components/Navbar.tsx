@@ -79,10 +79,14 @@ export function Navbar({ settings }: { settings: NavSettings }) {
             revalidatePaths={R}
             as="span"
           >
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-brand-yellow text-brand-black shadow-[0_0_18px_-2px_rgba(255,215,0,0.5)] transition-transform group-hover:rotate-[8deg] group-hover:scale-105 overflow-hidden">
+            <span className={`relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:rotate-[8deg] group-hover:scale-105 ${
+              settings.logoImageUrl
+                ? "shadow-[0_0_18px_-2px_rgba(255,215,0,0.35)] ring-1 ring-white/10"
+                : "bg-brand-yellow text-brand-black shadow-[0_0_18px_-2px_rgba(255,215,0,0.5)]"
+            }`}>
               {settings.logoImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={settings.logoImageUrl} alt="logo" className="h-full w-full object-cover" />
+                <img src={settings.logoImageUrl} alt="Galaksi Motor logo" className="h-full w-full object-cover" />
               ) : (
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                   <path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-7-3 4-7h-3l-1 2H7l5 5Z" fill="currentColor" />
