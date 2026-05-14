@@ -10,107 +10,35 @@ import { motion, AnimatePresence, type Variants } from "framer-motion";
 const EASE_IO = [0.4, 0, 0.2, 1] as const;
 const EASE_OUT = [0.0, 0, 0.2, 1] as const;
 
-/* ─── Spokes ─────────────────────────────────────────────────────────────── */
-function Spokes({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+/* ─── Logo Panel Center ─────────────────────────────────────────────────── */
+function LogoDisplay() {
   return (
-    <>
-      {[0, 45, 90, 135].map((angle) => {
-        const rad = (angle * Math.PI) / 180;
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        return (
-          <line key={angle}
-            x1={cx + r * cos} y1={cy + r * sin}
-            x2={cx - r * cos} y2={cy - r * sin}
-            stroke="#FFD700" strokeWidth="1" opacity="0.3"
-          />
-        );
-      })}
-    </>
-  );
-}
-
-/* ─── Motorcycle SVG (inline animations, no Variants) ──────────────────── */
-function MotorcycleSVG() {
-  const pathAnim = (delay: number) => ({
-    initial: { pathLength: 0, opacity: 0 },
-    animate: { pathLength: 1, opacity: 1 },
-    transition: {
-      pathLength: { duration: 1.8, delay, ease: EASE_IO },
-      opacity: { duration: 0.25, delay },
-    },
-  });
-
-  return (
-    <motion.svg
-      viewBox="0 0 400 220" width="360" height="198"
-      xmlns="http://www.w3.org/2000/svg"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, delay: 0.1 }}
-      style={{ filter: "drop-shadow(0 0 14px rgba(255,215,0,0.35))" }}
+    <motion.div
+      className="relative z-10 flex flex-col items-center"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, delay: 0.2, ease: EASE_OUT }}
     >
-      {/* Rear wheel */}
-      <motion.circle cx={88} cy={160} r={46} fill="none" stroke="#FFD700" strokeWidth="2.5" {...pathAnim(0.3)} />
-      <circle cx={88} cy={160} r={7} fill="rgba(255,215,0,0.7)" />
-      <Spokes cx={88} cy={160} r={38} />
-
-      {/* Front wheel */}
-      <motion.circle cx={314} cy={160} r={46} fill="none" stroke="#FFD700" strokeWidth="2.5" {...pathAnim(0.5)} />
-      <circle cx={314} cy={160} r={7} fill="rgba(255,215,0,0.7)" />
-      <Spokes cx={314} cy={160} r={38} />
-
-      {/* Main frame */}
-      <motion.path d="M88,160 L115,102 L178,90 L238,90 L270,118 L314,160"
-        fill="none" stroke="#FFD700" strokeWidth="2.5" {...pathAnim(0.7)} />
-
-      {/* Engine block */}
-      <path d="M138,103 L180,106 L194,130 L148,134 Z"
-        fill="rgba(255,215,0,0.07)" stroke="rgba(255,215,0,0.45)" strokeWidth="1.5" />
-
-      {/* Tank */}
-      <path d="M178,90 L240,88 L250,103 L210,106 L180,103 Z"
-        fill="rgba(255,215,0,0.1)" stroke="#FFD700" strokeWidth="1.5" />
-
-      {/* Seat */}
-      <path d="M212,88 L254,85 L266,94 L240,97 Z"
-        fill="rgba(255,215,0,0.16)" stroke="#FFD700" strokeWidth="1.5" />
-
-      {/* Front fork */}
-      <motion.path d="M266,94 L292,128 L314,160" fill="none" stroke="#FFD700" strokeWidth="2.5" {...pathAnim(0.9)} />
-      <motion.path d="M270,118 L296,150" fill="none" stroke="#FFD700" strokeWidth="1.5" opacity="0.5" {...pathAnim(1.0)} />
-
-      {/* Handlebars */}
-      <motion.path d="M266,94 L250,74 M266,94 L283,79" fill="none" stroke="#FFD700" strokeWidth="2" {...pathAnim(1.1)} />
-
-      {/* Headlight */}
-      <ellipse cx={286} cy={110} rx={14} ry={10} fill="rgba(255,215,0,0.12)" stroke="#FFD700" strokeWidth="1.5" />
-      <motion.ellipse cx={286} cy={110} rx={14} ry={10} fill="none" stroke="rgba(255,215,0,0.9)" strokeWidth="0.8"
-        animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2.5, repeat: Infinity, ease: EASE_IO }}
-      />
-
-      {/* Exhaust */}
-      <motion.path d="M138,140 L100,147 L62,152" fill="none" stroke="#FFD700" strokeWidth="2" opacity="0.55" {...pathAnim(1.2)} />
-
-      {/* Rider silhouette */}
-      <path d="M222,89 Q230,60 244,55 Q254,50 257,62 L254,89"
-        fill="rgba(255,215,0,0.05)" stroke="rgba(255,215,0,0.35)" strokeWidth="1.5" />
-
-      {/* Ground shadow */}
-      <motion.ellipse cx={201} cy={208} rx={120} ry={6} fill="rgba(255,215,0,0.06)"
-        initial={{ scaleX: 0, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ duration: 1, delay: 1.4, ease: EASE_OUT }}
-      />
-
-      {/* Speed lines */}
-      <motion.g
-        animate={{ x: ["-30px", "0px"], opacity: [0, 0.5, 0] }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: EASE_OUT }}
+      <motion.div
+        className="relative mb-6"
+        animate={{ scale: [1, 1.03, 1] }}
+        transition={{ duration: 4, repeat: Infinity, ease: EASE_IO }}
       >
-        <line x1="8" y1="128" x2="52" y2="128" stroke="#FFD700" strokeWidth="1.5" />
-        <line x1="4" y1="143" x2="44" y2="143" stroke="#FFD700" strokeWidth="1" />
-        <line x1="10" y1="157" x2="46" y2="157" stroke="#FFD700" strokeWidth="1" />
-      </motion.g>
-    </motion.svg>
+        {/* Outer glow ring */}
+        <div className="absolute inset-0 rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(255,215,0,0.25) 0%, transparent 70%)", transform: "scale(1.6)" }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logos/galaksi-motor-logo.jpg"
+          alt="Galaksi Motor"
+          width={160}
+          height={160}
+          className="relative z-10 rounded-full object-cover ring-2 ring-brand-yellow/40 shadow-[0_0_40px_rgba(255,215,0,0.3)]"
+          style={{ width: 160, height: 160 }}
+        />
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -154,13 +82,8 @@ function LeftPanel() {
         transition={{ duration: 4.5, repeat: Infinity, ease: EASE_IO }}
       />
 
-      {/* Motorcycle */}
-      <motion.div className="relative z-10"
-        initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.2, ease: EASE_OUT }}
-      >
-        <MotorcycleSVG />
-      </motion.div>
+      {/* Logo */}
+      <LogoDisplay />
 
       {/* Brand text */}
       <motion.div className="relative z-10 text-center mt-4"

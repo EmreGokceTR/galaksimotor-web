@@ -20,6 +20,9 @@ export async function Footer() {
     "footer_copyright",
     "footer_credit_prefix",
     "footer_credit_author",
+    "contact_address",
+    "contact_phone",
+    "contact_email",
   ]);
 
   const logoPart1 = st(bag, "logo_name_part1", "Galaksi");
@@ -71,6 +74,10 @@ export async function Footer() {
     { label: "İptal & İade Koşulları", href: "/iptal-iade-kosullari" },
   ];
 
+  const contactAddress = st(bag, "contact_address", `${SITE.address.line}, ${SITE.address.district} / ${SITE.address.city}`);
+  const contactPhone = st(bag, "contact_phone", SITE.phone);
+  const contactEmail = st(bag, "contact_email", SITE.email);
+
   const copyright = st(bag, "footer_copyright", `© ${new Date().getFullYear()} Galaksi Motor. Tüm hakları saklıdır.`);
   const creditPrefix = st(bag, "footer_credit_prefix", "Yapım");
   const creditAuthor = st(bag, "footer_credit_author", "Galaksi Garage");
@@ -115,17 +122,23 @@ export async function Footer() {
             </EditableWrapper>
 
             <div className="mt-5 space-y-2 text-sm text-white/70">
-              <div className="flex items-center gap-2">
-                <span className="text-brand-yellow">📍</span>
-                {SITE.address.line}, {SITE.address.district} / {SITE.address.city}
+              <div className="flex items-start gap-2">
+                <span className="text-brand-yellow mt-0.5">📍</span>
+                <EditableWrapper table="siteSetting" id="contact_address" field="value" value={contactAddress} label="Footer Adres" fieldType="textarea" revalidatePaths={R} as="span">
+                  {contactAddress}
+                </EditableWrapper>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-brand-yellow">✆</span>
-                {SITE.phone}
+                <EditableWrapper table="siteSetting" id="contact_phone" field="value" value={contactPhone} label="Footer Telefon" revalidatePaths={R} as="span">
+                  {contactPhone}
+                </EditableWrapper>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-brand-yellow">✉</span>
-                {SITE.email}
+                <EditableWrapper table="siteSetting" id="contact_email" field="value" value={contactEmail} label="Footer E-posta" revalidatePaths={R} as="span">
+                  {contactEmail}
+                </EditableWrapper>
               </div>
             </div>
           </div>

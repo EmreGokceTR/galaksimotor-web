@@ -11,9 +11,12 @@ const NAV = [
   { href: "/admin/randevular", label: "Randevular", icon: "📅" },
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
-  { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
+  { href: "/admin/hizmetler", label: "Hizmetler", icon: "🔧" },
+  { href: "/admin/ayarlar/iletisim", label: "İletişim Bilgileri", icon: "📍" },
+  { href: "/admin/ayarlar/testimonials", label: "Müşteri Yorumları", icon: "⭐" },
   { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },
   { href: "/admin/ayarlar/sss", label: "SSS İçeriği", icon: "❓" },
+  { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
   { href: "/admin/yedek", label: "Yedek & Bakım", icon: "💾" },
 ];
 

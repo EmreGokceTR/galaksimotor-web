@@ -12,6 +12,9 @@ type ProductSnapshot = {
   price: number;
   stock: number;
   image: string | null;
+  sku?: string;
+  brand?: string | null;
+  description?: string | null;
 };
 
 const spring = { type: "spring" as const, stiffness: 420, damping: 32 };
@@ -25,6 +28,9 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
   const [price, setPrice] = useState(String(product.price));
   const [stock, setStock] = useState(String(product.stock));
   const [imageUrl, setImageUrl] = useState(product.image ?? "");
+  const [sku, setSku] = useState(product.sku ?? "");
+  const [brand, setBrand] = useState(product.brand ?? "");
+  const [description, setDescription] = useState(product.description ?? "");
 
   // Sync fields from (possibly refreshed) props when modal opens
   useEffect(() => {
@@ -33,6 +39,9 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
       setPrice(String(product.price));
       setStock(String(product.stock));
       setImageUrl(product.image ?? "");
+      setSku(product.sku ?? "");
+      setBrand(product.brand ?? "");
+      setDescription(product.description ?? "");
     }
   }, [open, product]);
 
@@ -48,6 +57,9 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
         stock: parseInt(stock) ?? product.stock,
         imageUrl: imageUrl.trim() || null,
         slug: product.slug,
+        sku: sku.trim() || undefined,
+        brand: brand.trim() || null,
+        description: description.trim() || null,
       });
       setOpen(false);
     });
@@ -157,6 +169,46 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
                     />
                   </label>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-white/40">
+                      SKU
+                    </span>
+                    <input
+                      className="input-glass w-full"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                      disabled={isPending}
+                      placeholder="TLF-403"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-white/40">
+                      Marka
+                    </span>
+                    <input
+                      className="input-glass w-full"
+                      value={brand}
+                      onChange={(e) => setBrand(e.target.value)}
+                      disabled={isPending}
+                      placeholder="Honda, Bajaj…"
+                    />
+                  </label>
+                </div>
+
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-white/40">
+                    Açıklama
+                  </span>
+                  <textarea
+                    className="input-glass w-full resize-none"
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    disabled={isPending}
+                  />
+                </label>
 
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-white/40">
