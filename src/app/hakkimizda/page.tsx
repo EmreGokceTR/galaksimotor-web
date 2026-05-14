@@ -67,6 +67,27 @@ export default async function HakkimizdaPage() {
           <InfoCard title="Vizyonumuz"><p>{vision}</p></InfoCard>
         </div>
 
+        <InfoCard title="Ticari Bilgiler">
+          <dl className="grid gap-2 text-sm sm:grid-cols-2 md:grid-cols-4">
+            <div>
+              <dt className="text-[11px] uppercase tracking-wider text-white/40">Ünvan</dt>
+              <dd className="text-white">{SITE.name}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] uppercase tracking-wider text-white/40">Yetkili</dt>
+              <dd className="text-white">{SITE.owner}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] uppercase tracking-wider text-white/40">Vergi Dairesi</dt>
+              <dd className="text-white">{SITE.taxOffice}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] uppercase tracking-wider text-white/40">Vergi No</dt>
+              <dd className="text-white">{SITE.taxNo}</dd>
+            </div>
+          </dl>
+        </InfoCard>
+
         <InfoCard title="Değerlerimiz">
           <ul className="ml-5 list-disc space-y-1.5 text-white/70">
             <li><strong className="text-white">Dürüstlük:</strong> İhtiyaç olmayan işi yazmıyor, gereken parçayı önermekten geri durmuyoruz.</li>

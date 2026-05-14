@@ -123,6 +123,11 @@ export default function IptalIadeKosullariPage() {
           <a href={`mailto:${SITE.email}`}>{SITE.email}</a> /{" "}
           <strong>{SITE.phone}</strong>
         </p>
+        <p className="mt-2 text-sm text-white/60">
+          <strong>Satıcı Unvanı:</strong> {SITE.name} —{" "}
+          <strong>Yetkili:</strong> {SITE.owner} —{" "}
+          <strong>Vergi No:</strong> {SITE.taxNo}
+        </p>
       </LegalSection>
     </LegalPage>
   );

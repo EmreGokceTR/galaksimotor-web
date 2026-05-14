@@ -31,10 +31,14 @@ function getTransport(): Transporter | null {
     return null;
   }
 
+  const port = Number(process.env.SMTP_PORT ?? 587);
+  // Port 465 her zaman SSL (implicit TLS); SMTP_SECURE=true ile de override edilebilir
+  const secure = port === 465 || process.env.SMTP_SECURE === "true";
+
   _transport = nodemailer.createTransport({
     host,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: process.env.SMTP_SECURE === "true",
+    port,
+    secure,
     auth: { user, pass },
     pool: true,
     maxConnections: 3,

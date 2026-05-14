@@ -40,6 +40,15 @@ export default function MesafeliSatisPage() {
               <strong>Unvan:</strong> {SITE.name}
             </>,
             <>
+              <strong>Yetkili / Sahip:</strong> {SITE.owner}
+            </>,
+            <>
+              <strong>Vergi Dairesi:</strong> {SITE.taxOffice}
+            </>,
+            <>
+              <strong>Vergi No:</strong> {SITE.taxNo}
+            </>,
+            <>
               <strong>Adres:</strong> {FULL_ADDRESS}
             </>,
             <>

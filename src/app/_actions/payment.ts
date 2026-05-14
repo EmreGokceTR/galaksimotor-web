@@ -101,7 +101,7 @@ export async function initPaymentForOrder(
       name: buyerName.name,
       surname: buyerName.surname,
       gsmNumber: order.shippingPhone ?? "+905555555555",
-      email: order.user.email ?? "noreply@galaksimotor.com",
+      email: order.user.email ?? "info@galaksimotor.com",
       identityNumber: order.invoiceTcNo ?? "11111111111",
       lastLoginDate: new Date()
         .toISOString()

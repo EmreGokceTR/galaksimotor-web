@@ -9,6 +9,11 @@ export const SITE = {
   description:
     "Motosiklet yedek parça, aksesuar ve servis. Küçükçekmece İnönü Mahallesi Alp Sokak'taki merkezimizde uzman ekibimizle hizmetinizdeyiz.",
 
+  // Ticari kimlik (yasal sayfalar ve iyzico POS için)
+  owner: "Adem İmece",
+  taxNo: "4740398598",
+  taxOffice: "Küçükçekmece",
+
   // İletişim
   phone: "+90 553 573 29 29",
   /** WhatsApp için sadece rakam, ülke kodu dahil. */
@@ -19,7 +24,7 @@ export const SITE = {
 
   // Adres
   address: {
-    line: "İnönü Mahallesi, Alp Sokak No:3-5",
+    line: "İnönü Mahallesi, Alp Sokak No:3-5B",
     district: "Küçükçekmece",
     city: "İstanbul",
     postalCode: "34303",

@@ -163,6 +163,9 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Sistem Uyarı Notu — E-posta Teslimat Güvenliği */}
+      <SystemAlert />
+
       {/* Hızlı stat kartları */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
@@ -418,6 +421,54 @@ function ChartSkeleton() {
   return (
     <div className="flex h-[260px] w-full items-center justify-center rounded-xl border border-white/5 bg-white/[0.02]">
       <div className="h-1 w-32 animate-pulse rounded-full bg-brand-yellow/30" />
+    </div>
+  );
+}
+
+/**
+ * Kalıcı sistem uyarısı — e-posta teslimat güvenliği (SPF/DKIM).
+ * Bu banner, Zoho SMTP ile gönderilen e-postaların spam kutusuna düşmemesi
+ * için DNS ayarlarını yapıldığından emin olmak amacıyla her zaman görünür.
+ */
+function SystemAlert() {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/[0.06] px-5 py-4 backdrop-blur-sm">
+      <span className="mt-0.5 text-lg leading-none">⚠️</span>
+      <div className="space-y-1 text-sm">
+        <p className="font-semibold text-amber-300">
+          Sistem Uyarısı — E-posta Teslimat Güvenliği
+        </p>
+        <p className="text-white/70">
+          E-postaların (sipariş onayı, randevu bildirimi vb.) spam kutusuna düşmemesi için{" "}
+          <strong className="text-white">Veridyen DNS panelinden</strong> Zoho SPF ve DKIM
+          kayıtlarının eklendiğinden emin olun.
+        </p>
+        <ul className="mt-2 space-y-1 text-white/60">
+          <li>
+            <span className="font-mono text-xs text-amber-200/80">SPF</span>{" "}
+            — TXT kaydı:{" "}
+            <code className="rounded bg-white/5 px-1.5 py-0.5 text-xs text-white/80">
+              v=spf1 include:zoho.eu ~all
+            </code>
+          </li>
+          <li>
+            <span className="font-mono text-xs text-amber-200/80">DKIM</span>{" "}
+            — Zoho Mail &rarr; Ayarlar &rarr; E-posta Kanalı &rarr; Domain Doğrulama
+            sayfasından CNAME/TXT değerlerini kopyalayın.
+          </li>
+          <li>
+            <span className="font-mono text-xs text-amber-200/80">DMARC</span>{" "}
+            — TXT kaydı (isteğe bağlı):{" "}
+            <code className="rounded bg-white/5 px-1.5 py-0.5 text-xs text-white/80">
+              v=DMARC1; p=none; rua=mailto:info@galaksimotor.com
+            </code>
+          </li>
+        </ul>
+        <p className="mt-2 text-xs text-white/40">
+          Bu uyarı, DNS kayıtları yapıldıktan sonra dahi görünür kalmaya devam eder —
+          referans amaçlıdır.
+        </p>
+      </div>
     </div>
   );
 }
