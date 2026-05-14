@@ -6,15 +6,7 @@ import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditMode } from "@/context/EditModeContext";
 import { updateField } from "@/app/_actions/edit-field";
-
-function pathKey(path: string): string {
-  if (!path || path === "/") return "home";
-  return path
-    .replace(/^\/+|\/+$/g, "")
-    .replace(/\[([^\]]+)\]/g, "$1")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .toLowerCase();
-}
+import { pathKey } from "@/lib/page-meta";
 
 const spring = { type: "spring" as const, stiffness: 420, damping: 32 };
 

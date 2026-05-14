@@ -6,7 +6,7 @@ import { logActivity } from "@/lib/activity-log";
 
 /** Tüm giden mailler bu adresten çıkar (Brevo + Zoho doğrulamalı). */
 export const FROM_ADDRESS = "info@galaksimotor.com";
-export const FROM_NAME = "Galaksi Motor";
+const FROM_NAME = "Galaksi Motor";
 
 const FROM = `"${FROM_NAME}" <${FROM_ADDRESS}>`;
 
@@ -46,14 +46,6 @@ function getTransport(): Transporter | null {
   });
 
   return _transport;
-}
-
-export function isSmtpConfigured(): boolean {
-  return Boolean(
-    process.env.SMTP_HOST &&
-      process.env.SMTP_USER &&
-      (process.env.SMTP_PASSWORD || process.env.SMTP_PASS)
-  );
 }
 
 // ─── Çekirdek sendEmail (audit log + error handling) ─────────────────────────
@@ -183,37 +175,3 @@ export async function getEmailTemplate(
   };
 }
 
-/** Şablonu çek + render et + admin'e gönder (mevcut sistem uyumluluğu). */
-export async function sendTemplatedAdminMail(
-  key: string,
-  fallback: EmailTemplate,
-  vars: Record<string, string | number>
-): Promise<void> {
-  const tpl = await getEmailTemplate(key, fallback);
-  const subject = renderTemplate(tpl.subject, vars);
-  const body = renderTemplate(tpl.body, vars);
-  const adminEmail = process.env.ADMIN_EMAIL ?? FROM_ADDRESS;
-  await sendEmail({
-    to: adminEmail,
-    subject,
-    html: body,
-    category: `templated:${key}`,
-  });
-}
-
-// ─── Sipariş onay (eski stub uyumluluğu) ─────────────────────────────────────
-
-type OrderEmailPayload = {
-  to: string;
-  orderNumber: string;
-  customerName: string;
-  total: number;
-  itemCount: number;
-};
-
-export async function sendOrderConfirmation(p: OrderEmailPayload) {
-  console.log(
-    `📧 [legacy] sendOrderConfirmation çağrıldı (${p.orderNumber}) → sendOrderReceiptEmail kullanın.`
-  );
-  return { sent: false, reason: "legacy" };
-}

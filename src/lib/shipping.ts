@@ -1,4 +1,4 @@
-import { getSettings, st } from "@/lib/site-settings";
+import { getSettings } from "@/lib/site-settings";
 import { SITE } from "@/config/site";
 
 export type ShippingConfig = {
@@ -47,11 +47,3 @@ export function computeShippingFromConfig(
   };
 }
 
-/** Tek seferde fetch + hesap. */
-export async function resolveShipping(subtotal: number) {
-  const cfg = await getShippingConfig();
-  return { ...computeShippingFromConfig(subtotal, cfg), config: cfg };
-}
-
-/** st() helper'ın string varyantı (genel kullanım için). */
-export { st };

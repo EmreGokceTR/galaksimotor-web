@@ -24,7 +24,7 @@ export type PageMetaFallback = {
 };
 
 /** siteSetting'dan dinamik title/desc; yoksa fallback. */
-export async function getPageMeta(
+async function getPageMeta(
   path: string,
   fallback: PageMetaFallback
 ): Promise<PageMetaFallback> {

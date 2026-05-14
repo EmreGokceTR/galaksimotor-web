@@ -31,11 +31,6 @@ export const isIyzicoConfigured: boolean = Boolean(
   getApiKey() && getSecretKey()
 );
 
-/** Sandbox mode kontrolü (BASE_URL'e göre). */
-export function isSandbox(): boolean {
-  return getBaseUrl().includes("sandbox");
-}
-
 export type IyzicoResult = { ok: true } | { ok: false; error: string };
 
 let _client: Iyzipay | null = null;
