@@ -163,6 +163,17 @@ export async function Footer() {
           ))}
         </nav>
 
+        {/* Güvenli ödeme logoları */}
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <span className="text-[11px] text-white/40">Güvenli Ödeme:</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logos/iyzico-logo-band.svg"
+            alt="iyzico ile güvenli ödeme — Visa ve Mastercard kabul edilir"
+            className="h-7 opacity-70"
+          />
+        </div>
+
         <div className="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-white/40 sm:flex-row">
           <EditableWrapper table="siteSetting" id="footer_copyright" field="value" value={copyright} label="Footer Telif Hakkı" revalidatePaths={R} as="span">
             {copyright}
