@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { InfoPageHero } from "@/components/InfoPageHero";
 import { SITE } from "@/config/site";
 import { EditableWrapper } from "@/components/EditableWrapper";
+import { ServiceEditButton } from "./ServiceEditButton";
 
 type Service = {
   id: string;
@@ -534,30 +535,33 @@ function ServiceCard({
   freeLabel: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`relative flex flex-col items-start gap-1 rounded-xl border p-4 text-left transition ${
-        active
-          ? "border-brand-yellow bg-brand-yellow/10 shadow-[0_0_0_1px_rgba(255,215,0,0.4),0_0_28px_-6px_rgba(255,215,0,0.4)]"
-          : "border-white/10 bg-white/[0.025] hover:border-white/30"
-      }`}
-    >
-      <div className="flex w-full items-center justify-between">
-        <span className="text-sm font-semibold text-white">{service.name}</span>
-        <span className="text-xs font-semibold text-brand-yellow">
-          {service.price && service.price > 0 ? fmt(service.price) : freeLabel}
+    <div className="group relative">
+      <button
+        type="button"
+        onClick={onClick}
+        className={`relative flex w-full flex-col items-start gap-1 rounded-xl border p-4 text-left transition ${
+          active
+            ? "border-brand-yellow bg-brand-yellow/10 shadow-[0_0_0_1px_rgba(255,215,0,0.4),0_0_28px_-6px_rgba(255,215,0,0.4)]"
+            : "border-white/10 bg-white/[0.025] hover:border-white/30"
+        }`}
+      >
+        <div className="flex w-full items-center justify-between pr-6">
+          <span className="text-sm font-semibold text-white">{service.name}</span>
+          <span className="text-xs font-semibold text-brand-yellow">
+            {service.price && service.price > 0 ? fmt(service.price) : freeLabel}
+          </span>
+        </div>
+        {service.description && (
+          <span className="text-xs leading-relaxed text-white/55">
+            {service.description}
+          </span>
+        )}
+        <span className="mt-1 text-[11px] text-white/40">
+          ⏱ {service.duration} dk
         </span>
-      </div>
-      {service.description && (
-        <span className="text-xs leading-relaxed text-white/55">
-          {service.description}
-        </span>
-      )}
-      <span className="mt-1 text-[11px] text-white/40">
-        ⏱ {service.duration} dk
-      </span>
-    </button>
+      </button>
+      <ServiceEditButton service={service} />
+    </div>
   );
 }
 

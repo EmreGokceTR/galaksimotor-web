@@ -61,24 +61,26 @@ export default async function HomePage() {
       // Category cards
       "cat_cta",
       ...categories.map((c) => `cat_icon_${c.slug}`),
-      // Testimonials (5 adet × 4 alan)
-      "t1_name", "t1_bike", "t1_rating", "t1_text",
-      "t2_name", "t2_bike", "t2_rating", "t2_text",
-      "t3_name", "t3_bike", "t3_rating", "t3_text",
-      "t4_name", "t4_bike", "t4_rating", "t4_text",
-      "t5_name", "t5_bike", "t5_rating", "t5_text",
+      // Testimonials (5 adet × 5 alan)
+      "testimonials_count",
+      "t1_name", "t1_bike", "t1_rating", "t1_text", "t1_photo",
+      "t2_name", "t2_bike", "t2_rating", "t2_text", "t2_photo",
+      "t3_name", "t3_bike", "t3_rating", "t3_text", "t3_photo",
+      "t4_name", "t4_bike", "t4_rating", "t4_text", "t4_photo",
+      "t5_name", "t5_bike", "t5_rating", "t5_text", "t5_photo",
       // Atölye
       "workshop_photo_url", "workshop_caption", "workshop_badge",
     ]),
   ]);
 
+  const testimonialsCount = Math.min(5, Math.max(1, Number(st(bag, "testimonials_count", "5")) || 5));
   const testimonials = [
-    { name: st(bag,"t1_name","Mert K."), bike: st(bag,"t1_bike","Honda PCX 160"), rating: Number(st(bag,"t1_rating","5")), text: st(bag,"t1_text","Periyodik bakım için randevuyu site üzerinden aldım, dakikasında işlem başladı. Usta CVT kayışını gösterip durumu açıkladı, şeffaflık çok hoşuma gitti.") },
-    { name: st(bag,"t2_name","Ayşe T."), bike: st(bag,"t2_bike","Bajaj Pulsar F 250"), rating: Number(st(bag,"t2_rating","5")), text: st(bag,"t2_text","Koruma demirini ertesi gün elime aldım, montaj için de uğradım. 10/10 hizmet — fiyat-performans rakipsiz.") },
-    { name: st(bag,"t3_name","Burak D."), bike: st(bag,"t3_bike","Kymco DTX 360"), rating: Number(st(bag,"t3_rating","5")), text: st(bag,"t3_text","Telefonla soru sordum, sorunumu uzaktan teşhis ettiler. Ertesi gün uğradım yarım saatte hallettiler. Bayilerden çok daha rahat çalışıyorlar.") },
-    { name: st(bag,"t4_name","Hakan E."), bike: st(bag,"t4_bike","Yamaha MT-07"), rating: Number(st(bag,"t4_rating","5")), text: st(bag,"t4_text","Online sipariş ettim, aynı gün kargoya verdiler. Fatura, takip numarası her şey eksiksiz geldi. Müşteri ilişkisi profesyonel.") },
-    { name: st(bag,"t5_name","Selin Y."), bike: st(bag,"t5_bike","Honda CB 125F"), rating: Number(st(bag,"t5_rating","5")), text: st(bag,"t5_text","Kask seçerken çok yardımcı oldular. Bedenimi denedim, yanlış olduğunu söylediler. Doğru beden için tekrar uğradım — bu samimiyet az bulunur.") },
-  ];
+    { name: st(bag,"t1_name","Mert K."), bike: st(bag,"t1_bike","Honda PCX 160"), rating: Number(st(bag,"t1_rating","5")), text: st(bag,"t1_text","Periyodik bakım için randevuyu site üzerinden aldım, dakikasında işlem başladı. Usta CVT kayışını gösterip durumu açıkladı, şeffaflık çok hoşuma gitti."), photo: st(bag,"t1_photo","") || undefined },
+    { name: st(bag,"t2_name","Ayşe T."), bike: st(bag,"t2_bike","Bajaj Pulsar F 250"), rating: Number(st(bag,"t2_rating","5")), text: st(bag,"t2_text","Koruma demirini ertesi gün elime aldım, montaj için de uğradım. 10/10 hizmet — fiyat-performans rakipsiz."), photo: st(bag,"t2_photo","") || undefined },
+    { name: st(bag,"t3_name","Burak D."), bike: st(bag,"t3_bike","Kymco DTX 360"), rating: Number(st(bag,"t3_rating","5")), text: st(bag,"t3_text","Telefonla soru sordum, sorunumu uzaktan teşhis ettiler. Ertesi gün uğradım yarım saatte hallettiler. Bayilerden çok daha rahat çalışıyorlar."), photo: st(bag,"t3_photo","") || undefined },
+    { name: st(bag,"t4_name","Hakan E."), bike: st(bag,"t4_bike","Yamaha MT-07"), rating: Number(st(bag,"t4_rating","5")), text: st(bag,"t4_text","Online sipariş ettim, aynı gün kargoya verdiler. Fatura, takip numarası her şey eksiksiz geldi. Müşteri ilişkisi profesyonel."), photo: st(bag,"t4_photo","") || undefined },
+    { name: st(bag,"t5_name","Selin Y."), bike: st(bag,"t5_bike","Honda CB 125F"), rating: Number(st(bag,"t5_rating","5")), text: st(bag,"t5_text","Kask seçerken çok yardımcı oldular. Bedenimi denedim, yanlış olduğunu söylediler. Doğru beden için tekrar uğradım — bu samimiyet az bulunur."), photo: st(bag,"t5_photo","") || undefined },
+  ].slice(0, testimonialsCount);
 
   const heroSettings: HeroSettings = {
     badge:        st(bag, "hero_badge",         "Küçükçekmece'nin motosiklet üssü"),

@@ -5,11 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 
 const KEYS = [
-  "t1_name","t1_bike","t1_rating","t1_text",
-  "t2_name","t2_bike","t2_rating","t2_text",
-  "t3_name","t3_bike","t3_rating","t3_text",
-  "t4_name","t4_bike","t4_rating","t4_text",
-  "t5_name","t5_bike","t5_rating","t5_text",
+  "testimonials_count",
+  "t1_name","t1_bike","t1_rating","t1_text","t1_photo",
+  "t2_name","t2_bike","t2_rating","t2_text","t2_photo",
+  "t3_name","t3_bike","t3_rating","t3_text","t3_photo",
+  "t4_name","t4_bike","t4_rating","t4_text","t4_photo",
+  "t5_name","t5_bike","t5_rating","t5_text","t5_photo",
 ] as const;
 
 export async function saveTestimonials(

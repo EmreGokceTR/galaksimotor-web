@@ -14,12 +14,15 @@ export default async function TestimonialsSettingsPage() {
   await requireAdmin();
 
   const bag = await getSettings([
-    "t1_name","t1_bike","t1_rating","t1_text",
-    "t2_name","t2_bike","t2_rating","t2_text",
-    "t3_name","t3_bike","t3_rating","t3_text",
-    "t4_name","t4_bike","t4_rating","t4_text",
-    "t5_name","t5_bike","t5_rating","t5_text",
+    "testimonials_count",
+    "t1_name","t1_bike","t1_rating","t1_text","t1_photo",
+    "t2_name","t2_bike","t2_rating","t2_text","t2_photo",
+    "t3_name","t3_bike","t3_rating","t3_text","t3_photo",
+    "t4_name","t4_bike","t4_rating","t4_text","t4_photo",
+    "t5_name","t5_bike","t5_rating","t5_text","t5_photo",
   ]);
+
+  const count = st(bag, "testimonials_count", "5");
 
   const items = DEFAULTS.map((d, i) => {
     const n = i + 1;
@@ -28,6 +31,7 @@ export default async function TestimonialsSettingsPage() {
       bike:   st(bag, `t${n}_bike`,   d.bike),
       rating: st(bag, `t${n}_rating`, d.rating),
       text:   st(bag, `t${n}_text`,   d.text),
+      photo:  st(bag, `t${n}_photo`,  ""),
     };
   });
 
@@ -36,10 +40,10 @@ export default async function TestimonialsSettingsPage() {
       <header>
         <h1 className="text-2xl font-bold text-white">Müşteri Yorumları</h1>
         <p className="mt-1 text-sm text-white/50">
-          Ana sayfadaki "Müşterilerimiz Ne Diyor?" bölümündeki 5 yorumu buradan düzenleyebilirsiniz.
+          Ana sayfadaki "Müşterilerimiz Ne Diyor?" bölümündeki yorumları buradan düzenleyebilirsiniz.
         </p>
       </header>
-      <TestimonialsEditor items={items} />
+      <TestimonialsEditor items={items} count={count} />
     </div>
   );
 }

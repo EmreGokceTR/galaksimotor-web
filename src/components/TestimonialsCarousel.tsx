@@ -8,6 +8,7 @@ export type Testimonial = {
   bike: string;
   rating: number;
   text: string;
+  photo?: string;
 };
 
 const DEFAULT_TESTIMONIALS: Testimonial[] = [
@@ -55,8 +56,13 @@ export function TestimonialsCarousel({ testimonials }: { testimonials?: Testimon
               &ldquo;{t.text}&rdquo;
             </blockquote>
             <footer className="mt-6 flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-yellow/15 text-base font-bold text-brand-yellow ring-1 ring-brand-yellow/30">
-                {t.name.charAt(0)}
+              <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-brand-yellow/15 ring-1 ring-brand-yellow/30">
+                {t.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={t.photo} alt={t.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-base font-bold text-brand-yellow">{t.name.charAt(0)}</span>
+                )}
               </span>
               <div>
                 <div className="text-sm font-semibold text-white">{t.name}</div>

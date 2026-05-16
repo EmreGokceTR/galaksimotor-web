@@ -3,8 +3,8 @@
 import { useState, useTransition } from "react";
 import { saveTestimonials } from "./actions";
 
-type T = { name: string; bike: string; rating: string; text: string };
-type Props = { items: T[] };
+type T = { name: string; bike: string; rating: string; text: string; photo: string };
+type Props = { items: T[]; count: string };
 
 function Field({ label, name, defaultValue, rows = 0 }: {
   label: string; name: string; defaultValue: string; rows?: number;
@@ -25,7 +25,7 @@ function Field({ label, name, defaultValue, rows = 0 }: {
   );
 }
 
-export function TestimonialsEditor({ items }: Props) {
+export function TestimonialsEditor({ items, count }: Props) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -42,6 +42,22 @@ export function TestimonialsEditor({ items }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Count control */}
+      <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/50">
+            Gösterilecek Yorum Sayısı (1–5)
+          </label>
+          <select name="testimonials_count" defaultValue={count}
+            className="w-24 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-brand-yellow/40">
+            {[1,2,3,4,5].map((v) => (
+              <option key={v} value={v} className="bg-zinc-900">{v}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-white/40">Kaç yorum ana sayfada döngüde görünsün?</p>
+        </div>
+      </section>
+
       {items.map((item, i) => {
         const n = i + 1;
         return (
@@ -65,6 +81,15 @@ export function TestimonialsEditor({ items }: Props) {
               </select>
             </div>
             <Field label="Yorum metni" name={`t${n}_text`} defaultValue={item.text} rows={3} />
+            <div>
+              <Field label="Profil Fotoğrafı URL (isteğe bağlı)" name={`t${n}_photo`} defaultValue={item.photo} />
+              {item.photo && (
+                <div className="mt-2 h-14 w-14 overflow-hidden rounded-full border border-white/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.photo} alt={item.name} className="h-full w-full object-cover" />
+                </div>
+              )}
+            </div>
           </section>
         );
       })}
