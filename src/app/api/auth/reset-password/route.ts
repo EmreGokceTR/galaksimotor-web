@@ -22,9 +22,15 @@ export async function POST(req: Request) {
   if (!token || !email) {
     return NextResponse.json({ error: "Bağlantı geçersiz." }, { status: 400 });
   }
-  if (password.length < 6) {
+  if (password.length < 8) {
     return NextResponse.json(
-      { error: "Şifre en az 6 karakter olmalı." },
+      { error: "Şifre en az 8 karakter olmalıdır." },
+      { status: 400 }
+    );
+  }
+  if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return NextResponse.json(
+      { error: "Şifre en az bir büyük harf ve bir rakam içermelidir." },
       { status: 400 }
     );
   }
@@ -50,7 +56,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 400 });
   }
 
-  const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(password, 12);
   await prisma.$transaction([
     prisma.user.update({ where: { id: user.id }, data: { password: hashed } }),
     prisma.verificationToken.delete({ where: { token: tokenHash } }),

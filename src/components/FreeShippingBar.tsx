@@ -26,7 +26,7 @@ export function FreeShippingBar({ subtotal }: { subtotal: number }) {
               <strong className="text-brand-yellow">{fmt(ship.remaining)}</strong>{" "}
               daha alışveriş → ücretsiz kargo
             </span>
-            <span className="text-white/40">{Math.round(pct)}%</span>
+            <span className="text-white/55">{Math.round(pct)}%</span>
           </>
         )}
       </div>

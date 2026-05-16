@@ -40,7 +40,9 @@ export async function POST(req: Request) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://galaksimotor.com";
     const resetUrl = `${siteUrl}/auth/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
-    await sendMail(
+    // Fire-and-forget: response doesn't wait for SMTP so timing is
+    // identical for existing vs. non-existing users (enumeration guard).
+    sendMail(
       email,
       "Galaksi Motor — Şifre Sıfırlama",
       `
@@ -65,7 +67,7 @@ export async function POST(req: Request) {
         </p>
       </div>
       `
-    );
+    ).catch((err) => console.error("[forgot-password] e-posta gönderilemedi:", err));
   }
 
   // Her durumda aynı cevap (enumeration koruması).

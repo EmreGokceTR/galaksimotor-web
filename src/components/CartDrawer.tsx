@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart } from "@/stores/cart";
 import { FreeShippingBar } from "./FreeShippingBar";
@@ -11,6 +11,9 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
+const FOCUSABLE_SELECTORS =
+  'a[href], button:not([disabled]), input, textarea, select, [tabindex]:not([tabindex="-1"])';
+
 export function CartDrawer() {
   const isOpen = useCart((s) => s.isOpen);
   const close = useCart((s) => s.close);
@@ -19,6 +22,8 @@ export function CartDrawer() {
   const dec = useCart((s) => s.dec);
   const remove = useCart((s) => s.remove);
   const subtotal = useCart((s) => s.subtotal());
+
+  const panelRef = useRef<HTMLElement>(null);
 
   // ESC to close
   useEffect(() => {
@@ -38,6 +43,41 @@ export function CartDrawer() {
     };
   }, [isOpen]);
 
+  // Focus trap: move initial focus into panel; keep Tab inside dialog
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    // Move focus to the first focusable element (close button)
+    const firstFocusable = panel.querySelector<HTMLElement>(FOCUSABLE_SELECTORS);
+    firstFocusable?.focus();
+
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const els = Array.from(
+        panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
+      ).filter((el) => !el.hasAttribute("disabled"));
+      if (!els.length) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", trap);
+    return () => document.removeEventListener("keydown", trap);
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -50,12 +90,17 @@ export function CartDrawer() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             onClick={close}
+            aria-hidden="true"
             className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
           />
 
-          {/* panel */}
+          {/* panel — proper dialog role for screen readers */}
           <motion.aside
             key="panel"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-drawer-title"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -72,7 +117,7 @@ export function CartDrawer() {
                   </svg>
                 </span>
                 <div>
-                  <h2 className="text-base font-semibold text-white">Sepetim</h2>
+                  <h2 id="cart-drawer-title" className="text-base font-semibold text-white">Sepetim</h2>
                   <p className="text-xs text-white/50">
                     {items.length === 0
                       ? "Henüz ürün eklenmedi"
@@ -82,8 +127,8 @@ export function CartDrawer() {
               </div>
               <button
                 onClick={close}
-                aria-label="Kapat"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-white/30 hover:text-white"
+                aria-label="Sepeti kapat"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-white/30 hover:text-white"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                   <path d="m6 6 12 12M6 18 18 6" />
@@ -148,19 +193,19 @@ export function CartDrawer() {
                             <div className="flex items-center rounded-full border border-white/10 bg-white/5">
                               <button
                                 onClick={() => dec(it.key)}
-                                className="flex h-7 w-7 items-center justify-center text-white/70 hover:text-brand-yellow"
-                                aria-label="Azalt"
+                                className="flex h-11 w-11 items-center justify-center text-white/70 hover:text-brand-yellow"
+                                aria-label={`${it.name} adetini azalt`}
                               >
                                 −
                               </button>
-                              <span className="w-7 text-center text-xs font-medium">
+                              <span className="w-7 text-center text-xs font-medium" aria-live="polite" aria-label={`Adet: ${it.quantity}`}>
                                 {it.quantity}
                               </span>
                               <button
                                 onClick={() => inc(it.key)}
                                 disabled={it.quantity >= it.stockCap}
-                                className="flex h-7 w-7 items-center justify-center text-white/70 hover:text-brand-yellow disabled:cursor-not-allowed disabled:opacity-30"
-                                aria-label="Arttır"
+                                className="flex h-11 w-11 items-center justify-center text-white/70 hover:text-brand-yellow disabled:cursor-not-allowed disabled:opacity-30"
+                                aria-label={`${it.name} adetini artır`}
                               >
                                 +
                               </button>
@@ -173,8 +218,8 @@ export function CartDrawer() {
 
                         <button
                           onClick={() => remove(it.key)}
-                          aria-label="Kaldır"
-                          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-white/30 hover:text-rose-300"
+                          aria-label={`${it.name} ürününü sepetten kaldır`}
+                          className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full text-white/30 hover:text-rose-300"
                         >
                           <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                             <path d="m4 4 8 8M4 12 12 4" />

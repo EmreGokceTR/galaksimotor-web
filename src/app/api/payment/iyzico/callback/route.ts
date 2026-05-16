@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyPaymentCallback } from "@/app/_actions/payment";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 /**
  * Iyzico Checkout Form callback endpoint.
@@ -8,6 +9,16 @@ import { verifyPaymentCallback } from "@/app/_actions/payment";
  * PAID'e çekiyoruz; sonra başarı / hata sayfasına 303 redirect yapıyoruz.
  */
 export async function POST(req: Request) {
+  // Rate limit: prevent token-flooding abuse (20 attempts / 5 min per IP)
+  const ip = getClientIp(req.headers as unknown as Headers);
+  const rl = rateLimit(`iyzico-cb:${ip}`, { limit: 20, windowMs: 5 * 60_000 });
+  if (!rl.ok) {
+    return new Response(null, {
+      status: 429,
+      headers: { "Retry-After": String(rl.retryAfterSec) },
+    });
+  }
+
   let token = "";
   try {
     const ct = req.headers.get("content-type") ?? "";

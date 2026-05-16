@@ -12,7 +12,7 @@ export function CartButton({ className = "" }: { className?: string }) {
       type="button"
       onClick={open}
       aria-label="Sepeti aç"
-      className={`group relative flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/85 backdrop-blur-md transition hover:border-brand-yellow/60 hover:text-brand-yellow ${className}`}
+      className={`group relative flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/85 backdrop-blur-md transition hover:border-brand-yellow/60 hover:text-brand-yellow ${className}`}
     >
       <svg
         viewBox="0 0 24 24"

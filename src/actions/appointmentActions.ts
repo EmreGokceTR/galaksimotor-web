@@ -81,7 +81,7 @@ export async function createAppointment(input: Input): Promise<Result> {
   const adminEmail = process.env.ADMIN_EMAIL ?? FROM_ADDRESS;
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ??
-    "http://localhost:3000";
+    SITE.url;
 
   // Müşteriye markalı teyit
   if (customerEmail) {

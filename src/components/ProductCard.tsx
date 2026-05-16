@@ -110,7 +110,7 @@ export function ProductCard({
         {/* body */}
         <div className="flex flex-1 flex-col gap-1 p-5">
           {product.brand && (
-            <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/40">
+            <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/55">
               {product.brand}
             </span>
           )}
@@ -121,7 +121,7 @@ export function ProductCard({
 
           <div className="mt-3 flex items-end justify-between border-t border-white/5 pt-3">
             <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-white/40">
+              <span className="text-[10px] uppercase tracking-wider text-white/55">
                 Fiyat
               </span>
               <span className="text-xl font-bold text-gradient-gold">

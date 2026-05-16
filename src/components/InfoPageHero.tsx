@@ -32,7 +32,7 @@ export function InfoPageHero({ eyebrow, title, description }: Props) {
         }}
       />
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <nav className="mb-4 text-xs text-white/40">
+        <nav className="mb-4 text-xs text-white/55" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-brand-yellow">
             Anasayfa
           </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
 import { EditableWrapper } from "./EditableWrapper";
@@ -92,14 +93,13 @@ export async function Footer() {
           {/* Brand block */}
           <div>
             <div className="flex items-center gap-2.5">
-              <span className={`flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden ${
+              <span className={`relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden ${
                 logoImageUrl
                   ? "ring-1 ring-white/10 shadow-[0_0_18px_-2px_rgba(255,215,0,0.3)]"
                   : "bg-brand-yellow text-brand-black shadow-[0_0_18px_-2px_rgba(255,215,0,0.5)]"
               }`}>
                 {logoImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={logoImageUrl} alt="Galaksi Motor logo" className="h-full w-full object-cover" />
+                  <Image src={logoImageUrl} alt="Galaksi Motor logo" fill className="object-cover" sizes="36px" />
                 ) : (
                   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                     <path
@@ -190,7 +190,7 @@ export async function Footer() {
 
         {/* Güvenli ödeme logoları */}
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-white/40">Güvenli Ödeme:</span>
+          <span className="text-xs text-white/55">Güvenli Ödeme:</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logos/iyzico-logo-band.svg"
@@ -199,7 +199,7 @@ export async function Footer() {
           />
         </div>
 
-        <div className="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-white/40 sm:flex-row">
+        <div className="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-white/55 sm:flex-row">
           <EditableWrapper table="siteSetting" id="footer_copyright" field="value" value={copyright} label="Footer Telif Hakkı" revalidatePaths={R} as="span">
             {copyright}
           </EditableWrapper>

@@ -182,7 +182,7 @@ export function ReviewSection({ productId }: { productId: string }) {
 
       {/* List */}
       {loading ? (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-6 text-sm text-white/40 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-6 text-sm text-white/55 backdrop-blur-md">
           Yükleniyor...
         </div>
       ) : reviews.length === 0 ? (
@@ -210,7 +210,7 @@ export function ReviewSection({ productId }: { productId: string }) {
                       <div className="text-sm font-medium text-white">
                         {r.author}
                       </div>
-                      <div className="text-[11px] text-white/40">
+                      <div className="text-[11px] text-white/55">
                         {new Date(r.createdAt).toLocaleDateString("tr-TR")}
                       </div>
                     </div>

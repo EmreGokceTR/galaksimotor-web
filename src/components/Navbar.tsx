@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -10,7 +12,9 @@ import { CartDrawer } from "./CartDrawer";
 import { CartHydration } from "./CartHydration";
 import { GarageSelector } from "./GarageSelector";
 import { EditableWrapper } from "./EditableWrapper";
-import { PageMetaEditor } from "./PageMetaEditor";
+
+// Admin-only — dynamically imported to exclude from non-admin bundles
+const PageMetaEditor = dynamic(() => import("./PageMetaEditor").then((m) => m.PageMetaEditor), { ssr: false });
 
 export type NavSettings = {
   logoPart1: string;
@@ -83,8 +87,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
                 : "bg-brand-yellow text-brand-black shadow-[0_0_18px_-2px_rgba(255,215,0,0.5)]"
             }`}>
               {settings.logoImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={settings.logoImageUrl} alt="Galaksi Motor logo" className="h-full w-full object-cover" />
+                <Image src={settings.logoImageUrl} alt="Galaksi Motor logo" fill className="object-cover" sizes="36px" />
               ) : (
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                   <path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-7-3 4-7h-3l-1 2H7l5 5Z" fill="currentColor" />
@@ -256,7 +259,9 @@ export function Navbar({ settings }: { settings: NavSettings }) {
         <div className="flex items-center gap-2 md:hidden">
           <CartButton />
           <button
-            aria-label="Menü"
+            aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
             className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/5"
           >
@@ -271,6 +276,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
       <AnimatePresence>
         {open && (
           <motion.div
+            id="mobile-menu"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

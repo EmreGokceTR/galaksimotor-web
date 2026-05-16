@@ -132,11 +132,15 @@ export async function generateMetadata(): Promise<Metadata> {
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": "MotorcycleRepair",
+  "@id": SITE.url,
   name: SITE.name,
   description: SITE.description,
   url: SITE.url,
   telephone: SITE.phone,
   email: SITE.email,
+  priceRange: "₺₺",
+  currenciesAccepted: "TRY",
+  paymentAccepted: "Nakit, Kredi Kartı, Banka Transferi",
   address: {
     "@type": "PostalAddress",
     streetAddress: SITE.address.line,
