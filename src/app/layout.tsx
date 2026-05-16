@@ -9,6 +9,8 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { EditModeToggle } from "@/components/EditModeToggle";
 import { CookieConsent } from "@/components/CookieConsent";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
 
@@ -244,6 +246,8 @@ export default async function RootLayout({
           <EditModeToggle />
           <CookieConsent />
           <GoogleAnalytics />
+          <Analytics />
+          <SpeedInsights />
         </Providers>
       </body>
     </html>
