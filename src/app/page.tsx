@@ -231,7 +231,7 @@ export default async function HomePage() {
       <AnimatedSection as="section" className="mx-auto max-w-7xl px-6 py-12">
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.025]">
           {/* Fotoğraf */}
-          <div className="relative aspect-[21/9] w-full overflow-hidden">
+          <div className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[16/9] md:aspect-[21/9]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={st(bag, "workshop_photo_url", "/images/workshop.jpg")}

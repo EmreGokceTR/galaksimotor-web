@@ -260,7 +260,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
           <button
             aria-label="Menü"
             onClick={() => setOpen((v) => !v)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5"
+            className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/5"
           >
             <span className={`absolute h-[2px] w-5 bg-white transition-transform ${open ? "translate-y-0 rotate-45" : "-translate-y-1.5"}`} />
             <span className={`absolute h-[2px] w-5 bg-white transition-opacity ${open ? "opacity-0" : ""}`} />

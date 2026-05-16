@@ -171,7 +171,7 @@ export async function Footer() {
         {/* Yasal linkler — KVKK, mesafeli satış, gizlilik, iptal/iade */}
         <nav
           aria-label="Yasal Bilgiler"
-          className="mt-12 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-white/10 pt-6 text-[11px] text-white/55 sm:justify-start"
+          className="mt-12 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-white/10 pt-6 text-xs text-white/55 sm:justify-start"
         >
           {legalLinks.map((l, i) => (
             <span key={l.href} className="flex items-center gap-x-5">
@@ -190,7 +190,7 @@ export async function Footer() {
 
         {/* Güvenli ödeme logoları */}
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <span className="text-[11px] text-white/40">Güvenli Ödeme:</span>
+          <span className="text-xs text-white/40">Güvenli Ödeme:</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logos/iyzico-logo-band.svg"

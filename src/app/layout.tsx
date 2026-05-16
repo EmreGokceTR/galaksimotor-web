@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cache } from "react";
 import { Inter, Poppins, Roboto } from "next/font/google";
 import "./globals.css";
@@ -59,6 +59,13 @@ const fetchSettings = cache(() =>
     "wa_tooltip_sub",
   ])
 );
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0A0A0B",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const bag = await fetchSettings();

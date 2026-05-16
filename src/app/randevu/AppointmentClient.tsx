@@ -248,7 +248,7 @@ export function AppointmentClient({
                       type="button"
                       disabled={disabled}
                       onClick={() => setTime(slot)}
-                      className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                      className={`min-h-[44px] rounded-lg border px-3 py-2.5 text-sm font-medium transition ${
                         active
                           ? "border-brand-yellow bg-brand-yellow text-brand-black shadow-[0_0_18px_-4px_rgba(255,215,0,0.7)]"
                           : disabled
