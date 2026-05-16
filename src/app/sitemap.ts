@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SITE } from "@/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, categories, blog, motorcycles] = await Promise.all([
+  const [products, categories, blog] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true },
       select: { slug: true, updatedAt: true },
@@ -15,16 +15,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { isPublished: true },
       select: { slug: true, updatedAt: true },
     }),
-    prisma.motorcycleListing.findMany({
-      where: { isActive: true },
-      select: { id: true, updatedAt: true },
-    }),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
     { path: "", priority: 1.0, freq: "daily" as const },
     { path: "/urunler", priority: 0.9, freq: "daily" as const },
-    { path: "/motosikletler", priority: 0.9, freq: "daily" as const },
     { path: "/randevu", priority: 0.8, freq: "weekly" as const },
     { path: "/blog", priority: 0.8, freq: "weekly" as const },
     { path: "/hakkimizda", priority: 0.6, freq: "monthly" as const },
@@ -63,12 +58,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: b.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.5,
-    })),
-    ...motorcycles.map((m) => ({
-      url: `${SITE.url}/motosikletler/${m.id}`,
-      lastModified: m.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
     })),
   ];
 }
