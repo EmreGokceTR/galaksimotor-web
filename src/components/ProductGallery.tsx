@@ -13,7 +13,7 @@ export function ProductGallery({ images }: Props) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] text-white/40 backdrop-blur-md">
+      <div className="flex aspect-square w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.025] text-white/40 backdrop-blur-md">
         <div className="flex flex-col items-center gap-2 text-sm">
           <svg
             viewBox="0 0 64 64"
@@ -34,17 +34,17 @@ export function ProductGallery({ images }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-black/40 backdrop-blur-md">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md">
         <AnimatePresence mode="wait">
           <motion.img
             key={active}
             src={images[active].url}
             alt={images[active].alt}
-            initial={{ opacity: 0, scale: 1.04 }}
+            initial={{ opacity: 0, scale: 1.03 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain p-4"
           />
         </AnimatePresence>
 
@@ -77,7 +77,7 @@ export function ProductGallery({ images }: Props) {
                 alt={img.alt}
                 fill
                 sizes="64px"
-                className="object-cover"
+                className="object-contain p-1"
               />
             </button>
           ))}
