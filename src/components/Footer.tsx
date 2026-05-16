@@ -68,6 +68,7 @@ export async function Footer() {
   ];
 
   const legalLinks = [
+    { label: "Hakkımızda", href: "/hakkimizda" },
     { label: "KVKK", href: "/kvkk" },
     { label: "Gizlilik Politikası", href: "/gizlilik-politikasi" },
     { label: "Mesafeli Satış Sözleşmesi", href: "/mesafeli-satis-sozlesmesi" },
