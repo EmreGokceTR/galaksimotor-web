@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Sepetim - Galaksi Motor",
+  robots: { index: false, follow: false },
+};
 import { getShippingConfig } from "@/lib/shipping";
 import { EditableWrapper } from "@/components/EditableWrapper";
 import {

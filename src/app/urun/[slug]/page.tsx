@@ -64,8 +64,36 @@ export default async function ProductPage({ params }: Props) {
     {}
   );
 
+  // JSON-LD: Product yapılandırılmış verisi (Google rich result için)
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description ?? undefined,
+    sku: product.sku,
+    brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
+    image: product.images.map((img) => img.url),
+    url: `${SITE.url}/urun/${product.slug}`,
+    offers: {
+      "@type": "Offer",
+      url: `${SITE.url}/urun/${product.slug}`,
+      priceCurrency: "TRY",
+      price: Number(product.price).toFixed(2),
+      availability:
+        product.stock > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: SITE.name },
+    },
+  };
+
   return (
-    <div className="mx-auto max-w-7xl px-6 py-10">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <div className="mx-auto max-w-7xl px-6 py-10">
       <nav className="mb-4 text-sm text-white/50">
         <Link href="/" className="hover:text-brand-yellow">
           Anasayfa
@@ -164,5 +192,6 @@ export default async function ProductPage({ params }: Props) {
 
       <ReviewSection productId={product.id} />
     </div>
+    </>
   );
 }

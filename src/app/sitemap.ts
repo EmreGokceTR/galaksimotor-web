@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/sss", priority: 0.6, freq: "monthly" as const },
     { path: "/kargo", priority: 0.4, freq: "monthly" as const },
     { path: "/iade", priority: 0.4, freq: "monthly" as const },
-    { path: "/gizlilik", priority: 0.3, freq: "yearly" as const },
+    // Not: /gizlilik buradan kaldırıldı — 308 redirect, canonical /gizlilik-politikasi'dir
     { path: "/gizlilik-politikasi", priority: 0.3, freq: "yearly" as const },
     { path: "/kvkk", priority: 0.3, freq: "yearly" as const },
     { path: "/mesafeli-satis-sozlesmesi", priority: 0.3, freq: "yearly" as const },

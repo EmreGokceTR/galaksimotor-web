@@ -7,7 +7,25 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/admin/", "/api/", "/hesabim", "/odeme"],
+        disallow: [
+          // Yönetim paneli
+          "/admin",
+          "/admin/",
+          // API routes
+          "/api/",
+          // Kullanıcıya özel sayfalar
+          "/hesabim",
+          "/hesabim/",
+          // Ödeme akışı (hassas)
+          "/odeme",
+          "/odeme/",
+          // Sepet (oturum verisi içerir, ince içerik)
+          "/sepet",
+          // Kimlik doğrulama sayfaları (giriş/kayıt/şifre)
+          "/giris",
+          "/kayit",
+          "/auth/",
+        ],
       },
     ],
     sitemap: `${SITE.url}/sitemap.xml`,

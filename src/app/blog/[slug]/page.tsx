@@ -117,8 +117,32 @@ export default async function BlogPostPage({ params }: Props) {
 
   const R = ["/blog", `/blog/${post.slug}`];
 
+  // JSON-LD: Article yapılandırılmış verisi
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt ?? undefined,
+    image: post.coverUrl ?? undefined,
+    datePublished: post.publishedAt?.toISOString(),
+    dateModified: post.updatedAt?.toISOString() ?? post.publishedAt?.toISOString(),
+    author: { "@type": "Organization", name: SITE.name, url: SITE.url },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      url: SITE.url,
+      logo: { "@type": "ImageObject", url: `${SITE.url}/logos/galaksi-motor-logo.jpg` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE.url}/blog/${params.slug}` },
+  };
+
   return (
-    <article className="mx-auto max-w-3xl px-6 py-14">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <article className="mx-auto max-w-3xl px-6 py-14">
       <Link
         href="/blog"
         className="text-xs text-white/45 hover:text-brand-yellow"
@@ -211,6 +235,7 @@ export default async function BlogPostPage({ params }: Props) {
           ← Tüm yazılar
         </Link>
       </footer>
-    </article>
+      </article>
+    </>
   );
 }

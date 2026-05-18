@@ -1,7 +1,10 @@
 import { Suspense } from "react";
 import { ForgotPasswordClient } from "./ForgotPasswordClient";
 
-export const metadata = { title: "Şifremi Unuttum - Galaksi Motor" };
+export const metadata = {
+  title: "Şifremi Unuttum - Galaksi Motor",
+  robots: { index: false, follow: false },
+};
 
 export default function ForgotPasswordPage() {
   return (
