@@ -229,7 +229,7 @@ export default async function RootLayout({
   `;
 
   return (
-    <html lang="tr" className={`dark ${inter.variable} ${poppins.variable} ${roboto.variable}`}>
+    <html lang="tr" suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${roboto.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript }} />
         <style dangerouslySetInnerHTML={{ __html: themeStyle }} />

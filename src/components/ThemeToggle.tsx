@@ -26,7 +26,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       } ${className}`}
     >
       <span
-        className={`absolute top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-md transition-transform ${
+        style={{ backgroundColor: "#ffffff" }}
+        className={`absolute top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full shadow-md transition-transform ${
           isDark ? "translate-x-1" : "translate-x-6"
         }`}
       >

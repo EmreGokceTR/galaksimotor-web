@@ -10,11 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Tema bağlı tokenlar — globals.css'teki :root.dark / :root.light değişkenlerine bağlı.
-        // Mevcut yaygın sınıflar (text-white, bg-white/X, bg-black/X, bg-brand-black, border-white/X)
-        // otomatik olarak iki temada doğru renkleri verir.
-        white: "rgb(var(--c-fg) / <alpha-value>)",
-        black: "rgb(var(--c-fg-invert) / <alpha-value>)",
+        // brand-yellow her iki temada da aynı altın sarı
+        // brand-black tema değişkenine bağlı: dark=#0A0A0B, light=#F4F4F5
         brand: {
           yellow: "#FFD700",
           black: "rgb(var(--c-bg) / <alpha-value>)",

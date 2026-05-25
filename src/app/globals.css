@@ -4,28 +4,28 @@
 
 /* ============================================
    TEMA DEĞİŞKENLERİ
-   --c-bg          : Sayfa zemini  (brand-black, body bg)
-   --c-fg          : Birincil metin (tailwind: text-white)
-   --c-fg-invert   : Ters metin/zemin (tailwind: text-black)
-   --c-surface     : Kart/yüzey zemini
-   RGB triple olarak tanımlı — tailwind opacity (white/10 vb.) ile uyumlu.
+   --c-bg       : Sayfa zemini (brand-black token'ı buna bağlı)
+   --c-fg       : Birincil metin rengi (text-white opacity'leri ile uyumlu RGB triple)
+   --c-surface  : Kart/yüzey zemini
+   --c-inv      : Ters metin/overlay (bg-black opacity'leri ile uyumlu RGB triple)
+   Sarı (#FFD700) her iki temada da SABİT — değişmez.
    ============================================ */
 
-/* Varsayılan = Koyu tema */
+/* ===== KARANLIK TEMA (varsayılan) ===== */
 :root,
 :root.dark {
   --c-bg: 10 10 11;          /* #0A0A0B */
-  --c-fg: 245 245 245;       /* yumuşak beyaz */
-  --c-fg-invert: 17 17 17;   /* koyu */
-  --c-surface: 17 17 20;     /* #111114 */
+  --c-fg: 245 245 245;
+  --c-fg-soft: 245 245 245;  /* opacity için RGB triple */
+  --c-inv: 0 0 0;            /* bg-black overlay'ler için: siyah */
+  --c-surface: 17 17 20;
 
-  --brand-yellow: #FFD700;
-  --brand-yellow-soft: #FFE45C;
+  --bg-grad: linear-gradient(180deg, #0A0A0B 0%, #0A0A0B 100%);
 
   --glass-bg: rgba(255, 255, 255, 0.035);
   --glass-bg-strong: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-strong: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.10);
   --glass-inner: rgba(255, 255, 255, 0.04);
   --glass-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.5);
   --glass-shadow-strong: 0 18px 60px -12px rgba(0, 0, 0, 0.6);
@@ -37,30 +37,40 @@
   --ambient-1: rgba(255, 215, 0, 0.08);
   --ambient-2: rgba(255, 215, 0, 0.05);
   --ambient-3: rgba(255, 215, 0, 0.06);
+
+  --select-bg: rgba(255, 215, 0, 0.35);
+  --select-fg: #ffffff;
 }
 
-/* Aydınlık tema */
+/* ===== AYDINLIK TEMA — METALİK BEYAZ ===== */
 :root.light {
-  --c-bg: 250 250 250;       /* #FAFAFA */
-  --c-fg: 24 24 27;          /* #18181B koyu */
-  --c-fg-invert: 255 255 255;
-  --c-surface: 255 255 255;  /* beyaz kart */
+  --c-bg: 244 244 245;       /* zinc-100, metalik beyaz hissi */
+  --c-fg: 24 24 27;          /* zinc-900 */
+  --c-fg-soft: 24 24 27;
+  --c-inv: 255 255 255;      /* light'ta bg-black overlay'leri beyaz olur */
+  --c-surface: 255 255 255;
 
-  --glass-bg: rgba(0, 0, 0, 0.03);
-  --glass-bg-strong: rgba(0, 0, 0, 0.05);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-border-strong: rgba(0, 0, 0, 0.12);
-  --glass-inner: rgba(0, 0, 0, 0.04);
-  --glass-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.12);
-  --glass-shadow-strong: 0 18px 60px -12px rgba(0, 0, 0, 0.18);
+  --bg-grad: linear-gradient(180deg, #f7f7f8 0%, #ececee 100%);
 
-  --scrollbar-track: #ececec;
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(24, 24, 27, 0.08);
+  --glass-border-strong: rgba(24, 24, 27, 0.12);
+  --glass-inner: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 12px 40px -12px rgba(15, 15, 20, 0.12);
+  --glass-shadow-strong: 0 18px 50px -14px rgba(15, 15, 20, 0.16);
+
+  --scrollbar-track: #e4e4e7;
   --noise-opacity: 0;
   --noise-blend: normal;
 
-  --ambient-1: rgba(255, 215, 0, 0.14);
-  --ambient-2: rgba(255, 215, 0, 0.08);
-  --ambient-3: rgba(255, 215, 0, 0.10);
+  /* Sarı ambient — beyaz üstünde hafif altın ışıma */
+  --ambient-1: rgba(255, 215, 0, 0.10);
+  --ambient-2: rgba(255, 215, 0, 0.06);
+  --ambient-3: rgba(255, 215, 0, 0.08);
+
+  --select-bg: rgba(255, 215, 0, 0.40);
+  --select-fg: #1a1a1a;
 }
 
 * {
@@ -73,13 +83,14 @@ html {
 }
 
 html, body {
-  background-color: rgb(var(--c-bg));
+  background: var(--bg-grad);
+  background-attachment: fixed;
   color: rgb(var(--c-fg));
   overflow-x: hidden;
   transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Decorative ambient mesh gradient — fixed, behind everything */
+/* Ambient mesh gradient */
 body::before {
   content: "";
   position: fixed;
@@ -93,7 +104,7 @@ body::before {
   filter: blur(40px);
 }
 
-/* Subtle film grain noise */
+/* Film grain (sadece dark) */
 body::after {
   content: "";
   position: fixed;
@@ -105,25 +116,16 @@ body::after {
   mix-blend-mode: var(--noise-blend);
 }
 
-a {
-  color: inherit;
-}
+a { color: inherit; }
 
-/* Keyboard :focus-visible ring */
 :focus-visible {
   outline: 2px solid rgba(255, 215, 0, 0.75);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, rgba(255, 215, 0, 0.4), rgba(255, 215, 0, 0.15));
   border-radius: 10px;
@@ -133,10 +135,9 @@ a {
   background: linear-gradient(180deg, rgba(255, 215, 0, 0.7), rgba(255, 215, 0, 0.3));
 }
 
-/* Selection */
 ::selection {
-  background: rgba(255, 215, 0, 0.35);
-  color: rgb(var(--c-fg));
+  background: var(--select-bg);
+  color: var(--select-fg);
 }
 
 @layer components {
@@ -145,9 +146,7 @@ a {
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     border: 1px solid var(--glass-border);
-    box-shadow:
-      inset 0 1px 0 var(--glass-inner),
-      var(--glass-shadow);
+    box-shadow: inset 0 1px 0 var(--glass-inner), var(--glass-shadow);
   }
 
   .glass-strong {
@@ -155,9 +154,7 @@ a {
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
     border: 1px solid var(--glass-border-strong);
-    box-shadow:
-      inset 0 1px 0 var(--glass-inner),
-      var(--glass-shadow-strong);
+    box-shadow: inset 0 1px 0 var(--glass-inner), var(--glass-shadow-strong);
   }
 
   .glow-yellow {
@@ -178,9 +175,10 @@ a {
     box-shadow:
       0 0 0 1px rgba(255, 215, 0, 0.25),
       0 30px 60px -20px rgba(255, 215, 0, 0.2),
-      0 18px 40px -15px rgba(0, 0, 0, 0.35);
+      0 18px 40px -15px rgba(0, 0, 0, 0.25);
   }
 
+  /* Aynı altın gradient — her iki temada tutarlı */
   .text-gradient-gold {
     background: linear-gradient(135deg, #FFE45C 0%, #FFD700 45%, #C99A00 100%);
     -webkit-background-clip: text;
@@ -202,189 +200,148 @@ a {
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    scrollbar-width: none;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
 }
 
-@keyframes spin-slow {
-  to { transform: rotate(360deg); }
-}
-.animate-spin-slow {
-  animation: spin-slow 24s linear infinite;
-}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin-slow 24s linear infinite; }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--glass-bg) 0%,
-    var(--glass-bg-strong) 50%,
-    var(--glass-bg) 100%
-  );
+  background: linear-gradient(90deg, var(--glass-bg) 0%, var(--glass-bg-strong) 50%, var(--glass-bg) 100%);
   background-size: 200% 100%;
   animation: shimmer 2s linear infinite;
 }
 
-/* ============================================
-   AYDINLIK TEMA İNCE AYARLARI
-   - Sarı vurguları daha koyu amber'a çevir (okunabilirlik)
-   - Sarı tabanlı opacity'li yüzeyleri amber'a map'le
-   - Sarı gradient metni koyu altın gradient'e çevir
-   - Sarı dış gölgeleri yumuşat (beyaz üstünde flu kalmasınlar)
-   - White-ring kayar kayar yerleri daha koyu yap
-   ============================================ */
-:root.light {
-  --accent: 180 83 9; /* amber-700 #B45309 */
-}
-
-/* Sarı yazı → koyu amber */
-:root.light .text-brand-yellow { color: #b45309 !important; }
-
-/* Solid sarı buton: aynı kalsın ama içindeki yazı koyu kalmalı (brand-black artık zemin var. = beyaz olur).
-   bg-brand-yellow tek başına Tailwind hex (#FFD700) — bu sınıfı kullanan yerlerin
-   text-brand-black'i light'ta ters çevirip beyaz oluyor, içerik okunmaz. Bunu düzeltelim:
-   bg-brand-yellow + text-brand-black eşleşmesinde text'i sabit koyu yap. */
-:root.light .bg-brand-yellow.text-brand-black,
-:root.light [class*="bg-brand-yellow"] .text-brand-black,
-:root.light .text-brand-black {
-  color: #111 !important;
-}
-
-/* "Anasayfa" altındaki sarı çizgi vb. solid sarı yüzeyler: daha doygun amber */
-:root.light .bg-brand-yellow { background-color: #f59e0b !important; }
-
-/* Sarı opacity yüzey/border'lar — beyaz üstünde amber tonu */
-:root.light .bg-brand-yellow\/5  { background-color: rgba(245, 158, 11, 0.08) !important; }
-:root.light .bg-brand-yellow\/8  { background-color: rgba(245, 158, 11, 0.10) !important; }
-:root.light .bg-brand-yellow\/10 { background-color: rgba(245, 158, 11, 0.14) !important; }
-:root.light .bg-brand-yellow\/15 { background-color: rgba(245, 158, 11, 0.18) !important; }
-:root.light .bg-brand-yellow\/20 { background-color: rgba(245, 158, 11, 0.22) !important; }
-:root.light .bg-brand-yellow\/30 { background-color: rgba(245, 158, 11, 0.32) !important; }
-
-:root.light .border-brand-yellow\/20 { border-color: rgba(180, 83, 9, 0.28) !important; }
-:root.light .border-brand-yellow\/30 { border-color: rgba(180, 83, 9, 0.38) !important; }
-:root.light .border-brand-yellow\/40 { border-color: rgba(180, 83, 9, 0.5) !important; }
-:root.light .border-brand-yellow\/50 { border-color: rgba(180, 83, 9, 0.6) !important; }
-:root.light .border-brand-yellow\/60 { border-color: rgba(180, 83, 9, 0.7) !important; }
-
-/* Gradient sarı metin → derin altın */
-:root.light .text-gradient-gold {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 45%, #78350f 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Sarı dış ışıma → light'ta yumuşak amber halo */
-:root.light .glow-yellow {
-  box-shadow:
-    0 0 0 1px rgba(180, 83, 9, 0.35),
-    0 0 24px -4px rgba(245, 158, 11, 0.35),
-    0 0 60px -16px rgba(245, 158, 11, 0.25);
-}
-
-/* lift-card hover'da sarı outline'ı amber yap */
-:root.light .lift-card:hover {
-  border-color: rgba(180, 83, 9, 0.45);
-  box-shadow:
-    0 0 0 1px rgba(180, 83, 9, 0.22),
-    0 30px 60px -20px rgba(245, 158, 11, 0.22),
-    0 18px 40px -15px rgba(0, 0, 0, 0.12);
-}
-
-/* Pulse-glow CTA — light'ta sarı halo */
-:root.light .animate-pulse-glow {
-  animation-name: pulse-glow-light;
-}
-@keyframes pulse-glow-light {
-  0%, 100% {
-    box-shadow:
-      0 0 0 0 rgba(245, 158, 11, 0.55),
-      0 0 30px -4px rgba(245, 158, 11, 0.45);
-  }
-  50% {
-    box-shadow:
-      0 0 0 8px rgba(245, 158, 11, 0),
-      0 0 40px -2px rgba(245, 158, 11, 0.6);
-  }
-}
-
-/* input focus halo light */
-:root.light .input-glass:focus {
-  border-color: rgba(180, 83, 9, 0.55);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
-}
-
-/* Selection */
-:root.light ::selection {
-  background: rgba(245, 158, 11, 0.30);
-  color: #1a1a1a;
-}
-
-/* Body koyu siyah arkaplan inline'ları için (scrolled navbar bg-black/60 vb.) */
-:root.light .from-black\/0  { --tw-gradient-from: rgba(255,255,255,0) !important; }
-:root.light .via-black\/20  { --tw-gradient-via: rgba(0,0,0,0.06) !important; }
-:root.light .from-black\/70 { --tw-gradient-from: rgba(255,255,255,0.85) !important; }
-:root.light .from-black\/80 { --tw-gradient-from: rgba(255,255,255,0.92) !important; }
-
-/* Navbar scrolled background — light'ta beyaz cam */
-:root.light header.sticky { color-scheme: light; }
-
-/* ============================================
-   Renkli butonlar üstünde "text-white" sabit beyaz kalmalı.
-   Tailwind config'te white token'ını fg değişkenine bağladığımız için
-   light'ta text-white koyu olur — bu colored bg + white text butonlarında
-   okunmaz hale gelir. Aşağıdaki override'lar onları gerçek beyaza döndürür.
-   ============================================ */
-:root.light .bg-\[\#25D366\],
-:root.light .bg-amber-500,
-:root.light .bg-amber-600,
-:root.light .bg-blue-500,
-:root.light .bg-blue-600,
-:root.light .bg-emerald-400,
-:root.light .bg-emerald-500,
-:root.light .bg-emerald-600,
-:root.light .bg-green-500,
-:root.light .bg-green-600,
-:root.light .bg-red-500,
-:root.light .bg-red-600,
-:root.light .bg-rose-400,
-:root.light .bg-rose-500,
-:root.light .bg-rose-600 {
-  color: #ffffff !important;
-}
-/* Bu butonların doğrudan altındaki text-white opacity'li sınıfları da geri çevir */
-:root.light .bg-\[\#25D366\] .text-white,
-:root.light .bg-amber-500 .text-white,
-:root.light .bg-blue-500 .text-white,
-:root.light .bg-emerald-500 .text-white,
-:root.light .bg-green-500 .text-white,
-:root.light .bg-red-500 .text-white,
-:root.light .bg-rose-500 .text-white {
-  color: #ffffff !important;
-}
-
-/* Mobil hamburger çubukları text invert üzerinden çalışıyor → light'ta otomatik koyu */
-
 @keyframes pulse-glow {
-  0%, 100% {
-    box-shadow:
-      0 0 0 0 rgba(255, 215, 0, 0.5),
-      0 0 30px -4px rgba(255, 215, 0, 0.4);
-  }
-  50% {
-    box-shadow:
-      0 0 0 8px rgba(255, 215, 0, 0),
-      0 0 40px -2px rgba(255, 215, 0, 0.55);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5), 0 0 30px -4px rgba(255, 215, 0, 0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(255, 215, 0, 0), 0 0 40px -2px rgba(255, 215, 0, 0.55); }
 }
-.animate-pulse-glow {
-  animation: pulse-glow 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.animate-pulse-glow { animation: pulse-glow 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+/* ============================================
+   AYDINLIK TEMA — HASSAS OVERRIDE'LAR
+   text-white, bg-white/X, border-white/X, bg-black/X — bunlar koyu temaya
+   göre yazılmış. Light'ta hepsi otomatik ters çevriliyor. Sarı (#FFD700)
+   her yerde aynı kalıyor.
+   ============================================ */
+
+/* === text-white ve opacity varyasyonları === */
+:root.light .text-white       { color: rgb(24 24 27); }
+:root.light .text-white\/90   { color: rgba(24, 24, 27, 0.90); }
+:root.light .text-white\/85   { color: rgba(24, 24, 27, 0.85); }
+:root.light .text-white\/80   { color: rgba(24, 24, 27, 0.78); }
+:root.light .text-white\/75   { color: rgba(24, 24, 27, 0.75); }
+:root.light .text-white\/70   { color: rgba(24, 24, 27, 0.72); }
+:root.light .text-white\/65   { color: rgba(24, 24, 27, 0.68); }
+:root.light .text-white\/60   { color: rgba(24, 24, 27, 0.65); }
+:root.light .text-white\/55   { color: rgba(24, 24, 27, 0.60); }
+:root.light .text-white\/50   { color: rgba(24, 24, 27, 0.55); }
+:root.light .text-white\/45   { color: rgba(24, 24, 27, 0.50); }
+:root.light .text-white\/40   { color: rgba(24, 24, 27, 0.45); }
+:root.light .text-white\/35   { color: rgba(24, 24, 27, 0.42); }
+:root.light .text-white\/30   { color: rgba(24, 24, 27, 0.38); }
+:root.light .text-white\/28   { color: rgba(24, 24, 27, 0.34); }
+:root.light .text-white\/25   { color: rgba(24, 24, 27, 0.32); }
+:root.light .text-white\/20   { color: rgba(24, 24, 27, 0.28); }
+:root.light .text-white\/15   { color: rgba(24, 24, 27, 0.22); }
+:root.light .text-white\/5    { color: rgba(24, 24, 27, 0.12); }
+
+/* === bg-white/X — beyaz üstünde siyah yüzey === */
+:root.light .bg-white\/5      { background-color: rgba(24, 24, 27, 0.045); }
+:root.light .bg-white\/10     { background-color: rgba(24, 24, 27, 0.07); }
+:root.light .bg-white\/15     { background-color: rgba(24, 24, 27, 0.10); }
+:root.light .bg-white\/20     { background-color: rgba(24, 24, 27, 0.14); }
+:root.light .bg-white\/40     { background-color: rgba(24, 24, 27, 0.28); }
+
+/* === border-white/X === */
+:root.light .border-white\/5  { border-color: rgba(24, 24, 27, 0.06); }
+:root.light .border-white\/10 { border-color: rgba(24, 24, 27, 0.10); }
+:root.light .border-white\/15 { border-color: rgba(24, 24, 27, 0.14); }
+:root.light .border-white\/20 { border-color: rgba(24, 24, 27, 0.18); }
+:root.light .border-white\/25 { border-color: rgba(24, 24, 27, 0.22); }
+:root.light .border-white\/30 { border-color: rgba(24, 24, 27, 0.26); }
+
+/* === bg-black/X — koyu overlay'ler light'ta yumuşak beyaz overlay olur === */
+:root.light .bg-black\/10     { background-color: rgba(244, 244, 245, 0.40); }
+:root.light .bg-black\/20     { background-color: rgba(244, 244, 245, 0.55); }
+:root.light .bg-black\/30     { background-color: rgba(244, 244, 245, 0.65); }
+:root.light .bg-black\/40     { background-color: rgba(244, 244, 245, 0.75); }
+:root.light .bg-black\/50     { background-color: rgba(255, 255, 255, 0.65); }
+:root.light .bg-black\/60     { background-color: rgba(255, 255, 255, 0.80); }
+:root.light .bg-black\/65     { background-color: rgba(255, 255, 255, 0.85); }
+:root.light .bg-black\/70     { background-color: rgba(255, 255, 255, 0.88); }
+:root.light .bg-black\/75     { background-color: rgba(255, 255, 255, 0.90); }
+:root.light .bg-black\/80     { background-color: rgba(255, 255, 255, 0.92); }
+:root.light .bg-black\/85     { background-color: rgba(255, 255, 255, 0.94); }
+
+/* Gradient stops (Navbar scrolled gradient, hero overlays vb.) */
+:root.light .from-black\/30  { --tw-gradient-from: rgba(255,255,255,0.4) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(255,255,255,0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+:root.light .from-black\/70  { --tw-gradient-from: rgba(255,255,255,0.85) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(255,255,255,0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+:root.light .to-black\/30    { --tw-gradient-to: rgba(244,244,245,0.6) !important; }
+:root.light .via-black\/20   { --tw-gradient-via: rgba(0,0,0,0.05) !important; }
+
+/* Çok koyu solid bg-zinc-900 (admin select option) light'ta beyaz */
+:root.light .bg-zinc-900     { background-color: #ffffff !important; color: #18181b !important; }
+
+/* === bg-brand-black + text-brand-black çift kullanımı === */
+/* bg-brand-yellow text-brand-black butonlar: sarı zemin üstünde KOYU yazı (her temada) */
+:root.light .text-brand-black { color: #111 !important; }
+
+/* Mobile hamburger çubukları (Navbar.tsx: span'lere bg-white verilmiş) */
+:root.light .bg-white         { background-color: #18181b !important; }
+
+/* Logo arkası ring-white/10 — light'ta görünür kalsın */
+:root.light .ring-white\/10   { --tw-ring-color: rgba(24,24,27,0.10) !important; }
+
+/* Footer alt çizgi border-t border-white/10 → zaten yukarıda override edildi */
+
+/* Sarı yazıların light üzerinde okunabilirliği için iç gölge */
+:root.light .text-brand-yellow {
+  text-shadow: 0 0 1px rgba(120, 90, 0, 0.45);
 }
+:root.light .text-gradient-gold {
+  filter: drop-shadow(0 1px 0 rgba(80, 60, 0, 0.18));
+}
+
+/* Navbar scrolled durumunda shadow düzelt (light) */
+:root.light .shadow-\[0_8px_30px_rgba\(0\,0\,0\,0\.4\)\] {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Renkli butonlardaki "text-white" ve "bg-white" iconlar SABİT beyaz kalsın */
+:root.light .bg-\[\#25D366\] .text-white,
+:root.light .bg-\[\#25D366\] svg,
+:root.light .bg-emerald-400 .text-white,
+:root.light .bg-emerald-500 .text-white,
+:root.light .bg-emerald-600 .text-white,
+:root.light .bg-green-500 .text-white,
+:root.light .bg-green-600 .text-white,
+:root.light .bg-red-500 .text-white,
+:root.light .bg-red-600 .text-white,
+:root.light .bg-rose-400 .text-white,
+:root.light .bg-rose-500 .text-white,
+:root.light .bg-rose-600 .text-white,
+:root.light .bg-amber-500 .text-white,
+:root.light .bg-amber-600 .text-white,
+:root.light .bg-blue-500 .text-white,
+:root.light .bg-blue-600 .text-white {
+  color: #ffffff !important;
+}
+/* Renkli butonların kendi text rengi (genellikle text-white sınıfı olmadan) */
+:root.light .bg-\[\#25D366\],
+:root.light .bg-emerald-500,
+:root.light .bg-green-500,
+:root.light .bg-red-500,
+:root.light .bg-rose-500,
+:root.light .bg-blue-500 {
+  color: #ffffff;
+}
+
+/* Color-scheme — native kontroller (scrollbar, form input) için */
+:root.light { color-scheme: light; }
+:root.dark  { color-scheme: dark; }
