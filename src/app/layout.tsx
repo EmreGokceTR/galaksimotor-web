@@ -8,6 +8,8 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { EditModeToggle } from "@/components/EditModeToggle";
 import { CookieConsent } from "@/components/CookieConsent";
+import { DevBanner } from "@/components/DevBanner";
+import { themeNoFlashScript } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -227,8 +229,9 @@ export default async function RootLayout({
   `;
 
   return (
-    <html lang="tr" className={`${inter.variable} ${poppins.variable} ${roboto.variable}`}>
+    <html lang="tr" className={`dark ${inter.variable} ${poppins.variable} ${roboto.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript }} />
         <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
         <script
           type="application/ld+json"
@@ -239,6 +242,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-brand-black font-sans text-white antialiased">
         <Providers>
+          <DevBanner />
           <Navbar settings={navSettings} />
           <main className="relative">{children}</main>
           <Footer />
