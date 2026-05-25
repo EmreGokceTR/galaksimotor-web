@@ -230,26 +230,29 @@ a { color: inherit; }
    her yerde aynı kalıyor.
    ============================================ */
 
-/* === text-white ve opacity varyasyonları === */
-:root.light .text-white       { color: rgb(24 24 27); }
-:root.light .text-white\/90   { color: rgba(24, 24, 27, 0.90); }
-:root.light .text-white\/85   { color: rgba(24, 24, 27, 0.85); }
-:root.light .text-white\/80   { color: rgba(24, 24, 27, 0.78); }
-:root.light .text-white\/75   { color: rgba(24, 24, 27, 0.75); }
-:root.light .text-white\/70   { color: rgba(24, 24, 27, 0.72); }
-:root.light .text-white\/65   { color: rgba(24, 24, 27, 0.68); }
-:root.light .text-white\/60   { color: rgba(24, 24, 27, 0.65); }
-:root.light .text-white\/55   { color: rgba(24, 24, 27, 0.60); }
-:root.light .text-white\/50   { color: rgba(24, 24, 27, 0.55); }
-:root.light .text-white\/45   { color: rgba(24, 24, 27, 0.50); }
-:root.light .text-white\/40   { color: rgba(24, 24, 27, 0.45); }
-:root.light .text-white\/35   { color: rgba(24, 24, 27, 0.42); }
-:root.light .text-white\/30   { color: rgba(24, 24, 27, 0.38); }
-:root.light .text-white\/28   { color: rgba(24, 24, 27, 0.34); }
-:root.light .text-white\/25   { color: rgba(24, 24, 27, 0.32); }
-:root.light .text-white\/20   { color: rgba(24, 24, 27, 0.28); }
-:root.light .text-white\/15   { color: rgba(24, 24, 27, 0.22); }
-:root.light .text-white\/5    { color: rgba(24, 24, 27, 0.12); }
+/* === text-white ve opacity varyasyonları (light için kalibre edildi)
+   Beyaz üstünde okunabilirlik için opacity değerleri ARTIRILDI.
+   Tasarımda /55, /60 gibi düşük opacity'ler dark'ta yumuşak görünüyor ama
+   light'ta zayıf gri okunmaz — bu yüzden her seviyeyi yukarı çekiyoruz. */
+:root.light .text-white       { color: rgb(15 15 18); }
+:root.light .text-white\/90   { color: rgba(15, 15, 18, 0.98); }
+:root.light .text-white\/85   { color: rgba(15, 15, 18, 0.95); }
+:root.light .text-white\/80   { color: rgba(15, 15, 18, 0.92); }
+:root.light .text-white\/75   { color: rgba(15, 15, 18, 0.88); }
+:root.light .text-white\/70   { color: rgba(15, 15, 18, 0.85); }
+:root.light .text-white\/65   { color: rgba(15, 15, 18, 0.80); }
+:root.light .text-white\/60   { color: rgba(15, 15, 18, 0.78); }
+:root.light .text-white\/55   { color: rgba(15, 15, 18, 0.74); }
+:root.light .text-white\/50   { color: rgba(15, 15, 18, 0.70); }
+:root.light .text-white\/45   { color: rgba(15, 15, 18, 0.65); }
+:root.light .text-white\/40   { color: rgba(15, 15, 18, 0.60); }
+:root.light .text-white\/35   { color: rgba(15, 15, 18, 0.55); }
+:root.light .text-white\/30   { color: rgba(15, 15, 18, 0.50); }
+:root.light .text-white\/28   { color: rgba(15, 15, 18, 0.48); }
+:root.light .text-white\/25   { color: rgba(15, 15, 18, 0.45); }
+:root.light .text-white\/20   { color: rgba(15, 15, 18, 0.42); }
+:root.light .text-white\/15   { color: rgba(15, 15, 18, 0.38); }
+:root.light .text-white\/5    { color: rgba(15, 15, 18, 0.22); }
 
 /* === bg-white/X — beyaz üstünde siyah yüzey === */
 :root.light .bg-white\/5      { background-color: rgba(24, 24, 27, 0.045); }
@@ -300,12 +303,27 @@ a { color: inherit; }
 
 /* Footer alt çizgi border-t border-white/10 → zaten yukarıda override edildi */
 
-/* Sarı yazıların light üzerinde okunabilirliği için iç gölge */
+/* ============================================
+   SARI YAZILARIN LIGHT'TA OKUNABİLİRLİĞİ
+   #FFD700 saf sarı beyaz üstünde okunmaz. Light'ta yazı (sadece TEXT) için
+   derin altın varyantı kullanıyoruz. Buton zeminleri (bg-brand-yellow) ve
+   ikon vurguları ZEMİN olarak hâlâ #FFD700 — sadece "text-brand-yellow" ve
+   "text-gradient-gold" sınıfları light'ta koyu altına çevriliyor.
+   Renkler hâlâ sarı-altın ailesinde: kahverengi-altın, turuncu DEĞİL.
+   ============================================ */
 :root.light .text-brand-yellow {
-  text-shadow: 0 0 1px rgba(120, 90, 0, 0.45);
+  color: #8a6a00 !important;
 }
 :root.light .text-gradient-gold {
-  filter: drop-shadow(0 1px 0 rgba(80, 60, 0, 0.18));
+  background: linear-gradient(135deg, #b8860b 0%, #8a6a00 50%, #5a4400 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* hover'da text-brand-yellow'a dönüşen yerler de derin altın */
+:root.light .hover\:text-brand-yellow:hover,
+:root.light .group:hover .group-hover\:text-brand-yellow {
+  color: #8a6a00 !important;
 }
 
 /* Navbar scrolled durumunda shadow düzelt (light) */
