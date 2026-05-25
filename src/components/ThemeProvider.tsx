@@ -45,13 +45,13 @@ export function useTheme() {
 }
 
 // Flicker'ı önleyen inline script — <head>'in başında çalışır.
+// NOT: Aydınlık mod geçici olarak askıya alındı. Site her durumda DARK çalışıyor.
+// Eski "light" tercihi olan kullanıcılar için de zorla dark uygulanıyor.
 export const themeNoFlashScript = `
 (function(){try{
-  var k='${STORAGE_KEY}';
-  var s=localStorage.getItem(k);
-  var t=(s==='light'||s==='dark')?s:'dark';
   var r=document.documentElement;
   r.classList.remove('light','dark');
-  r.classList.add(t);
+  r.classList.add('dark');
+  try{localStorage.removeItem('${STORAGE_KEY}');}catch(_){}
 }catch(e){document.documentElement.classList.add('dark');}})();
 `;

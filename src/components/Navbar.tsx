@@ -12,7 +12,6 @@ import { CartDrawer } from "./CartDrawer";
 import { CartHydration } from "./CartHydration";
 import { GarageSelector } from "./GarageSelector";
 import { EditableWrapper } from "./EditableWrapper";
-import { ThemeToggle } from "./ThemeToggle";
 
 // Admin-only — dynamically imported to exclude from non-admin bundles
 const PageMetaEditor = dynamic(() => import("./PageMetaEditor").then((m) => m.PageMetaEditor), { ssr: false });
@@ -164,7 +163,6 @@ export function Navbar({ settings }: { settings: NavSettings }) {
 
         {/* Right side */}
         <div className="hidden items-center gap-3 md:flex">
-          <ThemeToggle />
           <GarageSelector />
           <CartButton />
           {session?.user ? (
@@ -259,7 +257,6 @@ export function Navbar({ settings }: { settings: NavSettings }) {
 
         {/* Mobile right */}
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
           <CartButton />
           <button
             aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
