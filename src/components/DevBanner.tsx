@@ -3,7 +3,7 @@ export function DevBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="sticky top-0 z-[60] w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-zinc-900"
+      className="relative z-[60] w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-zinc-900"
       style={{ color: "#1a1a1a" }}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 py-1.5 text-center text-[12px] font-semibold sm:text-sm">

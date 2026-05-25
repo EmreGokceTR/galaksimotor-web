@@ -232,6 +232,147 @@ a {
   animation: shimmer 2s linear infinite;
 }
 
+/* ============================================
+   AYDINLIK TEMA İNCE AYARLARI
+   - Sarı vurguları daha koyu amber'a çevir (okunabilirlik)
+   - Sarı tabanlı opacity'li yüzeyleri amber'a map'le
+   - Sarı gradient metni koyu altın gradient'e çevir
+   - Sarı dış gölgeleri yumuşat (beyaz üstünde flu kalmasınlar)
+   - White-ring kayar kayar yerleri daha koyu yap
+   ============================================ */
+:root.light {
+  --accent: 180 83 9; /* amber-700 #B45309 */
+}
+
+/* Sarı yazı → koyu amber */
+:root.light .text-brand-yellow { color: #b45309 !important; }
+
+/* Solid sarı buton: aynı kalsın ama içindeki yazı koyu kalmalı (brand-black artık zemin var. = beyaz olur).
+   bg-brand-yellow tek başına Tailwind hex (#FFD700) — bu sınıfı kullanan yerlerin
+   text-brand-black'i light'ta ters çevirip beyaz oluyor, içerik okunmaz. Bunu düzeltelim:
+   bg-brand-yellow + text-brand-black eşleşmesinde text'i sabit koyu yap. */
+:root.light .bg-brand-yellow.text-brand-black,
+:root.light [class*="bg-brand-yellow"] .text-brand-black,
+:root.light .text-brand-black {
+  color: #111 !important;
+}
+
+/* "Anasayfa" altındaki sarı çizgi vb. solid sarı yüzeyler: daha doygun amber */
+:root.light .bg-brand-yellow { background-color: #f59e0b !important; }
+
+/* Sarı opacity yüzey/border'lar — beyaz üstünde amber tonu */
+:root.light .bg-brand-yellow\/5  { background-color: rgba(245, 158, 11, 0.08) !important; }
+:root.light .bg-brand-yellow\/8  { background-color: rgba(245, 158, 11, 0.10) !important; }
+:root.light .bg-brand-yellow\/10 { background-color: rgba(245, 158, 11, 0.14) !important; }
+:root.light .bg-brand-yellow\/15 { background-color: rgba(245, 158, 11, 0.18) !important; }
+:root.light .bg-brand-yellow\/20 { background-color: rgba(245, 158, 11, 0.22) !important; }
+:root.light .bg-brand-yellow\/30 { background-color: rgba(245, 158, 11, 0.32) !important; }
+
+:root.light .border-brand-yellow\/20 { border-color: rgba(180, 83, 9, 0.28) !important; }
+:root.light .border-brand-yellow\/30 { border-color: rgba(180, 83, 9, 0.38) !important; }
+:root.light .border-brand-yellow\/40 { border-color: rgba(180, 83, 9, 0.5) !important; }
+:root.light .border-brand-yellow\/50 { border-color: rgba(180, 83, 9, 0.6) !important; }
+:root.light .border-brand-yellow\/60 { border-color: rgba(180, 83, 9, 0.7) !important; }
+
+/* Gradient sarı metin → derin altın */
+:root.light .text-gradient-gold {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 45%, #78350f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Sarı dış ışıma → light'ta yumuşak amber halo */
+:root.light .glow-yellow {
+  box-shadow:
+    0 0 0 1px rgba(180, 83, 9, 0.35),
+    0 0 24px -4px rgba(245, 158, 11, 0.35),
+    0 0 60px -16px rgba(245, 158, 11, 0.25);
+}
+
+/* lift-card hover'da sarı outline'ı amber yap */
+:root.light .lift-card:hover {
+  border-color: rgba(180, 83, 9, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(180, 83, 9, 0.22),
+    0 30px 60px -20px rgba(245, 158, 11, 0.22),
+    0 18px 40px -15px rgba(0, 0, 0, 0.12);
+}
+
+/* Pulse-glow CTA — light'ta sarı halo */
+:root.light .animate-pulse-glow {
+  animation-name: pulse-glow-light;
+}
+@keyframes pulse-glow-light {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(245, 158, 11, 0.55),
+      0 0 30px -4px rgba(245, 158, 11, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(245, 158, 11, 0),
+      0 0 40px -2px rgba(245, 158, 11, 0.6);
+  }
+}
+
+/* input focus halo light */
+:root.light .input-glass:focus {
+  border-color: rgba(180, 83, 9, 0.55);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+}
+
+/* Selection */
+:root.light ::selection {
+  background: rgba(245, 158, 11, 0.30);
+  color: #1a1a1a;
+}
+
+/* Body koyu siyah arkaplan inline'ları için (scrolled navbar bg-black/60 vb.) */
+:root.light .from-black\/0  { --tw-gradient-from: rgba(255,255,255,0) !important; }
+:root.light .via-black\/20  { --tw-gradient-via: rgba(0,0,0,0.06) !important; }
+:root.light .from-black\/70 { --tw-gradient-from: rgba(255,255,255,0.85) !important; }
+:root.light .from-black\/80 { --tw-gradient-from: rgba(255,255,255,0.92) !important; }
+
+/* Navbar scrolled background — light'ta beyaz cam */
+:root.light header.sticky { color-scheme: light; }
+
+/* ============================================
+   Renkli butonlar üstünde "text-white" sabit beyaz kalmalı.
+   Tailwind config'te white token'ını fg değişkenine bağladığımız için
+   light'ta text-white koyu olur — bu colored bg + white text butonlarında
+   okunmaz hale gelir. Aşağıdaki override'lar onları gerçek beyaza döndürür.
+   ============================================ */
+:root.light .bg-\[\#25D366\],
+:root.light .bg-amber-500,
+:root.light .bg-amber-600,
+:root.light .bg-blue-500,
+:root.light .bg-blue-600,
+:root.light .bg-emerald-400,
+:root.light .bg-emerald-500,
+:root.light .bg-emerald-600,
+:root.light .bg-green-500,
+:root.light .bg-green-600,
+:root.light .bg-red-500,
+:root.light .bg-red-600,
+:root.light .bg-rose-400,
+:root.light .bg-rose-500,
+:root.light .bg-rose-600 {
+  color: #ffffff !important;
+}
+/* Bu butonların doğrudan altındaki text-white opacity'li sınıfları da geri çevir */
+:root.light .bg-\[\#25D366\] .text-white,
+:root.light .bg-amber-500 .text-white,
+:root.light .bg-blue-500 .text-white,
+:root.light .bg-emerald-500 .text-white,
+:root.light .bg-green-500 .text-white,
+:root.light .bg-red-500 .text-white,
+:root.light .bg-rose-500 .text-white {
+  color: #ffffff !important;
+}
+
+/* Mobil hamburger çubukları text invert üzerinden çalışıyor → light'ta otomatik koyu */
+
 @keyframes pulse-glow {
   0%, 100% {
     box-shadow:
