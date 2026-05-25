@@ -64,13 +64,13 @@ export function HomeHero({ settings: s }: { settings: HeroSettings }) {
 
         {/* Title */}
         <motion.h1 initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: EASE, delay: 0.05 }}
-          className="text-balance text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl lg:text-[88px]"
+          className="text-balance text-5xl font-bold leading-[1.15] tracking-tight md:text-7xl md:leading-[1.12] lg:text-[88px] lg:leading-[1.1]"
         >
           <EditableWrapper table="siteSetting" id="hero_title_1" field="value" value={s.title1} label="Hero Satır 1" revalidatePaths={R} as="span" className="block text-white">
             <span className="block text-white">{s.title1}</span>
           </EditableWrapper>
-          <EditableWrapper table="siteSetting" id="hero_title_2" field="value" value={s.title2} label="Hero Satır 2 (altın)" revalidatePaths={R} as="span" className="block text-gradient-gold">
-            <span className="block text-gradient-gold">{s.title2}</span>
+          <EditableWrapper table="siteSetting" id="hero_title_2" field="value" value={s.title2} label="Hero Satır 2 (altın)" revalidatePaths={R} as="span" className="block pb-1 text-gradient-gold">
+            <span className="block pb-1 text-gradient-gold">{s.title2}</span>
           </EditableWrapper>
           <EditableWrapper table="siteSetting" id="hero_title_3" field="value" value={s.title3} label="Hero Satır 3" revalidatePaths={R} as="span" className="block text-white">
             <span className="block text-white">{s.title3}</span>

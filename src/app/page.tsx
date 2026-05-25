@@ -84,9 +84,9 @@ export default async function HomePage() {
 
   const heroSettings: HeroSettings = {
     badge:        st(bag, "hero_badge",         "Küçükçekmece'nin motosiklet üssü"),
-    title1:       st(bag, "hero_title_1",        "Motorunun"),
-    title2:       st(bag, "hero_title_2",        "tüm ihtiyacı,"),
-    title3:       st(bag, "hero_title_3",        "tek adreste."),
+    title1:       st(bag, "hero_title_1",        "Motosikletinin"),
+    title2:       st(bag, "hero_title_2",        "Tüm İhtiyacı"),
+    title3:       st(bag, "hero_title_3",        "Bu Adreste!"),
     subtitle:     st(bag, "hero_subtitle",       "Orijinal yedek parça, profesyonel bakım ürünleri ve şık aksesuarlar — uzman servis ekibiyle. Yola çıkmaktan ibaret kalsın."),
     ctaPrimary:   st(bag, "hero_cta_primary",    "Ürünleri Keşfet"),
     ctaSecondary: st(bag, "hero_cta_secondary",  "Servis Randevusu"),

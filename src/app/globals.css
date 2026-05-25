@@ -304,26 +304,33 @@ a { color: inherit; }
 /* Footer alt çizgi border-t border-white/10 → zaten yukarıda override edildi */
 
 /* ============================================
-   SARI YAZILARIN LIGHT'TA OKUNABİLİRLİĞİ
-   #FFD700 saf sarı beyaz üstünde okunmaz. Light'ta yazı (sadece TEXT) için
-   derin altın varyantı kullanıyoruz. Buton zeminleri (bg-brand-yellow) ve
-   ikon vurguları ZEMİN olarak hâlâ #FFD700 — sadece "text-brand-yellow" ve
-   "text-gradient-gold" sınıfları light'ta koyu altına çevriliyor.
-   Renkler hâlâ sarı-altın ailesinde: kahverengi-altın, turuncu DEĞİL.
+   SARI YAZILARIN LIGHT'TA OKUNABİLİRLİĞİ — TRUE YELLOW + DARK OUTLINE
+   Yellow #FFD700 saf sarı her iki temada KORUNUYOR. Light'ta okunabilirlik
+   için ince koyu kontur (-webkit-text-stroke) uygulanıyor. Sonuç: hâlâ
+   sarı, fakat beyaz üstünde net okunur — "highlighter / billboard" stili.
    ============================================ */
 :root.light .text-brand-yellow {
-  color: #8a6a00 !important;
+  color: #FFD700 !important;
+  -webkit-text-stroke: 0.6px #2a1f00;
+  paint-order: stroke fill;
 }
+
+/* Gradient altın — aynı gradient'i koru, üstüne stroke ekle */
 :root.light .text-gradient-gold {
-  background: linear-gradient(135deg, #b8860b 0%, #8a6a00 50%, #5a4400 100%);
+  background: linear-gradient(135deg, #FFE45C 0%, #FFD700 45%, #E8B800 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-stroke: 1.2px #2a1f00;
+  paint-order: stroke fill;
 }
-/* hover'da text-brand-yellow'a dönüşen yerler de derin altın */
+
+/* hover ve group-hover varyantları */
 :root.light .hover\:text-brand-yellow:hover,
 :root.light .group:hover .group-hover\:text-brand-yellow {
-  color: #8a6a00 !important;
+  color: #FFD700 !important;
+  -webkit-text-stroke: 0.6px #2a1f00;
+  paint-order: stroke fill;
 }
 
 /* Navbar scrolled durumunda shadow düzelt (light) */
