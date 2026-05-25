@@ -304,33 +304,40 @@ a { color: inherit; }
 /* Footer alt çizgi border-t border-white/10 → zaten yukarıda override edildi */
 
 /* ============================================
-   SARI YAZILARIN LIGHT'TA OKUNABİLİRLİĞİ — TRUE YELLOW + DARK OUTLINE
-   Yellow #FFD700 saf sarı her iki temada KORUNUYOR. Light'ta okunabilirlik
-   için ince koyu kontur (-webkit-text-stroke) uygulanıyor. Sonuç: hâlâ
-   sarı, fakat beyaz üstünde net okunur — "highlighter / billboard" stili.
+   SARI YAZILARIN LIGHT'TA OKUNABİLİRLİĞİ — SAF SARI + ELEGANT DROP SHADOW
+   Yellow #FFD700 saf sarı her iki temada KORUNUYOR. Light'ta harf formları
+   bozulmadan, yumuşak çok katmanlı drop-shadow ile zeminden ayrıştırılıyor:
+   - Tight halo (0 blur, koyu altın): kenar tanımı
+   - Soft drop (1-2px): hafif kaldırma
+   - Ambient (4px+): zarif derinlik
+   Sonuç: temiz, premium tipografi — kontur cartoon görünümü YOK.
    ============================================ */
 :root.light .text-brand-yellow {
   color: #FFD700 !important;
-  -webkit-text-stroke: 0.6px #2a1f00;
-  paint-order: stroke fill;
+  text-shadow:
+    0 0 1px rgba(80, 55, 0, 0.55),
+    0 1px 2px rgba(40, 25, 0, 0.18),
+    0 2px 6px rgba(60, 40, 0, 0.12);
 }
 
-/* Gradient altın — aynı gradient'i koru, üstüne stroke ekle */
 :root.light .text-gradient-gold {
-  background: linear-gradient(135deg, #FFE45C 0%, #FFD700 45%, #E8B800 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #F2C200 50%, #D9A800 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  -webkit-text-stroke: 1.2px #2a1f00;
-  paint-order: stroke fill;
+  filter:
+    drop-shadow(0 0 0.8px rgba(80, 55, 0, 0.5))
+    drop-shadow(0 1px 2px rgba(40, 25, 0, 0.18))
+    drop-shadow(0 3px 8px rgba(60, 40, 0, 0.12));
 }
 
 /* hover ve group-hover varyantları */
 :root.light .hover\:text-brand-yellow:hover,
 :root.light .group:hover .group-hover\:text-brand-yellow {
   color: #FFD700 !important;
-  -webkit-text-stroke: 0.6px #2a1f00;
-  paint-order: stroke fill;
+  text-shadow:
+    0 0 1px rgba(80, 55, 0, 0.55),
+    0 1px 2px rgba(40, 25, 0, 0.18);
 }
 
 /* Navbar scrolled durumunda shadow düzelt (light) */
