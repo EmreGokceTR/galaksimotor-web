@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { createProduct } from "./actions";
+import { ImageUploader } from "@/components/ImageUploader";
 
 export default async function NewProductPage() {
   const categories = await prisma.category.findMany({
@@ -65,10 +66,10 @@ export default async function NewProductPage() {
           </select>
         </label>
 
-        <Field
-          label="Görsel URL"
+        <ImageUploader
           name="imageUrl"
-          placeholder="/urunler/cvt.jpg veya https://..."
+          label="Ürün Görseli"
+          folder="products"
         />
 
         <label className="block">

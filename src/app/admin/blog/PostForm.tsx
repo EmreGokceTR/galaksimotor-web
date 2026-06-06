@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { upsertPost } from "./actions";
+import { ImageUploader } from "@/components/ImageUploader";
 
 type Props = {
   post?: {
@@ -28,11 +29,11 @@ export function PostForm({ post }: Props) {
         />
       </div>
 
-      <Field
-        label="Kapak Görseli URL"
+      <ImageUploader
         name="coverUrl"
+        label="Kapak Görseli"
+        folder="blog"
         defaultValue={post?.coverUrl ?? ""}
-        placeholder="https://... veya /blog/kapak.jpg"
       />
 
       <label className="block">
