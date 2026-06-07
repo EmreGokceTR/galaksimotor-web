@@ -25,17 +25,21 @@ export type HeroSettings = {
 export function HomeHero({ settings: s }: { settings: HeroSettings }) {
   return (
     <section className="relative overflow-hidden">
-      {/* Ambient orbs */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <motion.div aria-hidden initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.4, ease: EASE }}
-          className="absolute left-[8%] top-[15%] h-72 w-72 rounded-full bg-brand-yellow/15 blur-[110px]" />
-        <motion.div aria-hidden initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.6, ease: EASE, delay: 0.2 }}
-          className="absolute right-[5%] top-[25%] h-96 w-96 rounded-full bg-brand-yellow/10 blur-[140px]" />
-        <motion.div aria-hidden initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.8, ease: EASE, delay: 0.4 }}
-          className="absolute bottom-[-10%] left-[30%] h-80 w-80 rounded-full bg-brand-yellow/8 blur-[120px]" />
+      {/* Ambient orbs — static (animasyon kaldırıldı, scroll perf için)
+          Blur değeri 60-70px'e düşürüldü; GPU layer'a translate3d ile alındı. */}
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
+        <div
+          className="absolute left-[8%] top-[15%] h-64 w-64 rounded-full bg-brand-yellow/15 blur-[60px] will-change-transform"
+          style={{ transform: "translate3d(0,0,0)" }}
+        />
+        <div
+          className="absolute right-[5%] top-[25%] h-80 w-80 rounded-full bg-brand-yellow/10 blur-[70px] will-change-transform"
+          style={{ transform: "translate3d(0,0,0)" }}
+        />
+        <div
+          className="absolute bottom-[-10%] left-[30%] h-72 w-72 rounded-full bg-brand-yellow/8 blur-[65px] will-change-transform"
+          style={{ transform: "translate3d(0,0,0)" }}
+        />
       </div>
 
       {/* Grid backdrop */}

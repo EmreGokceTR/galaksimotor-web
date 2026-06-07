@@ -80,6 +80,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Tek seferlik repaint yerine GPU'da kompozit edilebilen scroll */
+  -webkit-overflow-scrolling: touch;
 }
 
 html, body {
@@ -90,7 +92,7 @@ html, body {
   transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Ambient mesh gradient */
+/* Ambient mesh gradient — fixed katman, GPU layer'a alındı */
 body::before {
   content: "";
   position: fixed;
@@ -102,9 +104,11 @@ body::before {
     radial-gradient(50% 50% at 50% 100%, var(--ambient-3) 0%, transparent 65%);
   pointer-events: none;
   filter: blur(40px);
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
-/* Film grain (sadece dark) */
+/* Film grain (sadece dark) — GPU layer */
 body::after {
   content: "";
   position: fixed;
@@ -114,6 +118,50 @@ body::after {
   opacity: var(--noise-opacity);
   pointer-events: none;
   mix-blend-mode: var(--noise-blend);
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* ============================================
+   SCROLL PERFORMANSI — Mobilde ağır blur efektlerini hafiflet
+   ve kullanıcı hareket azaltma istediyse animasyonları kapat
+   ============================================ */
+
+/* Tüm büyük blur'ları mobilde küçült — GPU yükünü ciddi azaltır */
+@media (max-width: 768px) {
+  .blur-\[110px\], .blur-\[140px\], .blur-\[120px\],
+  .blur-\[70px\], .blur-\[65px\], .blur-\[60px\] {
+    filter: blur(28px) !important;
+  }
+  body::before { filter: blur(24px); }
+
+  /* Backdrop-filter mobilde çok pahalı — şeffaflığı koru, blur'u azalt */
+  .glass {
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+  }
+  .glass-strong {
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+}
+
+/* Off-screen section'ları lazy render (modern tarayıcılar) */
+@supports (content-visibility: auto) {
+  .lazy-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
+  }
+}
+
+/* Kullanıcı hareket azaltma istedi — tüm animasyon ve geçişleri minimize et */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 a { color: inherit; }

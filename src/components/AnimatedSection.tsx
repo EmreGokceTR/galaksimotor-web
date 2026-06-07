@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import type { ReactNode } from "react";
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
@@ -8,6 +8,11 @@ const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
   visible: { opacity: 1, y: 0 },
+};
+
+const noMotion: Variants = {
+  hidden: { opacity: 1 },
+  visible: { opacity: 1 },
 };
 
 const stagger: Variants = {
@@ -36,19 +41,27 @@ export function AnimatedSection({
   amount = 0.2,
   as = "section",
 }: Props) {
+  const prefersReducedMotion = useReducedMotion();
   const Component =
     as === "section" ? motion.section : as === "article" ? motion.article : motion.div;
+
+  // Kullanıcı reduced-motion seçtiyse veya zaten görünür olacaksa animasyonu atla
+  const variants = useStagger ? stagger : prefersReducedMotion ? noMotion : fadeUp;
 
   return (
     <Component
       className={className}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount }}
-      variants={useStagger ? stagger : fadeUp}
+      viewport={{ once: true, amount, margin: "0px 0px -10% 0px" }}
+      variants={variants}
       transition={
-        useStagger ? undefined : { duration: 0.7, ease: EASE_OUT, delay }
+        useStagger || prefersReducedMotion
+          ? undefined
+          : { duration: 0.5, ease: EASE_OUT, delay }
       }
+      // GPU compositor layer'a al → scroll'da repaint maliyeti çok daha düşük
+      style={{ willChange: "transform, opacity" }}
     >
       {children}
     </Component>
@@ -64,11 +77,16 @@ export function AnimatedItem({
   className?: string;
   delay?: number;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   return (
     <motion.div
       className={className}
-      variants={fadeUp}
-      transition={{ duration: 0.6, ease: EASE_OUT, delay }}
+      variants={prefersReducedMotion ? noMotion : fadeUp}
+      transition={
+        prefersReducedMotion
+          ? undefined
+          : { duration: 0.5, ease: EASE_OUT, delay }
+      }
     >
       {children}
     </motion.div>

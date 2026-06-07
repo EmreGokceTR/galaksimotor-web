@@ -91,7 +91,7 @@ export function CartDrawer() {
             transition={{ duration: 0.25 }}
             onClick={close}
             aria-hidden="true"
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm"
           />
 
           {/* panel — proper dialog role for screen readers */}
@@ -105,7 +105,7 @@ export function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.45, ease: EASE }}
-            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col border-l border-white/10 bg-brand-black/90 backdrop-blur-2xl shadow-[-30px_0_60px_-20px_rgba(0,0,0,0.6)]"
+            className="fixed right-0 top-0 z-[100] flex h-full w-full max-w-md flex-col border-l border-white/10 bg-brand-black/95 shadow-[-30px_0_60px_-20px_rgba(0,0,0,0.6)]"
           >
             {/* header */}
             <header className="flex items-center justify-between border-b border-white/10 px-6 py-5">
