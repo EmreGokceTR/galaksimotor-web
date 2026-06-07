@@ -13,6 +13,9 @@ import { FAQS } from "@/config/faq";
 import { SITE } from "@/config/site";
 import { buildPageMetadata } from "@/lib/page-meta";
 
+// Ana sayfa ISR — 60 saniyede bir yenilenir, CDN'de cache'lenir
+export const revalidate = 60;
+
 const R = ["/"];
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -142,7 +142,9 @@ function GlassInput({
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") ?? "/hesabim";
+  // Varsayılan: ana sayfa. Eski "/hesabim" davranışı, kullanıcı yanlışlıkla
+  // gerçekten oturum açtığı halde /giris'te kalmasına sebep oluyordu.
+  const callbackUrl = params.get("callbackUrl") || "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -154,10 +156,16 @@ function LoginForm() {
     setError(null);
     setLoading(true);
     const res = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (res?.error) { setError("E-posta veya şifre hatalı."); return; }
-    router.push(callbackUrl);
-    router.refresh();
+    if (res?.error) {
+      setLoading(false);
+      setError("E-posta veya şifre hatalı.");
+      return;
+    }
+    // Başarılı giriş — hard navigation ile yönlendir.
+    // router.push() bazen client cache'te kalıyor ve sayfa /giris'te asılı
+    // kalıyordu. window.location.assign ise tarayıcıya tam yenileme yaptırır
+    // ve session cookie ile yeni session sunucudan çekilir.
+    window.location.assign(callbackUrl);
   }
 
   const container: Variants = {

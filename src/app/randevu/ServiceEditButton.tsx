@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { inlineUpdateService } from "./inlineUpdateService";
+import { useEditMode } from "@/context/EditModeContext";
 
 type ServiceSnapshot = {
   id: string;
@@ -17,6 +18,7 @@ const spring = { type: "spring" as const, stiffness: 420, damping: 32 };
 
 export function ServiceEditButton({ service }: { service: ServiceSnapshot }) {
   const { data: session } = useSession();
+  const { isEditMode } = useEditMode();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -67,7 +69,11 @@ export function ServiceEditButton({ service }: { service: ServiceSnapshot }) {
           setOpen(true);
         }}
         aria-label="Hizmeti düzenle"
-        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white/80 backdrop-blur-md ring-1 ring-white/20 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-brand-yellow hover:text-brand-black hover:ring-brand-yellow hover:shadow-[0_0_12px_rgba(255,215,0,0.5)]"
+        className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-md ring-1 transition-all duration-200 ${
+          isEditMode
+            ? "bg-brand-yellow text-brand-black ring-brand-yellow shadow-[0_0_14px_rgba(255,215,0,0.55)] opacity-100"
+            : "bg-black/70 text-white/80 ring-white/20 opacity-0 group-hover:opacity-100 hover:bg-brand-yellow hover:text-brand-black hover:ring-brand-yellow hover:shadow-[0_0_12px_rgba(255,215,0,0.5)]"
+        }`}
       >
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <path d="M11.5 2.5a1.414 1.414 0 0 1 2 2L5 13H3v-2L11.5 2.5z" />

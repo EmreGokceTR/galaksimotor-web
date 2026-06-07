@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+// Edge cache — aynı filtre kombinasyonu 60s boyunca CDN'den anında servis edilir,
+// 5 dakika boyunca stale (eski) sürümle yanıtla ve arkada yenile.
+// Ürün ekleme/güncelleme zaten admin tarafından yapılıyor; cache 1 dakika eski olabilir.
+export const revalidate = 60;
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const categorySlug = searchParams.get("category");
@@ -39,17 +44,26 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({
-    products: products.map((p) => ({
-      id: p.id,
-      slug: p.slug,
-      name: p.name,
-      sku: p.sku,
-      price: Number(p.price),
-      stock: p.stock,
-      brand: p.brand,
-      image: p.images[0]?.url ?? null,
-      category: { name: p.category.name, slug: p.category.slug },
-    })),
-  });
+  return NextResponse.json(
+    {
+      products: products.map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        sku: p.sku,
+        price: Number(p.price),
+        stock: p.stock,
+        brand: p.brand,
+        image: p.images[0]?.url ?? null,
+        category: { name: p.category.name, slug: p.category.slug },
+      })),
+    },
+    {
+      headers: {
+        // CDN'de 60s cache, 5dk stale-while-revalidate
+        "Cache-Control":
+          "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

@@ -74,6 +74,10 @@ export function ProductCatalog({
   useEffect(() => {
     setLoading(true);
     const controller = new AbortController();
+    // 200ms debounce — kullanıcı filtre yazarken her tuş için fetch atmayalım,
+    // ama ilk yüklemede de aynı 200ms gecikiyordu. İlk render'da debounce'ı atla.
+    const isInitial = products.length === 0;
+    const delay = isInitial ? 0 : 200;
     const handle = setTimeout(() => {
       fetch(`/api/products?${queryString}`, { signal: controller.signal })
         .then((r) => r.json())
@@ -82,11 +86,12 @@ export function ProductCatalog({
           setLoading(false);
         })
         .catch(() => {});
-    }, 200);
+    }, delay);
     return () => {
       controller.abort();
       clearTimeout(handle);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString]);
 
   function clearFilters() {

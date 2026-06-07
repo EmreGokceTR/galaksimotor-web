@@ -236,10 +236,13 @@ function RegisterForm() {
     }
 
     const signInRes = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (signInRes?.error) { setError("Kayıt tamam, ancak otomatik giriş yapılamadı."); return; }
-    router.push("/hesabim");
-    router.refresh();
+    if (signInRes?.error) {
+      setLoading(false);
+      setError("Kayıt tamam, ancak otomatik giriş yapılamadı.");
+      return;
+    }
+    // Hard navigation — session cookie ile yeni session sunucudan çekilir
+    window.location.assign("/");
   }
 
   const container: Variants = {
@@ -283,7 +286,7 @@ function RegisterForm() {
         >
           {/* Google */}
           <motion.button
-            onClick={() => signIn("google", { callbackUrl: "/hesabim" })}
+            onClick={() => signIn("google", { callbackUrl: "/" })}
             whileHover={{ scale: 1.015, boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}
             whileTap={{ scale: 0.97 }}
             className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold text-[#1a1a1a]"

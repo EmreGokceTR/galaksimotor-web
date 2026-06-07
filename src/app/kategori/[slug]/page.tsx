@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { SITE } from "@/config/site";
 
+// ISR — kategori sayfası 60 saniyede bir yenilenir
+export const revalidate = 60;
+
 type Props = { params: { slug: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

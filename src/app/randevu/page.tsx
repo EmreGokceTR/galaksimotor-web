@@ -8,6 +8,9 @@ import { AppointmentClient } from "./AppointmentClient";
 import { buildPageMetadata } from "@/lib/page-meta";
 import { SITE } from "@/config/site";
 
+// Servisler nadiren değişir — sayfa 5 dakikada bir yenilenir
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/randevu", {
     title: "Servis Randevusu - Galaksi Motor",

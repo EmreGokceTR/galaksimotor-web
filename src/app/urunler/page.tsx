@@ -4,6 +4,9 @@ import { ProductCatalog } from "@/components/ProductCatalog";
 import { AddRecordButton } from "@/components/AddRecordButton";
 import { buildPageMetadata } from "@/lib/page-meta";
 
+// ISR — sayfa 60 saniyede bir yenilenir. CDN'den hızlı servis.
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/urunler", {
     title: "Tüm Ürünler - Galaksi Motor",
