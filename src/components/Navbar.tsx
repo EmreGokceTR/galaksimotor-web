@@ -49,8 +49,25 @@ export function Navbar({ settings }: { settings: NavSettings }) {
   ];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    // requestAnimationFrame throttle: scroll event her frame'de gelir; rAF ile
+    // tarayıcıya frame başına en fazla 1 okuma yaptırıyoruz. Ayrıca state'i
+    // sadece değer değiştiğinde set ediyoruz → gereksiz re-render yok.
+    let ticking = false;
+    let lastScrolled = window.scrollY > 8;
+    setScrolled(lastScrolled);
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const next = window.scrollY > 8;
+        if (next !== lastScrolled) {
+          lastScrolled = next;
+          setScrolled(next);
+        }
+        ticking = false;
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -64,7 +81,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+          ? "bg-black/85 backdrop-blur-md border-b border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
           : "bg-transparent border-b border-transparent"
       }`}
     >

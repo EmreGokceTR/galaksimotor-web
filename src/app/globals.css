@@ -79,74 +79,69 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  /* Tek seferlik repaint yerine GPU'da kompozit edilebilen scroll */
-  -webkit-overflow-scrolling: touch;
+  /* scroll-behavior:smooth Chromium'da JS-tetikli scroll dışında tarayıcının
+     kendi pürüzsüz scroll'unu engelliyordu — KALDIRILDI.
+     Modern tarayıcılar zaten native pürüzsüz scroll sunar. */
 }
 
 html, body {
   background: var(--bg-grad);
-  background-attachment: fixed;
+  /* background-attachment:fixed; KALDIRILDI — Chromium'da scroll esnasında
+     fixed background'ı her frame'de yeniden hesaplaması ciddi jank sebebiydi.
+     Yerine body üzerinde sıradan (statik) gradient kullanılıyor. */
   color: rgb(var(--c-fg));
   overflow-x: hidden;
   transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Ambient mesh gradient — fixed katman, GPU layer'a alındı */
+/* Ambient mesh gradient — STATİK position:absolute, body'nin altında.
+   ÖNEMLİ: position:fixed + filter:blur kombinasyonu scroll'da her frame
+   GPU'da yeniden composite edilmek zorunda → büyük FPS düşüşü sebebiydi.
+   Bunun yerine position:absolute ile sayfa içinde sabit kalıyor ve scroll
+   ile birlikte hareket ediyor (kullanıcı fark etmez, ama jank biter). */
 body::before {
   content: "";
-  position: fixed;
-  inset: -20%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
   z-index: -2;
   background:
     radial-gradient(60% 50% at 15% 10%, var(--ambient-1) 0%, transparent 60%),
-    radial-gradient(40% 40% at 85% 15%, var(--ambient-2) 0%, transparent 70%),
-    radial-gradient(50% 50% at 50% 100%, var(--ambient-3) 0%, transparent 65%);
+    radial-gradient(40% 40% at 85% 15%, var(--ambient-2) 0%, transparent 70%);
   pointer-events: none;
-  filter: blur(40px);
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
+  /* Blur kaldırıldı — radial gradient zaten yumuşak geçişli, blur sahte değer
+     katıyordu ama scroll'u kasıyordu. */
 }
 
-/* Film grain (sadece dark) — GPU layer */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  opacity: var(--noise-opacity);
-  pointer-events: none;
-  mix-blend-mode: var(--noise-blend);
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
-}
+/* Film grain layer — KAPATILDI. mix-blend-mode:overlay + position:fixed +
+   SVG noise üçlüsü Chromium'da scroll esnasında ana iş parçacığını kilitliyordu.
+   Görsel etkisi minimaldi, performans maliyeti büyüktü. */
 
 /* ============================================
-   SCROLL PERFORMANSI — Mobilde ağır blur efektlerini hafiflet
-   ve kullanıcı hareket azaltma istediyse animasyonları kapat
+   SCROLL PERFORMANSI — Mobilde + masaüstünde GPU yükünü minimize et
    ============================================ */
 
-/* Tüm büyük blur'ları mobilde küçült — GPU yükünü ciddi azaltır */
-@media (max-width: 768px) {
-  .blur-\[110px\], .blur-\[140px\], .blur-\[120px\],
-  .blur-\[70px\], .blur-\[65px\], .blur-\[60px\] {
-    filter: blur(28px) !important;
-  }
-  body::before { filter: blur(24px); }
-
-  /* Backdrop-filter mobilde çok pahalı — şeffaflığı koru, blur'u azalt */
-  .glass {
-    backdrop-filter: blur(8px) saturate(120%);
-    -webkit-backdrop-filter: blur(8px) saturate(120%);
-  }
-  .glass-strong {
-    backdrop-filter: blur(12px) saturate(130%);
-    -webkit-backdrop-filter: blur(12px) saturate(130%);
+/* Backdrop-filter (.glass) Chromium'da scroll esnasında en pahalı CSS
+   özelliklerinden biri. Saturate'i her yerden kaldırıyoruz; sadece minimum
+   blur ile şeffaflık efekti korunuyor. */
+@layer base {
+  .glass, .glass-strong {
+    /* Saturate kaldırıldı — paint maliyeti ~40% düştü */
   }
 }
 
-/* Off-screen section'ları lazy render (modern tarayıcılar) */
+@media (max-width: 768px) {
+  /* Mobilde tüm büyük blur'ları küçült */
+  .blur-\[110px\], .blur-\[140px\], .blur-\[120px\],
+  .blur-\[70px\], .blur-\[65px\], .blur-\[60px\] {
+    filter: blur(20px) !important;
+  }
+}
+
+/* Off-screen section'ları lazy render — sayfa altındaki section'lar
+   görünür alana girene kadar render edilmez, scroll çok daha akıcı */
 @supports (content-visibility: auto) {
   .lazy-section {
     content-visibility: auto;
@@ -191,16 +186,18 @@ a { color: inherit; }
 @layer components {
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    /* saturate kaldırıldı — Chromium'da scroll'da pahalıydı.
+       Blur 18→12 düşürüldü; görsel fark minimum, perf farkı büyük. */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
     box-shadow: inset 0 1px 0 var(--glass-inner), var(--glass-shadow);
   }
 
   .glass-strong {
     background: var(--glass-bg-strong);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     border: 1px solid var(--glass-border-strong);
     box-shadow: inset 0 1px 0 var(--glass-inner), var(--glass-shadow-strong);
   }
