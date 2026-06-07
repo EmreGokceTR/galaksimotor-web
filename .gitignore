@@ -2,14 +2,37 @@ node_modules
 .next
 out
 build
+
+# Environment variables (hassas)
 .env
 .env.local
+.env*.local
+
+# Vercel / build çıktıları
+.vercel
+.turbo
+*.tsbuildinfo
+
+# Logs ve geçici
 *.log
 .DS_Store
 .vscode
-public/invoices/*.pdf
+.idea
+
+# Claude Code worktrees / cache
+.claude/worktrees/
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
 
 # Yedek ve dump dosyaları — repoya girmemeli
 *.sql
 dosya_yapisi.txt
 tsconfig.tsbuildinfo
+public/invoices/*.pdf
+
+# Yerel proje belgeleri (kullanıcının kişisel notları)
+GALAKSİ MOTOR CLAUDE CODE SOHBET YEDEĞİ/
+GALAKSİ MOTOR ÖNEMLİ BİLGİLER.docx
+İYZİCO KONTRAT SÖZLEŞME.pdf
+iyzico-logo-pack.zip
+start-dev.ps1

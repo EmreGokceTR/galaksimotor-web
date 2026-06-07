@@ -1,11 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 
 export default async function AccountOverviewPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return null;
   const userId = session.user.id;
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
 
   const [orderCount, favoriteCount, appointmentCount] = await Promise.all([
     prisma.order.count({ where: { userId } }),
@@ -14,7 +16,7 @@ export default async function AccountOverviewPage() {
   ]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <p className="text-white/80">
         Merhaba <span className="font-semibold text-brand-yellow">{session.user.name ?? session.user.email}</span>, hoş geldin.
       </p>
@@ -23,6 +25,19 @@ export default async function AccountOverviewPage() {
         <Stat label="Favori" value={favoriteCount} />
         <Stat label="Randevu" value={appointmentCount} />
       </div>
+
+      {/* Hesap silme — KVKK md.7 (silme hakkı) gereği zorunlu */}
+      {!isAdmin && (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+          <h3 className="mb-1 text-sm font-semibold text-white">Hesap Silme</h3>
+          <p className="mb-4 text-xs leading-relaxed text-white/55">
+            KVKK kapsamındaki silme hakkınızı kullanabilirsiniz. Kişisel
+            verileriniz kalıcı olarak silinir; sipariş geçmişi yasal saklama
+            süresince anonim olarak tutulur.
+          </p>
+          <DeleteAccountButton />
+        </div>
+      )}
     </div>
   );
 }
