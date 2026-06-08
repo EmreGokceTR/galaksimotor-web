@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
   { href: "/admin/hizmetler", label: "Hizmetler", icon: "🔧" },
+  { href: "/admin/kullanicilar", label: "Kullanıcılar", icon: "👥" },
   { href: "/admin/ayarlar/iletisim", label: "İletişim Bilgileri", icon: "📍" },
   { href: "/admin/ayarlar/testimonials", label: "Müşteri Yorumları", icon: "⭐" },
   { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },

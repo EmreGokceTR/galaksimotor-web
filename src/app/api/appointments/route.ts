@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/config/site";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 type Body = {
   serviceId: string;
@@ -14,12 +15,30 @@ type Body = {
   note?: string;
 };
 
+// Input limitleri (DB schema ile uyumlu, spam koruması)
+const MAX_BRAND = 50;
+const MAX_MODEL = 80;
+const MAX_NOTE = 500;
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "Önce giriş yapmalısın." },
       { status: 401 }
+    );
+  }
+
+  // Rate limit: kullanıcı başına 5 dakikada en fazla 10 randevu denemesi
+  // (bot/spam koruması; yasal kullanıcı bu kadar randevu almaz)
+  const rl = rateLimit(`appointment:${session.user.id}`, {
+    limit: 10,
+    windowMs: 5 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: `Çok fazla deneme. ${rl.retryAfterSec} saniye sonra tekrar deneyin.` },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
     );
   }
 
@@ -37,6 +56,20 @@ export async function POST(req: Request) {
     );
   }
 
+  // Input uzunluk kontrolleri (spam/DB taşma koruması)
+  if (
+    (body.motoBrand && body.motoBrand.length > MAX_BRAND) ||
+    (body.motoModel && body.motoModel.length > MAX_MODEL) ||
+    (body.note && body.note.length > MAX_NOTE)
+  ) {
+    return NextResponse.json(
+      {
+        error: `Metin alanları çok uzun (marka ≤${MAX_BRAND}, model ≤${MAX_MODEL}, not ≤${MAX_NOTE}).`,
+      },
+      { status: 400 }
+    );
+  }
+
   const date = new Date(body.scheduledAt);
   if (isNaN(date.getTime())) {
     return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
@@ -44,6 +77,15 @@ export async function POST(req: Request) {
   if (date.getTime() < Date.now()) {
     return NextResponse.json(
       { error: "Geçmiş bir tarih için randevu alınamaz." },
+      { status: 400 }
+    );
+  }
+
+  // Pazar günleri kapalıyız — randevu alınamaz
+  // (getDay: 0=Pazar, 6=Cumartesi)
+  if (date.getDay() === 0) {
+    return NextResponse.json(
+      { error: "Pazar günleri kapalıyız. Lütfen başka bir gün seçin." },
       { status: 400 }
     );
   }

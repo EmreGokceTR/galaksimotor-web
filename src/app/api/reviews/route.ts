@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
+
+const MAX_COMMENT_LENGTH = 2000;
 
 /** GET /api/reviews?productId= — list reviews for a product */
 export async function GET(req: Request) {
@@ -47,6 +50,18 @@ export async function POST(req: Request) {
     );
   }
 
+  // Rate limit: kullanıcı başına 1 saatte en fazla 20 yorum (spam koruması)
+  const rl = rateLimit(`review:${session.user.id}`, {
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: `Çok fazla yorum. ${rl.retryAfterSec} saniye bekleyin.` },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   let body: { productId?: string; rating?: number; comment?: string };
   try {
     body = await req.json();
@@ -63,6 +78,12 @@ export async function POST(req: Request) {
   if (body.rating < 1 || body.rating > 5) {
     return NextResponse.json(
       { error: "Puan 1-5 arası olmalı." },
+      { status: 400 }
+    );
+  }
+  if (body.comment && body.comment.length > MAX_COMMENT_LENGTH) {
+    return NextResponse.json(
+      { error: `Yorum çok uzun (≤${MAX_COMMENT_LENGTH} karakter).` },
       { status: 400 }
     );
   }
