@@ -19,6 +19,7 @@ export function PageMetaEditor() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const isAdmin =
@@ -28,6 +29,7 @@ export function PageMetaEditor() {
   useEffect(() => {
     if (!open) return;
     if (typeof document === "undefined") return;
+    setError(null);
     setTitle(document.title);
     const meta = document.querySelector(
       'meta[name="description"]'
@@ -40,23 +42,30 @@ export function PageMetaEditor() {
   const k = pathKey(pathname);
 
   function handleSave() {
+    setError(null);
     startTransition(async () => {
-      await updateField(
-        "siteSetting",
-        `meta_title_${k}`,
-        "value",
-        title,
-        [pathname]
-      );
-      await updateField(
-        "siteSetting",
-        `meta_desc_${k}`,
-        "value",
-        desc,
-        [pathname]
-      );
-      setOpen(false);
-      router.refresh();
+      try {
+        await updateField(
+          "siteSetting",
+          `meta_title_${k}`,
+          "value",
+          title,
+          [pathname]
+        );
+        await updateField(
+          "siteSetting",
+          `meta_desc_${k}`,
+          "value",
+          desc,
+          [pathname]
+        );
+        setOpen(false);
+        router.refresh();
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : "SEO kaydı başarısız. Tekrar deneyin."
+        );
+      }
     });
   }
 
@@ -173,6 +182,15 @@ export function PageMetaEditor() {
                   </span>
                 </label>
               </div>
+
+              {error && (
+                <div
+                  role="alert"
+                  className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
+                >
+                  {error}
+                </div>
+              )}
 
               <div className="mt-6 flex gap-3">
                 <button

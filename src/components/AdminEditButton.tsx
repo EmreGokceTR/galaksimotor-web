@@ -31,6 +31,7 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
   const [sku, setSku] = useState(product.sku ?? "");
   const [brand, setBrand] = useState(product.brand ?? "");
   const [description, setDescription] = useState(product.description ?? "");
+  const [error, setError] = useState<string | null>(null);
 
   // Sync fields from (possibly refreshed) props when modal opens
   useEffect(() => {
@@ -42,6 +43,7 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
       setSku(product.sku ?? "");
       setBrand(product.brand ?? "");
       setDescription(product.description ?? "");
+      setError(null);
     }
   }, [open, product]);
 
@@ -50,18 +52,25 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
   }
 
   function handleSave() {
+    setError(null);
     startTransition(async () => {
-      await inlineUpdateProduct(product.id, {
-        name: name.trim() || product.name,
-        price: parseFloat(price) || product.price,
-        stock: parseInt(stock) ?? product.stock,
-        imageUrl: imageUrl.trim() || null,
-        slug: product.slug,
-        sku: sku.trim() || undefined,
-        brand: brand.trim() || null,
-        description: description.trim() || null,
-      });
-      setOpen(false);
+      try {
+        await inlineUpdateProduct(product.id, {
+          name: name.trim() || product.name,
+          price: parseFloat(price) || product.price,
+          stock: parseInt(stock) || product.stock,
+          imageUrl: imageUrl.trim() || null,
+          slug: product.slug,
+          sku: sku.trim() || undefined,
+          brand: brand.trim() || null,
+          description: description.trim() || null,
+        });
+        setOpen(false);
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : "Kayıt başarısız. Tekrar deneyin."
+        );
+      }
     });
   }
 
@@ -236,6 +245,15 @@ export function AdminEditButton({ product }: { product: ProductSnapshot }) {
                   )}
                 </label>
               </div>
+
+              {error && (
+                <div
+                  role="alert"
+                  className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
+                >
+                  {error}
+                </div>
+              )}
 
               <div className="mt-6 flex gap-3">
                 <button

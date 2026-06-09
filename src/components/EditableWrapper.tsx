@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useState,
   useTransition,
   type ReactNode,
@@ -76,6 +77,7 @@ function RichTextEditor({
     content: initialContent,
     editable: !disabled,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         class:
@@ -242,10 +244,21 @@ export function EditableWrapper({
   const { isEditMode } = useEditMode();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<string | number | boolean>("");
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const isAdmin =
     (session?.user as { role?: string } | undefined)?.role === "ADMIN";
+
+  // value prop değiştiğinde (revalidation sonrası) draft güncellenir; modal kapalıysa
+  // bir sonraki açılışta taze değer gelir, modal açıkken kullanıcının yazdığı korunur.
+  useEffect(() => {
+    if (!open) {
+      setDraft(
+        value ?? (fieldType === "boolean" ? false : fieldType === "number" ? 0 : "")
+      );
+    }
+  }, [value, open, fieldType]);
 
   if (!isAdmin) return <>{children}</>;
 
@@ -256,6 +269,7 @@ export function EditableWrapper({
   function handleOpen(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    setError(null);
     setDraft(
       value ?? (type === "boolean" ? false : type === "number" ? 0 : "")
     );
@@ -263,46 +277,79 @@ export function EditableWrapper({
   }
 
   function handleSave() {
+    setError(null);
     startTransition(async () => {
-      const settingType =
-        type === "richtext" ? "richtext" : type === "svg" ? "svg" : "text";
-      await updateField(table, id, field, draft, revalidatePaths, settingType);
-      setOpen(false);
+      try {
+        const settingType =
+          type === "richtext" ? "richtext" : type === "svg" ? "svg" : "text";
+        await updateField(table, id, field, draft, revalidatePaths, settingType);
+        setOpen(false);
+      } catch (err) {
+        // Hata sessizce yutulmasın — modalda göster
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Kayıt başarısız. Tekrar deneyin."
+        );
+      }
     });
   }
 
   return (
     <>
-      <Tag className={`group/edit relative ${className ?? ""}`}>
+      {/*
+        Kapsayıcı: `relative` + `group/edit`. Çocukların görselini bozmadan
+        kalem ikonu ve kesikli sınır kapsayıcıya pinned.
+        DİKKAT: pointer-events-none → çerçeve ve highlight tıklamayı engellemez,
+        sadece kalem butonu tıklanabilir.
+      */}
+      <Tag
+        className={`group/edit relative isolate ${className ?? ""}`}
+        data-editable=""
+      >
         {children}
 
-        {/* Kalem ikonu — sadece edit modda, hover'da görünür */}
+        {/*
+          Kesikli sınır — edit modda her zaman görünür.
+          Daha önceki `ring-dashed` Tailwind'de mevcut DEĞİL — gerçek dashed border
+          için absolute span + `border-dashed` kullanıyoruz. Kapsayıcının yuvarlak
+          köşelerini takip etmesi için `rounded-[inherit]` + minimum `rounded-sm`.
+        */}
+        {isEditMode && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1] rounded-[inherit] border border-dashed border-brand-yellow/50 transition-colors group-hover/edit:border-brand-yellow/90"
+            style={{ borderRadius: "inherit" }}
+          />
+        )}
+
+        {/*
+          Kalem ikonu — edit modda HEP görünür (mobilde dokunma için).
+          Konum: parent'ın İÇİNDE sağ-üst (top-1 right-1) — overflow-hidden
+          olan kapsayıcılarda da görünür kalır.
+          Desktop'ta hover'da büyür ve sarı olur.
+        */}
         {isEditMode && (
           <button
+            type="button"
             onClick={handleOpen}
-            aria-label="Düzenle"
-            className="absolute right-0 top-0 z-10 flex h-5 w-5 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-black/80 text-white/70 opacity-0 ring-1 ring-white/20 backdrop-blur-md transition-all duration-150 group-hover/edit:opacity-100 hover:bg-brand-yellow hover:text-brand-black hover:ring-brand-yellow hover:shadow-[0_0_10px_rgba(255,215,0,0.5)]"
+            aria-label={`Düzenle: ${displayLabel}`}
+            title={`Düzenle: ${displayLabel}`}
+            className="absolute right-1 top-1 z-[2] flex h-5 w-5 items-center justify-center rounded-full bg-brand-yellow/95 text-brand-black opacity-90 shadow-[0_2px_8px_rgba(0,0,0,0.4)] ring-1 ring-brand-black/20 backdrop-blur-md transition-all duration-150 hover:scale-110 hover:opacity-100 hover:shadow-[0_0_14px_rgba(255,215,0,0.7)] focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
           >
             <svg
               viewBox="0 0 16 16"
               className="h-2.5 w-2.5"
               fill="none"
               stroke="currentColor"
-              strokeWidth={2}
+              strokeWidth={2.2}
               strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="M11.5 2.5a1.414 1.414 0 0 1 2 2L5 13H3v-2L11.5 2.5z" />
+              <path d="M10 4l2 2" />
             </svg>
           </button>
-        )}
-
-        {/* Kesikli çerçeve — edit modda her zaman görünür */}
-        {isEditMode && (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-sm ring-1 ring-dashed ring-brand-yellow/50"
-          />
         )}
       </Tag>
 
@@ -345,6 +392,7 @@ export function EditableWrapper({
                 <button
                   onClick={() => !isPending && setOpen(false)}
                   className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label="Kapat"
                 >
                   <svg
                     viewBox="0 0 16 16"
@@ -443,6 +491,16 @@ export function EditableWrapper({
                   />
                 )}
               </div>
+
+              {/* Hata mesajı — kaydetme başarısız olduğunda */}
+              {error && (
+                <div
+                  role="alert"
+                  className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200"
+                >
+                  {error}
+                </div>
+              )}
 
               {/* Butonlar */}
               <div className="mt-6 flex gap-3">
