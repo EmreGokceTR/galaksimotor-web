@@ -3,50 +3,99 @@
 /**
  * ImageUploader — admin formları için tek başına çalışır dosya yükleme alanı.
  *
+ * İki kullanım modu:
+ *
+ *  1) UNCONTROLLED (formData ile gönderim):
+ *     <ImageUploader name="imageUrl" defaultValue={...} folder="products" />
+ *     → hidden input dolacak, normal <form> ile gönderilir
+ *
+ *  2) CONTROLLED (state ile yönetim — modallarda, AddRecordButton'da, EditableWrapper'da):
+ *     <ImageUploader value={url} onChange={setUrl} folder="blog" />
+ *     → name verilmez, hidden input render edilmez, parent state'i yönetir
+ *
  * Özellikler:
  *  - Drag & drop + tıklayıp seçme
- *  - Anlık önizleme (eski URL korunur, yenisi yüklenirse değiştirir)
- *  - Vercel Blob'a yükler → URL'i hidden input'a yazar (formData ile gönderilir)
- *  - URL'i de manuel girebilir (eski sisteme geri uyum)
+ *  - Anlık önizleme + "kaldır" butonu
+ *  - Vercel Blob'a yükler → URL döner
+ *  - Manuel URL yapıştırma da çalışır (geriye dönük uyum)
  *  - 8 MB sınırı, sadece resim mime-type'ları
- *  - Mobilde de erişilebilir (touch friendly, full-width)
+ *  - Mobilde de touch-friendly
  */
 
-import { useState, useRef, useCallback } from "react";
-import Image from "next/image";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 interface ImageUploaderProps {
-  name: string; // formData'da kullanılacak alan adı (ör. "imageUrl")
+  /** UNCONTROLLED için: formData alan adı. CONTROLLED için verme. */
+  name?: string;
+  /** Etiket */
   label?: string;
+  /** UNCONTROLLED için başlangıç değeri */
   defaultValue?: string;
-  folder?: string; // blob klasörü (ör. "products", "blog")
+  /** CONTROLLED için anlık değer */
+  value?: string;
+  /** CONTROLLED için onChange handler — yeni URL ile çağrılır */
+  onChange?: (url: string) => void;
+  /** Blob klasörü (ör. "products", "blog", "logos") */
+  folder?: string;
   required?: boolean;
   placeholder?: string;
   className?: string;
+  /** Önizleme boyutu — small (96px) / medium (160px) */
+  size?: "small" | "medium";
+  /** Kompakt mod — modallarda alan kazanmak için drop zone küçülür */
+  compact?: boolean;
 }
 
 export function ImageUploader({
   name,
   label = "Görsel",
   defaultValue = "",
+  value,
+  onChange,
   folder = "uploads",
   required = false,
   placeholder = "https://... veya bilgisayardan seç",
   className = "",
+  size = "medium",
+  compact = false,
 }: ImageUploaderProps) {
-  const [url, setUrl] = useState(defaultValue);
+  // Controlled mode: value prop verilmişse onu kullan; uncontrolled: kendi state'i tut
+  const isControlled = value !== undefined;
+  const [internalUrl, setInternalUrl] = useState(defaultValue);
+  const url = isControlled ? value : internalUrl;
+
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Controlled değilse, dışarıdan defaultValue değişimini yakala (revalidate sonrası)
+  useEffect(() => {
+    if (!isControlled) {
+      setInternalUrl(defaultValue);
+    }
+  }, [defaultValue, isControlled]);
+
+  const setUrl = useCallback(
+    (next: string) => {
+      if (isControlled) {
+        onChange?.(next);
+      } else {
+        setInternalUrl(next);
+        onChange?.(next);
+      }
+    },
+    [isControlled, onChange]
+  );
+
   const handleFile = useCallback(
     async (file: File) => {
       setError(null);
 
-      // Client-side validation
       if (file.size > 8 * 1024 * 1024) {
-        setError(`Dosya çok büyük (${(file.size / 1024 / 1024).toFixed(1)} MB). Maks 8 MB.`);
+        setError(
+          `Dosya çok büyük (${(file.size / 1024 / 1024).toFixed(1)} MB). Maks 8 MB.`
+        );
         return;
       }
       if (!file.type.startsWith("image/")) {
@@ -77,7 +126,7 @@ export function ImageUploader({
         setUploading(false);
       }
     },
-    [folder]
+    [folder, setUrl]
   );
 
   const handleDrop = useCallback(
@@ -90,27 +139,37 @@ export function ImageUploader({
     [handleFile]
   );
 
+  const previewHeight =
+    size === "small" ? "h-24 sm:h-28" : "h-40 sm:h-48";
+  const dropPadding = compact ? "px-3 py-3" : "px-4 py-6";
+
   return (
     <div className={`block ${className}`}>
-      <span className="mb-1.5 block text-xs uppercase tracking-wider text-white/55">
-        {label}
-        {required && <span className="text-rose-300"> *</span>}
-      </span>
+      {label && (
+        <span className="mb-1.5 block text-xs uppercase tracking-wider text-white/55">
+          {label}
+          {required && <span className="text-rose-300"> *</span>}
+        </span>
+      )}
 
-      {/* Hidden input — formData ile gönderilir */}
-      <input type="hidden" name={name} value={url} required={required} />
+      {/* Hidden input — sadece uncontrolled mode'da, formData için */}
+      {name && (
+        <input type="hidden" name={name} value={url} required={required} />
+      )}
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {/* Önizleme */}
         {url && (
           <div className="relative overflow-hidden rounded-lg border border-white/15 bg-black/30">
-            <div className="relative h-40 w-full sm:h-48">
+            <div className={`relative w-full ${previewHeight}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={url}
                 alt="Önizleme"
                 className="h-full w-full object-contain"
-                onError={() => setError("Görsel yüklenemedi. URL'i kontrol edin.")}
+                onError={() =>
+                  setError("Görsel yüklenemedi. URL'i kontrol edin.")
+                }
               />
             </div>
             <button
@@ -119,14 +178,14 @@ export function ImageUploader({
                 setUrl("");
                 setError(null);
               }}
-              className="absolute right-2 top-2 rounded-full bg-black/70 px-3 py-1 text-xs text-white/90 backdrop-blur-sm hover:bg-rose-500/80"
+              className="absolute right-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm hover:bg-rose-500/80"
             >
               ✕ Kaldır
             </button>
           </div>
         )}
 
-        {/* Drop zone + dosya seç butonu */}
+        {/* Drop zone */}
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -140,7 +199,7 @@ export function ImageUploader({
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click();
           }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-6 text-center transition ${
+          className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed text-center transition ${dropPadding} ${
             dragOver
               ? "border-brand-yellow bg-brand-yellow/10"
               : "border-white/15 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.04]"
@@ -154,7 +213,7 @@ export function ImageUploader({
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) void handleFile(file);
-              e.target.value = ""; // aynı dosyayı tekrar seçebilmek için
+              e.target.value = "";
             }}
           />
 
@@ -168,20 +227,26 @@ export function ImageUploader({
             </div>
           ) : (
             <>
-              <svg viewBox="0 0 24 24" className="mb-2 h-7 w-7 text-white/55" fill="none" stroke="currentColor" strokeWidth={1.6}>
-                <path d="M12 16V4M12 4l-4 4M12 4l4 4" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              {!compact && (
+                <svg viewBox="0 0 24 24" className="mb-2 h-7 w-7 text-white/55" fill="none" stroke="currentColor" strokeWidth={1.6}>
+                  <path d="M12 16V4M12 4l-4 4M12 4l4 4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
               <p className="text-sm text-white/80">
                 <span className="text-brand-yellow underline">Bilgisayardan seç</span>{" "}
-                <span className="text-white/55">veya buraya sürükle</span>
+                <span className="text-white/55">veya sürükle</span>
               </p>
-              <p className="mt-1 text-xs text-white/40">JPG, PNG, WebP, GIF, AVIF — maks 8 MB</p>
+              {!compact && (
+                <p className="mt-1 text-xs text-white/40">
+                  JPG, PNG, WebP, GIF, AVIF — maks 8 MB
+                </p>
+              )}
             </>
           )}
         </div>
 
-        {/* URL manuel giriş — opsiyonel */}
+        {/* URL manuel giriş */}
         <details className="text-xs text-white/55">
           <summary className="cursor-pointer hover:text-white/80">
             veya görsel URL'i yapıştır

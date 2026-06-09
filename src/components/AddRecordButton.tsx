@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useState,
   useTransition,
   type FormEvent,
@@ -10,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEditMode } from "@/context/EditModeContext";
+import { ImageUploader } from "@/components/ImageUploader";
 import {
   createProductRecord,
   createMotorcycleListingRecord,
@@ -55,6 +57,20 @@ export function AddRecordButton(props: AddRecordButtonProps) {
 
   const isAdmin =
     (session?.user as { role?: string } | undefined)?.role === "ADMIN";
+
+  // ESC ile modal kapat
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isPending) {
+        setOpen(false);
+        setForm({});
+        setError(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, isPending]);
 
   if (!isAdmin || !isEditMode) return null;
 
@@ -227,11 +243,13 @@ export function AddRecordButton(props: AddRecordButtonProps) {
                       disabled={isPending}
                       required
                     />
-                    <FieldImage
-                      label="Görsel URL"
+                    <ImageUploader
+                      label="Ürün Görseli"
                       value={form.imageUrl ?? ""}
                       onChange={(v) => setField("imageUrl", v)}
-                      disabled={isPending}
+                      folder="products"
+                      size="small"
+                      compact
                     />
                     <FieldTextarea
                       label="Açıklama"
@@ -286,11 +304,13 @@ export function AddRecordButton(props: AddRecordButtonProps) {
                       disabled={isPending}
                       required
                     />
-                    <FieldImage
-                      label="Görsel URL"
+                    <ImageUploader
+                      label="Motosiklet Görseli"
                       value={form.gorsel ?? ""}
                       onChange={(v) => setField("gorsel", v)}
-                      disabled={isPending}
+                      folder="motorcycles"
+                      size="small"
+                      compact
                     />
                     <FieldTextarea
                       label="Açıklama"
@@ -311,11 +331,13 @@ export function AddRecordButton(props: AddRecordButtonProps) {
                       disabled={isPending}
                       required
                     />
-                    <FieldImage
-                      label="Kapak Görsel URL"
+                    <ImageUploader
+                      label="Kapak Görseli"
                       value={form.coverUrl ?? ""}
                       onChange={(v) => setField("coverUrl", v)}
-                      disabled={isPending}
+                      folder="blog"
+                      size="small"
+                      compact
                     />
                     <FieldTextarea
                       label="Özet"

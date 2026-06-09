@@ -13,6 +13,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { updateField } from "@/app/_actions/edit-field";
 import { useEditMode } from "@/context/EditModeContext";
+import { ImageUploader } from "@/components/ImageUploader";
 
 // ─── Tipler ──────────────────────────────────────────────────────────────────
 
@@ -260,6 +261,16 @@ export function EditableWrapper({
     }
   }, [value, open, fieldType]);
 
+  // ESC ile modal kapansın (UX iyileştirme)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isPending) setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, isPending]);
+
   if (!isAdmin) return <>{children}</>;
 
   const type = fieldType ?? detectType(field, value);
@@ -449,7 +460,7 @@ export function EditableWrapper({
                   />
                 )}
 
-                {(type === "text" || type === "image") && (
+                {type === "text" && (
                   <input
                     className="input-glass w-full"
                     type="text"
@@ -459,21 +470,16 @@ export function EditableWrapper({
                   />
                 )}
 
-                {type === "image" &&
-                  typeof draft === "string" &&
-                  draft && (
-                    <div className="h-24 w-24 overflow-hidden rounded-lg border border-white/10">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={draft}
-                        alt="önizleme"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
+                {type === "image" && (
+                  <ImageUploader
+                    value={typeof draft === "string" ? draft : ""}
+                    onChange={(url) => setDraft(url)}
+                    folder={table === "siteSetting" ? "settings" : table}
+                    size="small"
+                    compact
+                    label={undefined}
+                  />
+                )}
 
                 {type === "richtext" && (
                   <RichTextEditor

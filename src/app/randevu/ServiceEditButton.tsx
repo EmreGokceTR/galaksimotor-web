@@ -38,6 +38,16 @@ export function ServiceEditButton({ service }: { service: ServiceSnapshot }) {
     }
   }, [open, service]);
 
+  // ESC ile modal kapatma
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isPending) setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, isPending]);
+
   if ((session?.user as { role?: string } | undefined)?.role !== "ADMIN") {
     return null;
   }
