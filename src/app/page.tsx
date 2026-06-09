@@ -13,8 +13,13 @@ import { FAQS } from "@/config/faq";
 import { SITE } from "@/config/site";
 import { buildPageMetadata } from "@/lib/page-meta";
 
-// Ana sayfa ISR — 60 saniyede bir yenilenir, CDN'de cache'lenir
-export const revalidate = 60;
+// Ana sayfa ISR — 1 saat boyunca CDN'de cache'lenir.
+// Admin EditableWrapper ile güncelleme yaptığında revalidatePath("/") otomatik
+// tetikleniyor (R = ["/"]); yani cache anında geçersiz oluyor — kullanıcıya
+// her zaman güncel içerik. Bu agresif cache sadece soğuk başlangıçlarda
+// 200-400ms render maliyetini elimine ediyor. Sonraki tüm istekler CDN'den
+// ANINDA döner (~30-80 ms).
+export const revalidate = 3600;
 
 const R = ["/"];
 

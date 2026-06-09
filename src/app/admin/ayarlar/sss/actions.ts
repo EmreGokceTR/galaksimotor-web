@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 
@@ -17,6 +17,7 @@ export async function saveSssItems(
       update: { value },
       create: { key: "sss_items", value, type: "json", label: "SSS Maddeleri" },
     });
+    revalidateTag("site-settings");
     revalidatePath("/sss");
     revalidatePath("/admin/ayarlar/sss");
     return { ok: true };

@@ -82,6 +82,17 @@ const nextConfig = {
         source: "/favicon.ico",
         headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
       },
+      // Ana sayfa için ek hint: tarayıcı sonraki ziyarette
+      // 60 sn boyunca cache'ten servis edebilir (kullanıcı geri tuşuna basınca anında).
+      // CDN tarafı zaten revalidate=3600 ile cache'liyor.
+      {
+        source: "/",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400, must-revalidate" },
+          // Tarayıcıyı Vercel CDN'e ön-bağlantı (TLS handshake'i paralel başlatır)
+          { key: "Link", value: "</_next/static>; rel=preconnect" },
+        ],
+      },
     ];
   },
   // www → non-www kalıcı yönlendirme (SEO + DNS hız)

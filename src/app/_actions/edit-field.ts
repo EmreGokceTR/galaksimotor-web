@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { logActivity } from "@/lib/activity-log";
@@ -51,6 +51,11 @@ export async function updateField(
   await logActivity(email, "update", `${table}:${id}:${field}`, {
     value: preview,
   });
+
+  // siteSetting cache tag'ini de yenile — layout/page'lerin getSettings cache'i temizlenir
+  if (table === "siteSetting") {
+    revalidateTag("site-settings");
+  }
 
   for (const path of paths) revalidatePath(path);
 }

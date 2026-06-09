@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cache } from "react";
-import { Inter, Poppins, Roboto } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/Navbar";
@@ -16,24 +16,19 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
 
+// Tek font (Inter) — Poppins + Roboto kaldırıldı.
+// Önceden 3 font × 4-5 weight = ~13 woff2 dosyası preload ediliyordu, bu da
+// ana sayfanın HTML'inden önce font request'lerinin paralel başlamasına ve
+// render-blocking yaratıyordu. Inter tek başına 2 weight ile yeterli.
+// İhtiyaç olursa weight subset'i artırılabilir.
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-inter",
-});
-
-const poppins = Poppins({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-  variable: "--font-poppins",
-});
-
-const roboto = Roboto({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "700", "900"],
-  display: "swap",
-  variable: "--font-roboto",
+  preload: true,
+  // Sayfayı görüntülemek için kritik olan tek font Inter — diğerlerinin
+  // istek bile gönderilmemesi için Tailwind sınıfından da çıkartıldı.
 });
 
 // Tek sorguda tüm ayarları çek; cache() ile aynı request içinde dedup yapar
@@ -212,24 +207,18 @@ export default async function RootLayout({
     ),
   };
 
-  const themeFont = st(bag, "theme_font", "inter");
   const themeFontScale = st(bag, "theme_font_scale", "100");
 
-  // Active font variable name based on selection
-  const fontVar =
-    themeFont === "poppins"
-      ? "var(--font-poppins)"
-      : themeFont === "roboto"
-      ? "var(--font-roboto)"
-      : "var(--font-inter)";
-
+  // Tek font (Inter) sabitlendi; theme_font seçimi şu an devre dışı.
+  // İleride Poppins/Roboto eklemek gerekirse dinamik import + suspense ile
+  // sadece o sayfanın isteğine göre çekilebilir.
   const themeStyle = `
-    :root { --font-body: ${fontVar}; }
+    :root { --font-body: var(--font-inter); }
     html  { font-size: ${themeFontScale}%; }
   `;
 
   return (
-    <html lang="tr" suppressHydrationWarning className={`${inter.variable} ${poppins.variable} ${roboto.variable}`}>
+    <html lang="tr" suppressHydrationWarning className={inter.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript }} />
         <style dangerouslySetInnerHTML={{ __html: themeStyle }} />

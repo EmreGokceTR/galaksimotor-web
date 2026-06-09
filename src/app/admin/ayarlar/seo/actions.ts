@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { pathKey } from "@/lib/page-meta";
@@ -28,6 +28,7 @@ export async function saveSeoPage(
       }),
     ]);
 
+    revalidateTag("site-settings");
     revalidatePath(path);
     return { ok: true };
   } catch (e: unknown) {

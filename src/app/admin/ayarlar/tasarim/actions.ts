@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 
@@ -26,6 +26,7 @@ export async function saveTasarim(
     );
 
     // Revalidate entire site since typography affects every page
+    revalidateTag("site-settings");
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e: unknown) {
