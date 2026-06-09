@@ -220,6 +220,11 @@ export default async function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning className={inter.variable}>
       <head>
+        {/* DNS prefetch & preconnect — bağlantı kurulumunu paralel başlat */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* LCP image — logo eagerly preload */}
+        <link rel="preload" as="image" href="/logos/galaksi-motor-logo.jpg" fetchPriority="high" />
         <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript }} />
         <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
         <script

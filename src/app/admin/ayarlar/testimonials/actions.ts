@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 
@@ -28,6 +28,7 @@ export async function saveTestimonials(
         });
       })
     );
+    revalidateTag("site-settings");
     revalidatePath("/");
     return { ok: true };
   } catch (e: unknown) {

@@ -26,6 +26,7 @@ export async function saveIletisim(
         });
       })
     );
+    revalidateTag("site-settings");
     revalidatePath("/");
     revalidatePath("/iletisim");
     revalidatePath("/admin/ayarlar/iletisim");
