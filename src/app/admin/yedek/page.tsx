@@ -1,6 +1,39 @@
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { list } from "@vercel/blob";
 import { BackupButton, CleanupButton } from "./BackupClient";
+
+export const dynamic = "force-dynamic";
+
+type AutoBackup = {
+  url: string;
+  filename: string;
+  uploadedAt: Date;
+  size: number;
+};
+
+async function getAutoBackups(): Promise<AutoBackup[]> {
+  try {
+    const { blobs } = await list({ prefix: "backups/" });
+    return blobs
+      .map((b) => ({
+        url: b.url,
+        filename: b.pathname.replace(/^backups\//, ""),
+        uploadedAt: new Date(b.uploadedAt),
+        size: b.size,
+      }))
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+  } catch (e) {
+    console.warn("[admin/yedek] otomatik yedek listesi alınamadı:", e);
+    return [];
+  }
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
+}
 
 export default async function MaintenancePage() {
   await requireAdmin();
@@ -8,7 +41,7 @@ export default async function MaintenancePage() {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - 30);
 
-  const [oldCount, totalLogs, recentLogs, productCount, orderCount, userCount] =
+  const [oldCount, totalLogs, recentLogs, productCount, orderCount, userCount, autoBackups] =
     await Promise.all([
       prisma.activityLog.count({ where: { timestamp: { lt: cutoff } } }),
       prisma.activityLog.count(),
@@ -19,6 +52,7 @@ export default async function MaintenancePage() {
       prisma.product.count(),
       prisma.order.count(),
       prisma.user.count(),
+      getAutoBackups(),
     ]);
 
   return (
@@ -49,6 +83,66 @@ export default async function MaintenancePage() {
           <Mini label="Log" value={totalLogs} />
         </div>
         <BackupButton />
+      </section>
+
+      {/* Otomatik Yedekler — Vercel Cron tarafından her gün 06:00 TR'de alınır */}
+      <section className="rounded-2xl border border-emerald-400/20 bg-emerald-500/[0.04] p-6 backdrop-blur-md">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="text-base">🤖</span>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-200">
+            Otomatik Yedekler
+          </h3>
+        </div>
+        <p className="mb-4 text-xs text-white/55">
+          Vercel Cron her gün <strong>06:00 (TR)</strong> saatinde veritabanı
+          snapshot'ı alıp Vercel Blob'a kaydeder. <strong>30 günden eski</strong>{" "}
+          yedekler otomatik silinir. Aşağıdan tek tıkla indirebilirsiniz.
+        </p>
+        {autoBackups.length === 0 ? (
+          <p className="rounded-lg border border-white/10 bg-white/[0.02] p-4 text-center text-xs text-white/55">
+            Henüz otomatik yedek yok. İlk yedek bu gece 06:00'da oluşacak.
+            <br />
+            <span className="text-white/35">
+              (Cron yalnızca production ortamında çalışır.)
+            </span>
+          </p>
+        ) : (
+          <ul className="divide-y divide-white/5 rounded-lg border border-white/5 bg-white/[0.015]">
+            {autoBackups.map((b) => (
+              <li
+                key={b.url}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-white/[0.02]"
+              >
+                <div className="min-w-0">
+                  <div className="font-mono text-xs text-white/85">
+                    {b.filename}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-white/45">
+                    {b.uploadedAt.toLocaleString("tr-TR", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    {" · "}
+                    {formatBytes(b.size)}
+                  </div>
+                </div>
+                <a
+                  href={b.url}
+                  download
+                  className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200 hover:border-emerald-400 hover:bg-emerald-500/20"
+                >
+                  <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 2v8M4 7l4 4 4-4M3 14h10" />
+                  </svg>
+                  İndir
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Cleanup paneli */}
