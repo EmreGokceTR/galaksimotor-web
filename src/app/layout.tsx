@@ -173,6 +173,58 @@ const localBusinessJsonLd = {
   sameAs: [SITE.social.facebook, SITE.social.youtube],
 };
 
+// WebSite schema — Google sitelinks search box ve site title için.
+// SearchAction sayesinde Google sonuçlarında doğrudan arama kutusu çıkabilir.
+const webSiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE.url}#website`,
+  name: SITE.name,
+  alternateName: "Galaksi Motor",
+  url: SITE.url,
+  inLanguage: "tr-TR",
+  publisher: { "@id": SITE.url },
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${SITE.url}/urunler?search={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
+// Organization schema — Google Knowledge Panel için.
+// LocalBusiness'tan farklı: marka kimliği ve sosyal hesapları kapsar.
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${SITE.url}#organization`,
+  name: SITE.name,
+  alternateName: "Galaksi Motor",
+  url: SITE.url,
+  logo: `${SITE.url}/logos/galaksi-motor-logo.jpg`,
+  email: SITE.email,
+  telephone: SITE.phone,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: SITE.address.line,
+    addressLocality: SITE.address.district,
+    addressRegion: SITE.address.city,
+    postalCode: SITE.address.postalCode,
+    addressCountry: SITE.address.country,
+  },
+  sameAs: [SITE.social.facebook, SITE.social.youtube].filter(Boolean),
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    telephone: SITE.phone,
+    email: SITE.email,
+    areaServed: "TR",
+    availableLanguage: ["tr"],
+  },
+};
+
 export default async function RootLayout({
   children,
 }: {
@@ -231,6 +283,18 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(localBusinessJsonLd),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(webSiteJsonLd),
           }}
         />
       </head>
