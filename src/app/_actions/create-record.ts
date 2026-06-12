@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { logActivity } from "@/lib/activity-log";
+import { pingIndexNow } from "@/lib/indexnow";
+import { SITE } from "@/config/site";
 
 // ─── Türkçe slugifier ────────────────────────────────────────────────────────
 
@@ -92,6 +94,14 @@ export async function createProductRecord(input: {
   revalidatePath("/urunler");
   revalidatePath("/admin/urunler");
   revalidatePath("/");
+
+  // Yeni ürün — Bing/Yandex'e bildir
+  void pingIndexNow([
+    `${SITE.url}/`,
+    `${SITE.url}/urunler`,
+    `${SITE.url}/urun/${product.slug}`,
+  ]);
+
   return { id: product.id, slug: product.slug };
 }
 
@@ -169,5 +179,11 @@ export async function createBlogPostRecord(input: {
 
   revalidatePath("/blog");
   revalidatePath("/admin/blog");
+
+  // Yeni blog yazısı yayınlanırsa Bing/Yandex'e bildir
+  if (post.isPublished) {
+    void pingIndexNow([`${SITE.url}/blog`, `${SITE.url}/blog/${post.slug}`]);
+  }
+
   return { id: post.id, slug: post.slug };
 }

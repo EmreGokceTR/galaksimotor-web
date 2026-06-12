@@ -4,6 +4,8 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { logActivity } from "@/lib/activity-log";
+import { pingIndexNow } from "@/lib/indexnow";
+import { SITE } from "@/config/site";
 
 const DELEGATE_MAP = {
   product: () => prisma.product,
@@ -58,4 +60,16 @@ export async function updateField(
   }
 
   for (const path of paths) revalidatePath(path);
+
+  // IndexNow — değişen sayfaları Bing/Yandex/Seznam'a bildir.
+  // Sadece kamuya açık sayfalar için (admin/, /api/, /hesabim hariç).
+  if (paths.length > 0) {
+    const publicUrls = paths
+      .filter((p) => !p.startsWith("/admin") && !p.startsWith("/api") && !p.startsWith("/hesabim"))
+      .map((p) => `${SITE.url}${p}`);
+    if (publicUrls.length > 0) {
+      // Await etmiyoruz — admin'in kayıt akışını blocklamasın
+      void pingIndexNow(publicUrls);
+    }
+  }
 }
