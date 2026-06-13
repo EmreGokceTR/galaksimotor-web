@@ -167,6 +167,81 @@ export function orderConfirmationTemplate(input: {
   };
 }
 
+// ─── Hoşgeldin (Yeni üye) ────────────────────────────────────────────────────
+
+export function welcomeTemplate(input: {
+  customerName: string;
+  loginUrl: string;
+}): { subject: string; html: string } {
+  const body = `
+    <div style="background:#0a0a0a;border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:20px;margin-bottom:18px">
+      <p style="margin:0 0 14px;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7">
+        Galaksi Motor ailesine hoş geldin, <strong style="color:#FFD700">${escapeHtml(input.customerName)}</strong>!
+        Motosiklet yedek parça, aksesuar ve servis ihtiyaçların artık bir tık ötede.
+      </p>
+      <ul style="margin:0;padding:0 0 0 18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.9">
+        <li>Aynı gün kargo, kapıda ödeme imkânı</li>
+        <li>10+ yıl tecrübe ile uzman servis ekibi</li>
+        <li>Online servis randevusu — sıra beklemeden</li>
+        <li>Orijinal parça garantisi</li>
+      </ul>
+    </div>
+    <p style="margin:14px 0 0;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7">
+      Soru veya özel siparişlerin için bize her zaman WhatsApp'tan veya
+      <a href="mailto:${SITE.email}" style="color:#FFD700;text-decoration:none">${SITE.email}</a>'dan ulaşabilirsin.
+    </p>
+  `;
+
+  return {
+    subject: "Galaksi Motor'a hoş geldin! 🏍️",
+    html: shell({
+      preheader: `Hoş geldin ${input.customerName}! Yedek parça + aksesuar + servis bir tık ötede.`,
+      heading: "Hoş geldin!",
+      body,
+      ctaUrl: input.loginUrl,
+      ctaLabel: "Ürünleri Keşfet",
+    }),
+  };
+}
+
+// ─── Şifre Sıfırlama ─────────────────────────────────────────────────────────
+
+export function passwordResetTemplate(input: {
+  resetUrl: string;
+  ttlMinutes: number;
+}): { subject: string; html: string } {
+  const body = `
+    <div style="background:#0a0a0a;border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:18px;margin-bottom:18px">
+      <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7">
+        Hesabınız için şifre sıfırlama talebinde bulundunuz. Aşağıdaki butona tıklayarak
+        yeni şifrenizi belirleyebilirsiniz. Bağlantı
+        <strong style="color:#FFD700">${input.ttlMinutes} dakika</strong> içinde geçersiz olur.
+      </p>
+    </div>
+    <p style="margin:18px 0 0;font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6">
+      Buton çalışmıyorsa bu adresi tarayıcınıza yapıştırabilirsiniz:<br/>
+      <a href="${input.resetUrl}" style="color:#FFD700;text-decoration:none;word-break:break-all">${input.resetUrl}</a>
+    </p>
+    <div style="margin-top:20px;padding:12px 14px;background:rgba(255,100,100,0.06);border:1px solid rgba(255,100,100,0.18);border-radius:8px">
+      <p style="margin:0;font-size:11px;color:rgba(255,200,200,0.85);line-height:1.6">
+        ⚠ Bu talebi siz yapmadıysanız bu maili görmezden gelebilirsiniz.
+        Mevcut şifreniz değişmeyecek. Hesap güvenliğiniz için şifrenizi kimseyle paylaşmayın.
+      </p>
+    </div>
+  `;
+
+  return {
+    subject: "Galaksi Motor — Şifre Sıfırlama",
+    html: shell({
+      preheader: `Şifre sıfırlama bağlantısı ${input.ttlMinutes} dakika geçerli.`,
+      heading: "Şifre Sıfırlama 🔐",
+      body,
+      ctaUrl: input.resetUrl,
+      ctaLabel: "Şifremi Sıfırla",
+    }),
+  };
+}
+
 // ─── Yeni Sipariş Bildirimi (Admin) ──────────────────────────────────────────
 
 export function newOrderAdminAlertTemplate(input: {

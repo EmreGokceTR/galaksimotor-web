@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
-import { sendMail } from "@/lib/mail";
+import { sendEmail } from "@/lib/mail";
+import { passwordResetTemplate } from "@/lib/email-templates";
 
 const TOKEN_TTL_MINUTES = 60;
 
@@ -42,32 +43,17 @@ export async function POST(req: Request) {
 
     // Fire-and-forget: response doesn't wait for SMTP so timing is
     // identical for existing vs. non-existing users (enumeration guard).
-    sendMail(
-      email,
-      "Galaksi Motor — Şifre Sıfırlama",
-      `
-      <div style="font-family:sans-serif;max-width:520px;color:#1a1a1a">
-        <h2 style="margin:0 0 12px">Şifre Sıfırlama</h2>
-        <p style="font-size:14px;line-height:1.6;color:#444">
-          Hesabın için şifre sıfırlama talebinde bulundun. Aşağıdaki butona tıklayarak yeni şifreni belirleyebilirsin. Bağlantı <strong>${TOKEN_TTL_MINUTES} dakika</strong> içinde geçersiz olur.
-        </p>
-        <p style="margin:24px 0">
-          <a href="${resetUrl}"
-             style="display:inline-block;background:#FFD700;color:#000;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;font-size:14px">
-            Şifremi Sıfırla
-          </a>
-        </p>
-        <p style="font-size:12px;color:#888">
-          Buton çalışmazsa bu adresi tarayıcına yapıştır:<br>
-          <a href="${resetUrl}" style="color:#aa8800;word-break:break-all">${resetUrl}</a>
-        </p>
-        <hr style="margin:24px 0;border:none;border-top:1px solid #eee">
-        <p style="font-size:12px;color:#999">
-          Bu talebi sen yapmadıysan bu maili görmezden gelebilirsin. Mevcut şifren değişmeyecek.
-        </p>
-      </div>
-      `
-    ).catch((err) => console.error("[forgot-password] e-posta gönderilemedi:", err));
+    const tpl = passwordResetTemplate({
+      resetUrl,
+      ttlMinutes: TOKEN_TTL_MINUTES,
+    });
+    void sendEmail({
+      to: email,
+      subject: tpl.subject,
+      html: tpl.html,
+      category: "password_reset",
+      actor: email,
+    });
   }
 
   // Her durumda aynı cevap (enumeration koruması).

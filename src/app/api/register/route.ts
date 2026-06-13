@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/mail";
+import { welcomeTemplate } from "@/lib/email-templates";
+import { SITE } from "@/config/site";
 
 export async function POST(request: Request) {
   // Rate limit: IP başına 15 dakikada en fazla 5 kayıt denemesi
@@ -48,6 +51,19 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: { name, email, password: hashed },
       select: { id: true, email: true, name: true },
+    });
+
+    // Hoşgeldin maili (fire-and-forget — kayıt yanıtını bloklamaz)
+    const tpl = welcomeTemplate({
+      customerName: user.name ?? "Değerli müşterimiz",
+      loginUrl: `${SITE.url}/urunler`,
+    });
+    void sendEmail({
+      to: user.email,
+      subject: tpl.subject,
+      html: tpl.html,
+      category: "welcome",
+      actor: user.email,
     });
 
     return NextResponse.json({ user }, { status: 201 });
