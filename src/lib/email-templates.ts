@@ -167,6 +167,83 @@ export function orderConfirmationTemplate(input: {
   };
 }
 
+// ─── Yeni Sipariş Bildirimi (Admin) ──────────────────────────────────────────
+
+export function newOrderAdminAlertTemplate(input: {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  shippingAddress?: string | null;
+  shippingCity?: string | null;
+  items: OrderEmailItem[];
+  subtotal: number;
+  shippingFee: number;
+  discount?: number;
+  total: number;
+  paymentId?: string | null;
+  adminOrderUrl: string;
+}): { subject: string; html: string } {
+  const itemsRows = input.items
+    .map(
+      (it) => `<tr>
+      <td style="padding:8px;font-size:13px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.06)">${escapeHtml(it.name)}</td>
+      <td align="center" style="padding:8px;font-size:13px;color:rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.06)">×${it.quantity}</td>
+      <td align="right" style="padding:8px;font-size:13px;color:#FFD700;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.06)">${fmtTRY(it.price * it.quantity)}</td>
+    </tr>`
+    )
+    .join("");
+
+  const body = `
+    <div style="background:#0a0a0a;border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:18px 16px;margin-bottom:18px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,215,0,0.7);margin-bottom:4px">Sipariş Numarası</div>
+      <div style="font-size:18px;font-weight:700;color:#fff;font-family:'Courier New',monospace">#${escapeHtml(input.orderNumber)}</div>
+      ${input.paymentId ? `<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.45)">Iyzico Payment ID: <code style="color:#FFD700">${escapeHtml(input.paymentId)}</code></div>` : ""}
+    </div>
+
+    <div style="background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:10px;padding:14px 16px;margin-bottom:18px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,215,0,0.7);margin-bottom:6px">Müşteri</div>
+      <div style="font-size:14px;color:#fff;font-weight:600">${escapeHtml(input.customerName)}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px">
+        <a href="mailto:${escapeHtml(input.customerEmail)}" style="color:#FFD700;text-decoration:none">${escapeHtml(input.customerEmail)}</a>
+        ${input.customerPhone ? ` · ${escapeHtml(input.customerPhone)}` : ""}
+      </div>
+      ${input.shippingAddress ? `<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;line-height:1.5">📍 ${escapeHtml(input.shippingAddress)}${input.shippingCity ? `, ${escapeHtml(input.shippingCity)}` : ""}</div>` : ""}
+    </div>
+
+    <table width="100%" style="border-collapse:collapse">
+      <thead><tr>
+        <th align="left" style="padding:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);border-bottom:1px solid rgba(255,215,0,0.25)">Ürün</th>
+        <th align="center" style="padding:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);border-bottom:1px solid rgba(255,215,0,0.25)">Adet</th>
+        <th align="right" style="padding:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);border-bottom:1px solid rgba(255,215,0,0.25)">Tutar</th>
+      </tr></thead>
+      <tbody>${itemsRows}</tbody>
+    </table>
+
+    <table width="100%" style="margin-top:14px">
+      ${statRow("Ara Toplam", fmtTRY(input.subtotal))}
+      ${statRow("Kargo", input.shippingFee === 0 ? "Ücretsiz" : fmtTRY(input.shippingFee))}
+      ${input.discount && input.discount > 0 ? statRow("İndirim", `-${fmtTRY(input.discount)}`) : ""}
+      <tr>
+        <td style="padding:14px 12px 0 0;font-size:12px;color:rgba(255,215,0,0.8);text-transform:uppercase;letter-spacing:1px">Toplam (Tahsil edildi)</td>
+        <td align="right" style="padding:14px 0 0;font-size:20px;color:#FFD700;font-weight:800">${fmtTRY(input.total)}</td>
+      </tr>
+    </table>
+  `;
+
+  return {
+    subject: `💰 Yeni sipariş: #${input.orderNumber} (${fmtTRY(input.total)})`,
+    html: shell({
+      preheader: `${input.customerName} - ${fmtTRY(input.total)} tutarında yeni sipariş alındı`,
+      heading: "Yeni Sipariş Alındı 💰",
+      intro: `Bir sipariş başarıyla ödendi. Lütfen hazırlamak için admin paneline gidin.`,
+      body,
+      ctaUrl: input.adminOrderUrl,
+      ctaLabel: "Admin Panelinde Aç",
+    }),
+  };
+}
+
 // ─── Randevu Bildirimi (Müşteri) ─────────────────────────────────────────────
 
 export function appointmentConfirmationTemplate(input: {

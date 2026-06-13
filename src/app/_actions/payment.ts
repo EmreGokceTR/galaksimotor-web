@@ -7,6 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { getIyzico, isIyzicoConfigured } from "@/lib/iyzico";
 import { logActivity } from "@/lib/activity-log";
 import { createInvoice } from "@/lib/e-invoice";
+import { sendEmail } from "@/lib/mail";
+import {
+  orderConfirmationTemplate,
+  newOrderAdminAlertTemplate,
+} from "@/lib/email-templates";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -277,6 +282,7 @@ export async function verifyPaymentCallback(
   );
 
   // Fatura URL'sini oluştur / e-fatura gönder (hata akışı bloklamaz)
+  let invoicePdfUrl: string | null = null;
   try {
     const invoiceResult = await createInvoice(
       {
@@ -308,6 +314,7 @@ export async function verifyPaymentCallback(
       updated.id
     );
     if (invoiceResult.ok) {
+      invoicePdfUrl = invoiceResult.pdfUrl;
       await prisma.order.update({
         where: { id: updated.id },
         data: { invoicePdfUrl: invoiceResult.pdfUrl },
@@ -315,6 +322,101 @@ export async function verifyPaymentCallback(
     }
   } catch (e) {
     console.error("[Invoice] hata:", e);
+  }
+
+  // ── E-posta bildirimleri (müşteri + admin) ──
+  // Mail gönderim hatası ödeme akışını bloklamaz; sessizce loglanır.
+  try {
+    const siteUrl = getSiteUrl();
+    const customerName =
+      updated.invoiceFullName ??
+      updated.shippingName ??
+      updated.user.name ??
+      "Değerli müşterimiz";
+    const items = updated.items.map((it) => ({
+      name: it.name,
+      quantity: it.quantity,
+      price: Number(it.price),
+    }));
+
+    // PDF faturayı email ekine indir (sadece varsa)
+    let invoiceAttachment:
+      | { filename: string; content: Buffer; contentType: string }[]
+      | undefined;
+    if (invoicePdfUrl) {
+      try {
+        const pdfResp = await fetch(invoicePdfUrl, {
+          signal: AbortSignal.timeout(8000),
+        });
+        if (pdfResp.ok) {
+          const buf = Buffer.from(await pdfResp.arrayBuffer());
+          invoiceAttachment = [
+            {
+              filename: `Fatura-${updated.orderNumber}.pdf`,
+              content: buf,
+              contentType: "application/pdf",
+            },
+          ];
+        }
+      } catch (e) {
+        console.warn("[mail] fatura PDF indirilemedi:", e);
+      }
+    }
+
+    // 1) Müşteriye sipariş onay maili (PDF fatura ekli)
+    if (updated.user.email) {
+      const confirm = orderConfirmationTemplate({
+        customerName,
+        orderNumber: updated.orderNumber,
+        items,
+        subtotal: Number(updated.subtotal),
+        shippingFee: Number(updated.shippingFee),
+        discount: updated.discountAmount
+          ? Number(updated.discountAmount)
+          : undefined,
+        total: Number(updated.total),
+        trackOrderUrl: `${siteUrl}/hesabim/siparislerim`,
+      });
+      void sendEmail({
+        to: updated.user.email,
+        subject: confirm.subject,
+        html: confirm.html,
+        category: "order_confirmation",
+        attachments: invoiceAttachment,
+        actor: updated.user.email,
+      });
+    }
+
+    // 2) Admin'e yeni sipariş bildirimi
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      const alert = newOrderAdminAlertTemplate({
+        orderNumber: updated.orderNumber,
+        customerName,
+        customerEmail: updated.user.email ?? "—",
+        customerPhone: updated.shippingPhone,
+        shippingAddress: updated.shippingAddress,
+        shippingCity: updated.shippingCity,
+        items,
+        subtotal: Number(updated.subtotal),
+        shippingFee: Number(updated.shippingFee),
+        discount: updated.discountAmount
+          ? Number(updated.discountAmount)
+          : undefined,
+        total: Number(updated.total),
+        paymentId: result.paymentId,
+        adminOrderUrl: `${siteUrl}/admin/siparisler`,
+      });
+      void sendEmail({
+        to: adminEmail,
+        subject: alert.subject,
+        html: alert.html,
+        category: "admin_new_order",
+        actor: "system",
+      });
+    }
+  } catch (e) {
+    console.error("[Mail] sipariş onay e-postası hatası:", e);
   }
 
   return { ok: true, orderId: order.id, orderNumber: order.orderNumber };

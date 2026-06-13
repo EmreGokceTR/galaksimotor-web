@@ -4,6 +4,11 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/config/site";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/mail";
+import {
+  appointmentConfirmationTemplate,
+  appointmentAdminAlertTemplate,
+} from "@/lib/email-templates";
 
 type Body = {
   serviceId: string;
@@ -132,6 +137,62 @@ export async function POST(req: Request) {
     },
     select: { id: true },
   });
+
+  // ── E-posta bildirimleri (müşteri + admin) ──
+  // Mail gönderim hatası randevu oluşumunu bloklamaz; arka planda çalışır.
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { email: true, name: true },
+    });
+    const customerName = user?.name ?? "Değerli müşterimiz";
+    const motoLabel = [body.motoBrand, body.motoModel, body.motoYear]
+      .filter(Boolean)
+      .join(" ");
+
+    // 1) Müşteriye randevu onayı
+    if (user?.email) {
+      const tpl = appointmentConfirmationTemplate({
+        customerName,
+        serviceName: service.name,
+        duration: service.duration,
+        scheduledAt: date,
+        motoLabel: motoLabel || undefined,
+        note: body.note,
+      });
+      void sendEmail({
+        to: user.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        category: "appointment_confirmation",
+        actor: user.email,
+      });
+    }
+
+    // 2) Admin'e bildirim
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      const tpl = appointmentAdminAlertTemplate({
+        customerName,
+        customerEmail: user?.email ?? "—",
+        serviceName: service.name,
+        duration: service.duration,
+        scheduledAt: date,
+        motoLabel: motoLabel || undefined,
+        note: body.note,
+        adminUrl: `${SITE.url}/admin/randevular`,
+      });
+      void sendEmail({
+        to: adminEmail,
+        subject: tpl.subject,
+        html: tpl.html,
+        category: "admin_new_appointment",
+        actor: "system",
+      });
+    }
+  } catch (e) {
+    console.error("[Mail] randevu e-postası hatası:", e);
+  }
 
   return NextResponse.json(appointment, { status: 201 });
 }
