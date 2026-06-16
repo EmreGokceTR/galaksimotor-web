@@ -65,12 +65,19 @@ export default function middleware(req: NextRequest) {
     req.headers.get("x-real-ip") ??
     "unknown";
 
-  // ── Auth & registration endpoints (brute-force protection) ─────────────
-  // 20 attempts per IP per minute
-  if (
-    path.startsWith("/api/auth") ||
-    path === "/api/register"
-  ) {
+  // ── Auth WRITE endpoints (brute-force protection) ──────────────────────
+  // signin/signout/callback/credentials → 20 per IP per minute.
+  // /api/auth/session, /api/auth/csrf, /api/auth/providers gibi OKUMA
+  // endpoint'leri NextAuth tarafından sık (her sayfa yüklemesinde + 5 dk
+  // interval) çağrılır — bunları rate limit'ten muaf tut, aksi takdirde
+  // sıradan kullanıcı 429 alır ve CLIENT_FETCH_ERROR ile login bozulur.
+  const isAuthWritePath =
+    path === "/api/auth/signin" ||
+    path.startsWith("/api/auth/signin/") ||
+    path === "/api/auth/signout" ||
+    path.startsWith("/api/auth/callback/") ||
+    path === "/api/register";
+  if (isAuthWritePath) {
     if (isRateLimited(ip, "auth", 20, 60_000)) {
       return tooManyRequests(60);
     }
