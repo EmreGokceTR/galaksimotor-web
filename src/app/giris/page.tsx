@@ -1,9 +1,9 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { FormEvent, useState, Suspense } from "react";
+import { FormEvent, useEffect, useState, Suspense } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 /* ─── Easing constants (satisfies framer-motion Easing type) ─────────────── */
@@ -142,8 +142,7 @@ function GlassInput({
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  // Varsayılan: ana sayfa. Eski "/hesabim" davranışı, kullanıcı yanlışlıkla
-  // gerçekten oturum açtığı halde /giris'te kalmasına sebep oluyordu.
+  const { status } = useSession();
   const callbackUrl = params.get("callbackUrl") || "/";
 
   const [email, setEmail] = useState("");
@@ -151,21 +150,25 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Oturum zaten açıksa anasayfaya (veya callbackUrl'e) gönder.
+  useEffect(() => {
+    if (status === "authenticated") {
+      window.location.replace(callbackUrl);
+    }
+  }, [status, callbackUrl]);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     const res = await signIn("credentials", { email, password, redirect: false });
-    if (res?.error) {
-      setLoading(false);
-      setError("E-posta veya şifre hatalı.");
+    if (res?.ok && !res.error) {
+      // Hard navigation — session cookie sunucudan yeniden okunur.
+      window.location.assign(callbackUrl);
       return;
     }
-    // Başarılı giriş — hard navigation ile yönlendir.
-    // router.push() bazen client cache'te kalıyor ve sayfa /giris'te asılı
-    // kalıyordu. window.location.assign ise tarayıcıya tam yenileme yaptırır
-    // ve session cookie ile yeni session sunucudan çekilir.
-    window.location.assign(callbackUrl);
+    setLoading(false);
+    setError("E-posta veya şifre hatalı.");
   }
 
   const container: Variants = {
