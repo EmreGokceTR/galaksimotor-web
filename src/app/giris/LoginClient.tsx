@@ -249,10 +249,14 @@ function LoginForm({ callbackUrl }: { callbackUrl: string }) {
         background: "linear-gradient(160deg, #0d0d0d 0%, #111111 100%)",
       }}
     >
+      {/* initial="visible" → form her durumda görünür. Animation efekti
+          variants çalışsa gösteri olur, çalışmasa bile statik görünür kalır.
+          Daha önce initial="hidden" idi; bazı SSR/hydration durumlarında
+          'visible' state'e geçemediği için form opacity:0'da takılıyordu. */}
       <motion.div
         className="w-full max-w-[400px]"
         variants={container}
-        initial="hidden"
+        initial="visible"
         animate="visible"
       >
         <motion.div
