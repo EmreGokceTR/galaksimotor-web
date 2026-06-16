@@ -1,9 +1,8 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { FormEvent, useState, Suspense } from "react";
+import { FormEvent, useState } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 const EASE_IO = [0.4, 0, 0.2, 1] as const;
@@ -177,17 +176,17 @@ function GlassInput({
   );
 }
 
-function LoginForm() {
-  const params = useSearchParams();
-  // Her zaman ana sayfaya gönder — login sonrası "yine giriş" sayfasında
-  // takılıp kalmasın. callbackUrl varsa ona, yoksa "/".
-  const callbackUrl = params.get("callbackUrl") || "/";
-
+function LoginForm({
+  csrfToken,
+  callbackUrl,
+}: {
+  csrfToken: string;
+  callbackUrl: string;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleCredentials(e: FormEvent) {
     e.preventDefault();
@@ -213,51 +212,9 @@ function LoginForm() {
     }
   }
 
-  async function handleGoogle() {
-    if (googleLoading) return;
-    setGoogleLoading(true);
-    setError(null);
-    try {
-      // ── NATIVE HTML FORM POST ─────────────────────────────────────────
-      // next-auth-react'in signIn() fonksiyonunu KULLANMIYORUZ. JS tabanlı
-      // fetch+redirect zinciri tarayıcı eklentileri, eski client bundle'ı,
-      // veya beklenmedik hatalardan etkilenebiliyordu.
-      //
-      // Bu yöntem: CSRF token alıp, geçici bir <form> oluşturup natif
-      // submit() ile POST atıyoruz. Tarayıcı 302 yönlendirmesini otomatik
-      // izler — bu next-auth'un default davranışı ve her zaman çalışır.
-      // ─────────────────────────────────────────────────────────────────
-      const csrfRes = await fetch("/api/auth/csrf", {
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-      if (!csrfRes.ok) throw new Error("CSRF alınamadı");
-      const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
-
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = "/api/auth/signin/google";
-      form.style.display = "none";
-
-      const csrfInput = document.createElement("input");
-      csrfInput.type = "hidden";
-      csrfInput.name = "csrfToken";
-      csrfInput.value = csrfToken;
-      form.appendChild(csrfInput);
-
-      const callbackInput = document.createElement("input");
-      callbackInput.type = "hidden";
-      callbackInput.name = "callbackUrl";
-      callbackInput.value = callbackUrl;
-      form.appendChild(callbackInput);
-
-      document.body.appendChild(form);
-      form.submit();
-    } catch {
-      setGoogleLoading(false);
-      setError("Google girişi başlatılamadı. Lütfen tekrar deneyin.");
-    }
-  }
+  // Google butonu artık native HTML form (submit type) — handleGoogle YOK.
+  // Bu garantili çalışır: JS yüklenmese veya bozuksa bile tarayıcı form
+  // POST'unu yapar, server 302 döner, tarayıcı Google'a gider.
 
   const container: Variants = {
     hidden: { opacity: 0 },
@@ -318,24 +275,27 @@ function LoginForm() {
             backdropFilter: "blur(20px)",
           }}
         >
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={googleLoading || loading}
-            className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold text-[#1a1a1a] transition-transform active:scale-[0.97] hover:scale-[1.015] disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ background: "#f5f5f5" }}
+          {/* Native HTML form POST → /api/auth/signin/google → 302 → Google.
+              JS'e bağımlı DEĞİL. Tarayıcı eklentileri, eski JS bundle veya
+              fetch sorunlarından etkilenmez. CSRF token sunucudan SSR ile
+              gömülür. */}
+          <form
+            method="POST"
+            action="/api/auth/signin/google"
+            className="w-full"
           >
-            {googleLoading ? (
-              <span className="flex items-center gap-2">
-                <LoadingSpinner /> Yönlendiriliyor...
-              </span>
-            ) : (
-              <>
-                <GoogleIcon />
-                Google ile Giriş Yap
-              </>
-            )}
-          </button>
+            <input type="hidden" name="csrfToken" value={csrfToken} />
+            <input type="hidden" name="callbackUrl" value={callbackUrl} />
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold text-[#1a1a1a] transition-transform active:scale-[0.97] hover:scale-[1.015] disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ background: "#f5f5f5" }}
+            >
+              <GoogleIcon />
+              Google ile Giriş Yap
+            </button>
+          </form>
 
           <div className="my-5 flex items-center gap-3">
             <div
@@ -389,7 +349,7 @@ function LoginForm() {
             </AnimatePresence>
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={loading}
               className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-brand-black transition-transform active:scale-[0.97] hover:scale-[1.015] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background:
@@ -451,26 +411,17 @@ function LoadingSpinner() {
   );
 }
 
-export default function LoginClient() {
+export default function LoginClient({
+  csrfToken,
+  callbackUrl,
+}: {
+  csrfToken: string;
+  callbackUrl: string;
+}) {
   return (
     <div className="flex" style={{ minHeight: "calc(100vh - 65px)" }}>
       <LeftPanel />
-      <Suspense
-        fallback={
-          <div
-            className="flex flex-1 items-center justify-center"
-            style={{ background: "#111111" }}
-          >
-            <motion.div
-              className="w-6 h-6 rounded-full border-2 border-brand-yellow border-t-transparent"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-            />
-          </div>
-        }
-      >
-        <LoginForm />
-      </Suspense>
+      <LoginForm csrfToken={csrfToken} callbackUrl={callbackUrl} />
     </div>
   );
 }
