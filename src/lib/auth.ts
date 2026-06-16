@@ -68,6 +68,19 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    // Yönlendirme garantisi: NextAuth bazen Google callback'inden sonra
+    // /giris'e geri atabiliyor. Bu callback her zaman aynı origin'deki
+    // güvenli bir hedefe çevirir; tanınmayan URL gelirse ana sayfaya.
+    async redirect({ url, baseUrl }) {
+      try {
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        const u = new URL(url);
+        if (u.origin === baseUrl) return url;
+      } catch {
+        // bozuk URL → ana sayfa
+      }
+      return baseUrl;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
