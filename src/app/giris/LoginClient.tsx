@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 const EASE_IO = [0.4, 0, 0.2, 1] as const;
@@ -176,17 +176,31 @@ function GlassInput({
   );
 }
 
-function LoginForm({
-  csrfToken,
-  callbackUrl,
-}: {
-  csrfToken: string;
-  callbackUrl: string;
-}) {
+function LoginForm({ callbackUrl }: { callbackUrl: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // CSRF token client-side fetch ediliyor. /api/auth/csrf çağrısı
+  // hem token döndürür hem `__Host-next-auth.csrf-token` cookie'sini
+  // tarayıcıya yazar. POST /api/auth/signin/google'da NextAuth bu cookie
+  // ile form'daki token'ı eşleştirip CSRF kontrolünü geçirir.
+  const [csrfToken, setCsrfToken] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/csrf", { credentials: "same-origin", cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { csrfToken: string }) => {
+        if (!cancelled) setCsrfToken(d.csrfToken);
+      })
+      .catch(() => {
+        /* sessizce yut — kullanıcı butona basana kadar gerek yok */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleCredentials(e: FormEvent) {
     e.preventDefault();
@@ -276,9 +290,10 @@ function LoginForm({
           }}
         >
           {/* Native HTML form POST → /api/auth/signin/google → 302 → Google.
-              JS'e bağımlı DEĞİL. Tarayıcı eklentileri, eski JS bundle veya
-              fetch sorunlarından etkilenmez. CSRF token sunucudan SSR ile
-              gömülür. */}
+              JS bundle bozulsa bile butona basılınca tarayıcı POST yapar
+              ve sunucudan dönen 302'yi izler.
+              CSRF token mount sırasında client-side fetch ile alınır
+              (cookie de aynı request'te set olur). */}
           <form
             method="POST"
             action="/api/auth/signin/google"
@@ -286,14 +301,15 @@ function LoginForm({
           >
             <input type="hidden" name="csrfToken" value={csrfToken} />
             <input type="hidden" name="callbackUrl" value={callbackUrl} />
+            <input type="hidden" name="json" value="false" />
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !csrfToken}
               className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold text-[#1a1a1a] transition-transform active:scale-[0.97] hover:scale-[1.015] disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: "#f5f5f5" }}
             >
               <GoogleIcon />
-              Google ile Giriş Yap
+              {csrfToken ? "Google ile Giriş Yap" : "Hazırlanıyor..."}
             </button>
           </form>
 
@@ -412,16 +428,14 @@ function LoadingSpinner() {
 }
 
 export default function LoginClient({
-  csrfToken,
   callbackUrl,
 }: {
-  csrfToken: string;
   callbackUrl: string;
 }) {
   return (
     <div className="flex" style={{ minHeight: "calc(100vh - 65px)" }}>
       <LeftPanel />
-      <LoginForm csrfToken={csrfToken} callbackUrl={callbackUrl} />
+      <LoginForm callbackUrl={callbackUrl} />
     </div>
   );
 }
