@@ -218,20 +218,41 @@ function LoginForm() {
     setGoogleLoading(true);
     setError(null);
     try {
-      // redirect: false → server bize JSON `{url}` döner, navigasyonu
-      // EL İLE yaparız. Bu, next-auth-react client'ın bazı tarayıcı/build
-      // varyantlarında otomatik yönlendirmeyi atlamasını bypass eder.
-      const res = await signIn("google", {
-        callbackUrl,
-        redirect: false,
+      // ── NATIVE HTML FORM POST ─────────────────────────────────────────
+      // next-auth-react'in signIn() fonksiyonunu KULLANMIYORUZ. JS tabanlı
+      // fetch+redirect zinciri tarayıcı eklentileri, eski client bundle'ı,
+      // veya beklenmedik hatalardan etkilenebiliyordu.
+      //
+      // Bu yöntem: CSRF token alıp, geçici bir <form> oluşturup natif
+      // submit() ile POST atıyoruz. Tarayıcı 302 yönlendirmesini otomatik
+      // izler — bu next-auth'un default davranışı ve her zaman çalışır.
+      // ─────────────────────────────────────────────────────────────────
+      const csrfRes = await fetch("/api/auth/csrf", {
+        credentials: "same-origin",
+        cache: "no-store",
       });
-      if (res?.url) {
-        window.location.href = res.url;
-        return;
-      }
-      // Fallback: server doğrudan signin endpoint'ine GET → form sayfası
-      // gösterir, ama oradan POST otomatik tetiklenir.
-      window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      if (!csrfRes.ok) throw new Error("CSRF alınamadı");
+      const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "/api/auth/signin/google";
+      form.style.display = "none";
+
+      const csrfInput = document.createElement("input");
+      csrfInput.type = "hidden";
+      csrfInput.name = "csrfToken";
+      csrfInput.value = csrfToken;
+      form.appendChild(csrfInput);
+
+      const callbackInput = document.createElement("input");
+      callbackInput.type = "hidden";
+      callbackInput.name = "callbackUrl";
+      callbackInput.value = callbackUrl;
+      form.appendChild(callbackInput);
+
+      document.body.appendChild(form);
+      form.submit();
     } catch {
       setGoogleLoading(false);
       setError("Google girişi başlatılamadı. Lütfen tekrar deneyin.");
