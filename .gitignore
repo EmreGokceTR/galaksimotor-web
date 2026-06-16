@@ -33,6 +33,10 @@ public/invoices/*.pdf
 # Yerel proje belgeleri (kullanıcının kişisel notları)
 GALAKSİ MOTOR CLAUDE CODE SOHBET YEDEĞİ/
 GALAKSİ MOTOR ÖNEMLİ BİLGİLER.docx
+GALAKSİ MOTOR - GÜNCEL BİLGİLER.docx
 İYZİCO KONTRAT SÖZLEŞME.pdf
 iyzico-logo-pack.zip
 start-dev.ps1
+
+# Hassas sırlar içeren scriptler (kişisel bilgisayarda kalır)
+scripts/generate_guncel_docx.py
