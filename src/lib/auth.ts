@@ -6,45 +6,22 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { rateLimit } from "./rate-limit";
 
-const useSecureCookies = (process.env.NEXTAUTH_URL ?? "").startsWith("https://");
-const cookiePrefix = useSecureCookies ? "__Secure-" : "";
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   debug: process.env.NODE_ENV === "development",
+  // Vercel proxy'sinin arkasında host doğrulaması — NEXTAUTH_URL'e güven.
+  // Bu olmadan OAuth callback'te host mismatch yüzünden "state cookie missing"
+  // hatası alınabiliyor.
+  useSecureCookies: (process.env.NEXTAUTH_URL ?? "").startsWith("https://"),
   pages: {
     signIn: "/giris",
   },
-  cookies: {
-    sessionToken: {
-      name: `${cookiePrefix}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
-      },
-    },
-    callbackUrl: {
-      name: `${cookiePrefix}next-auth.callback-url`,
-      options: {
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
-      },
-    },
-    csrfToken: {
-      name: `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
-      },
-    },
-  },
+  // Not: özel `cookies` bloğu KALDIRILDI. NextAuth v4 production'da otomatik
+  // olarak __Secure-/__Host- prefix'lerini uygular. Manuel config www↔non-www
+  // redirect sırasında state cookie kaybına neden oluyordu — Google OAuth
+  // "error=google" / "OAuthCallback" hatalarının başlıca sebebi buydu.
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
