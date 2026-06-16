@@ -213,12 +213,29 @@ function LoginForm() {
     }
   }
 
-  function handleGoogle() {
+  async function handleGoogle() {
     if (googleLoading) return;
     setGoogleLoading(true);
-    // redirect: true (varsayılan) → NextAuth Google'a yönlendirir, dönüşte
-    // callbackUrl'e (ana sayfa) bizi atar.
-    signIn("google", { callbackUrl });
+    setError(null);
+    try {
+      // redirect: false → server bize JSON `{url}` döner, navigasyonu
+      // EL İLE yaparız. Bu, next-auth-react client'ın bazı tarayıcı/build
+      // varyantlarında otomatik yönlendirmeyi atlamasını bypass eder.
+      const res = await signIn("google", {
+        callbackUrl,
+        redirect: false,
+      });
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
+      // Fallback: server doğrudan signin endpoint'ine GET → form sayfası
+      // gösterir, ama oradan POST otomatik tetiklenir.
+      window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+    } catch {
+      setGoogleLoading(false);
+      setError("Google girişi başlatılamadı. Lütfen tekrar deneyin.");
+    }
   }
 
   const container: Variants = {
