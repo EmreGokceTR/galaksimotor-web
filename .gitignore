@@ -24,8 +24,9 @@ build
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
 
-# Yedek ve dump dosyaları — repoya girmemeli
+# Yedek ve dump dosyaları — repoya girmemeli (PII içerir)
 *.sql
+prisma/backup-*.json
 dosya_yapisi.txt
 tsconfig.tsbuildinfo
 public/invoices/*.pdf

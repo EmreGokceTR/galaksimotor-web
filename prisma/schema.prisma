@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Çalışma zamanı: transaction-mode pooler (pgbouncer, port 6543)
+  url       = env("DATABASE_URL")
+  // Migration / db push: session-mode pooler (port 5432)
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -322,7 +325,7 @@ model BlogPost {
   title     String
   slug      String   @unique
   excerpt   String?  @db.Text
-  content   String   @db.LongText
+  content   String   @db.Text
   coverUrl  String?
   isPublished Boolean @default(false)
   publishedAt DateTime?
