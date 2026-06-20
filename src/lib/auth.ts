@@ -5,6 +5,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { rateLimit } from "./rate-limit";
+import { sendEmail } from "./mail";
+import { welcomeTemplate } from "./email-templates";
+import { SITE } from "@/config/site";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -67,6 +70,30 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  // Adapter yeni bir kullanıcı oluşturduğunda tetiklenir — yani SADECE
+  // Google ile İLK kez giriş yapıldığında (credentials kaydı /api/register
+  // üzerinden gittiği için burada çift mail olmaz). Hoşgeldin maili gönderir.
+  events: {
+    async createUser({ user }) {
+      if (!user.email) return;
+      try {
+        const tpl = welcomeTemplate({
+          customerName: user.name ?? "Değerli müşterimiz",
+          loginUrl: `${SITE.url}/urunler`,
+        });
+        await sendEmail({
+          to: user.email,
+          subject: tpl.subject,
+          html: tpl.html,
+          category: "welcome",
+          actor: user.email,
+        });
+      } catch (e) {
+        // Mail hatası giriş akışını bloklamamalı.
+        console.error("[auth] hoşgeldin maili gönderilemedi:", e);
+      }
+    },
+  },
   callbacks: {
     // Yönlendirme garantisi: NextAuth bazen Google callback'inden sonra
     // /giris'e geri atabiliyor. Bu callback her zaman aynı origin'deki
