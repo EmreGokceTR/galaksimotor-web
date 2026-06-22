@@ -15,6 +15,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
+import { getSocialLinks } from "@/lib/social";
 
 // Tek font (Inter) — Poppins + Roboto kaldırıldı.
 // Önceden 3 font × 4-5 weight = ~13 woff2 dosyası preload ediliyordu, bu da
@@ -232,6 +233,15 @@ export default async function RootLayout({
 }) {
   const bag = await fetchSettings();
 
+  // Sosyal medya linkleri admin'den (JSON-LD sameAs için)
+  const sameAs = (await getSocialLinks()).map((s) => s.url);
+  const localBusiness = sameAs.length
+    ? { ...localBusinessJsonLd, sameAs }
+    : localBusinessJsonLd;
+  const organization = sameAs.length
+    ? { ...organizationJsonLd, sameAs }
+    : organizationJsonLd;
+
   const navSettings = {
     logoPart1: st(bag, "logo_name_part1", "Galaksi"),
     logoPart2: st(bag, "logo_name_part2", "Motor"),
@@ -282,13 +292,13 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(localBusinessJsonLd),
+            __html: JSON.stringify(localBusiness),
           }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationJsonLd),
+            __html: JSON.stringify(organization),
           }}
         />
         <script

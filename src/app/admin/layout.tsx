@@ -22,6 +22,7 @@ const NAV = [
   { href: "/admin/ayarlar/iletisim", label: "İletişim Bilgileri", icon: "📍" },
   { href: "/admin/ayarlar/kargo", label: "Kargo & Teslimat", icon: "🚚" },
   { href: "/admin/ayarlar/calisma-saatleri", label: "Çalışma Saatleri", icon: "🕒" },
+  { href: "/admin/ayarlar/sosyal-medya", label: "Sosyal Medya", icon: "🔗" },
   { href: "/admin/ayarlar/testimonials", label: "Öne Çıkan Yorumlar", icon: "⭐" },
   { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },
   { href: "/admin/ayarlar/sss", label: "SSS İçeriği", icon: "❓" },
