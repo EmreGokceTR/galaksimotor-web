@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { AdminNav } from "./AdminNav";
+import { AdminSearch } from "./AdminSearch";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin · Galaksi Motor" };
@@ -67,12 +68,15 @@ export default async function AdminLayout({
             Hoşgeldin, <span className="text-white">{admin.name ?? admin.email}</span>
           </p>
         </div>
-        <Link
-          href="/"
-          className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/70 hover:text-brand-yellow"
-        >
-          ← Siteye Dön
-        </Link>
+        <div className="flex items-center gap-2">
+          <AdminSearch />
+          <Link
+            href="/"
+            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/70 hover:text-brand-yellow"
+          >
+            ← Siteye Dön
+          </Link>
+        </div>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
