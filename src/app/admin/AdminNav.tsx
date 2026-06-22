@@ -5,7 +5,13 @@ import { usePathname } from "next/navigation";
 
 export type NavItem = { href: string; label: string; icon: string };
 
-export function AdminNav({ items }: { items: NavItem[] }) {
+export function AdminNav({
+  items,
+  badges = {},
+}: {
+  items: NavItem[];
+  badges?: Record<string, number>;
+}) {
   const pathname = usePathname();
 
   function isActive(href: string): boolean {
@@ -18,6 +24,7 @@ export function AdminNav({ items }: { items: NavItem[] }) {
       <ul className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-x-visible">
         {items.map((n) => {
           const active = isActive(n.href);
+          const badge = badges[n.href] ?? 0;
           return (
             <li key={n.href}>
               <Link
@@ -30,7 +37,12 @@ export function AdminNav({ items }: { items: NavItem[] }) {
                 }`}
               >
                 <span className="text-base opacity-80">{n.icon}</span>
-                {n.label}
+                <span className="flex-1">{n.label}</span>
+                {badge > 0 && (
+                  <span className="ml-auto inline-flex min-w-[20px] items-center justify-center rounded-full bg-rose-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                )}
               </Link>
             </li>
           );

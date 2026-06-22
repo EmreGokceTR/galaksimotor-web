@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/prisma";
 import { AdminNav } from "./AdminNav";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ const NAV = [
   { href: "/admin/hizmetler", label: "Hizmetler", icon: "🔧" },
   { href: "/admin/kullanicilar", label: "Kullanıcılar", icon: "👥" },
   { href: "/admin/ayarlar/iletisim", label: "İletişim Bilgileri", icon: "📍" },
+  { href: "/admin/ayarlar/kargo", label: "Kargo & Teslimat", icon: "🚚" },
   { href: "/admin/ayarlar/testimonials", label: "Öne Çıkan Yorumlar", icon: "⭐" },
   { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },
   { href: "/admin/ayarlar/sss", label: "SSS İçeriği", icon: "❓" },
@@ -34,6 +36,16 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const admin = await requireAdmin();
+
+  // Nav rozetleri için bekleyen iş sayıları (tek bakışta yapılacaklar)
+  const [pendingOrders, pendingAppointments] = await Promise.all([
+    prisma.order.count({ where: { status: "PENDING" } }),
+    prisma.appointment.count({ where: { status: "PENDING" } }),
+  ]);
+  const navBadges: Record<string, number> = {
+    "/admin/siparisler": pendingOrders,
+    "/admin/randevular": pendingAppointments,
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -60,7 +72,7 @@ export default async function AdminLayout({
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <AdminNav items={NAV} />
+          <AdminNav items={NAV} badges={navBadges} />
         </aside>
 
         <section className="min-w-0">{children}</section>
