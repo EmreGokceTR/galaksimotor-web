@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin", label: "Genel Bakış", icon: "📊" },
   { href: "/admin/siparisler", label: "Siparişler", icon: "📦" },
   { href: "/admin/randevular", label: "Randevular", icon: "📅" },
+  { href: "/admin/hasar-dosyalari", label: "Hasar Dosyaları", icon: "📂" },
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
   { href: "/admin/kategoriler", label: "Kategoriler", icon: "🗂" },
   { href: "/admin/kuponlar", label: "Kuponlar", icon: "🎟" },
@@ -38,13 +39,15 @@ export default async function AdminLayout({
   const admin = await requireAdmin();
 
   // Nav rozetleri için bekleyen iş sayıları (tek bakışta yapılacaklar)
-  const [pendingOrders, pendingAppointments] = await Promise.all([
+  const [pendingOrders, pendingAppointments, newClaims] = await Promise.all([
     prisma.order.count({ where: { status: "PENDING" } }),
     prisma.appointment.count({ where: { status: "PENDING" } }),
+    prisma.damageClaim.count({ where: { status: "NEW" } }),
   ]);
   const navBadges: Record<string, number> = {
     "/admin/siparisler": pendingOrders,
     "/admin/randevular": pendingAppointments,
+    "/admin/hasar-dosyalari": newClaims,
   };
 
   return (

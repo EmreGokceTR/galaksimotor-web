@@ -446,6 +446,94 @@ export function contactConfirmationTemplate(input: {
   };
 }
 
+// ─── Değer Kaybı / Hasar Dosyası (Müşteri Teyit) ─────────────────────────────
+
+const CLAIM_TYPE_LABEL: Record<string, string> = {
+  DEGER_KAYBI: "Araç Değer Kaybı",
+  HASAR_IHBAR: "Hasar İhbar Dosyası",
+  HER_IKISI: "Değer Kaybı + Hasar İhbar",
+};
+
+export function damageClaimConfirmationTemplate(input: {
+  customerName: string;
+  claimNumber: string;
+  type: string;
+}): { subject: string; html: string } {
+  const typeLabel = CLAIM_TYPE_LABEL[input.type] ?? input.type;
+  const body = `
+    <div style="background:#0a0a0a;border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:18px 16px;margin-bottom:18px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,215,0,0.7);margin-bottom:4px">Dosya Numaranız</div>
+      <div style="font-size:18px;font-weight:700;color:#fff;font-family:'Courier New',monospace">${escapeHtml(input.claimNumber)}</div>
+      <div style="margin-top:8px;font-size:13px;color:rgba(255,255,255,0.7)">Talep türü: <strong style="color:#FFD700">${escapeHtml(typeLabel)}</strong></div>
+    </div>
+    <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.85)">
+      Başvurunuz tarafımıza ulaştı. Uzman ekibimiz dosyanızı inceleyip <strong>en kısa sürede</strong> sizi telefonla arayacak ve sürecin nasıl ilerleyeceğini anlatacaktır.
+    </p>
+    <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.6)">
+      Trafik kazası sonrası aracınızda oluşan değer kaybını, sigorta şirketinden talep etme hakkınız bulunmaktadır. Tüm süreci sizin adınıza takip ediyoruz.
+    </p>
+  `;
+  return {
+    subject: `Başvurunuz alındı — Dosya ${input.claimNumber}`,
+    html: shell({
+      preheader: `${typeLabel} başvurunuz alındı. Dosya: ${input.claimNumber}`,
+      heading: "Başvurunuz alındı 📂",
+      intro: `Merhaba <strong>${escapeHtml(input.customerName)}</strong>, ${escapeHtml(typeLabel.toLowerCase())} talebiniz başarıyla oluşturuldu.`,
+      body,
+    }),
+  };
+}
+
+// ─── Değer Kaybı / Hasar Dosyası (Admin Uyarı) ───────────────────────────────
+
+export function damageClaimAdminAlertTemplate(input: {
+  claimNumber: string;
+  type: string;
+  fullName: string;
+  phone: string;
+  email?: string | null;
+  plate?: string | null;
+  vehicle?: string | null;
+  accidentDate?: string | null;
+  faultStatus?: string | null;
+  description?: string | null;
+  adminUrl: string;
+}): { subject: string; html: string } {
+  const typeLabel = CLAIM_TYPE_LABEL[input.type] ?? input.type;
+  const body = `
+    <table width="100%" style="border-collapse:collapse;background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:18px">
+      ${statRow("Dosya No", escapeHtml(input.claimNumber))}
+      ${statRow("Talep Türü", escapeHtml(typeLabel))}
+      ${statRow("Ad Soyad", escapeHtml(input.fullName))}
+      ${statRow("Telefon", `<a href="tel:${escapeHtml(input.phone)}" style="color:#FFD700;text-decoration:none">${escapeHtml(input.phone)}</a>`)}
+      ${input.email ? statRow("E-posta", escapeHtml(input.email)) : ""}
+      ${input.plate ? statRow("Plaka", escapeHtml(input.plate)) : ""}
+      ${input.vehicle ? statRow("Araç", escapeHtml(input.vehicle)) : ""}
+      ${input.accidentDate ? statRow("Kaza Tarihi", escapeHtml(input.accidentDate)) : ""}
+      ${input.faultStatus ? statRow("Kusur Durumu", escapeHtml(input.faultStatus)) : ""}
+    </table>
+    ${
+      input.description
+        ? `<div style="background:#1a1a1a;border-radius:12px;padding:16px;border:1px solid rgba(255,215,0,0.2)">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,215,0,0.7);margin-bottom:8px">Açıklama</div>
+            <p style="margin:0;font-size:14px;line-height:1.7;color:#fff;white-space:pre-line">${escapeHtml(input.description)}</p>
+          </div>`
+        : ""
+    }
+  `;
+  return {
+    subject: `📂 Yeni dosya: ${typeLabel} — ${input.fullName}`,
+    html: shell({
+      preheader: `${input.fullName} yeni bir ${typeLabel} başvurusu yaptı.`,
+      heading: "Yeni Hasar/Değer Kaybı Dosyası 📂",
+      intro: "Web sitesi üzerinden yeni bir dosya başvurusu alındı. Müşteriyi en kısa sürede arayın.",
+      body,
+      ctaUrl: input.adminUrl,
+      ctaLabel: "Admin Panelinde Aç",
+    }),
+  };
+}
+
 // ─── İletişim Formu (Admin Uyarı) ────────────────────────────────────────────
 
 export function contactAdminAlertTemplate(input: {

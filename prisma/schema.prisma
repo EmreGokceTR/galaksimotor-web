@@ -391,3 +391,54 @@ model ActivityLog {
   @@index([adminEmail])
   @@index([timestamp])
 }
+
+// ── Trafik kazası: hasar ihbar / değer kaybı dosyaları ──────────────────────
+
+enum ClaimType {
+  DEGER_KAYBI // Araç değer kaybı talebi
+  HASAR_IHBAR // Hasar ihbar / kasko-trafik dosyası
+  HER_IKISI   // Hem değer kaybı hem hasar ihbar
+}
+
+enum ClaimStatus {
+  NEW         // Yeni başvuru
+  CONTACTED   // İletişime geçildi
+  IN_PROGRESS // Dosya açıldı / süreç devam ediyor
+  COMPLETED   // Sonuçlandı
+  REJECTED    // Uygun değil / iptal
+}
+
+/// Müşterinin trafik kazası sonrası açtığı değer kaybı / hasar ihbar dosyası.
+model DamageClaim {
+  id          String      @id @default(cuid())
+  claimNumber String      @unique
+  type        ClaimType   @default(DEGER_KAYBI)
+  status      ClaimStatus @default(NEW)
+
+  // Başvuran kişi
+  fullName String
+  phone    String
+  email    String?
+  tcNo     String?
+
+  // Araç bilgisi
+  plate        String?
+  vehicleBrand String?
+  vehicleModel String?
+  vehicleYear  Int?
+
+  // Kaza bilgisi
+  accidentDate DateTime?
+  faultStatus  String? // kusur durumu (örn. "%0 - kusursuz")
+  description  String? @db.Text
+
+  // Yönetim alanları (yalnızca admin)
+  adminNote      String?  @db.Text
+  estimatedValue Decimal? @db.Decimal(10, 2) // tahmini değer kaybı tutarı
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

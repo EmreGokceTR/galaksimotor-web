@@ -54,6 +54,7 @@ export async function GET(req: Request) {
       orderItems,
       siteSettings,
       coupons,
+      damageClaims,
     ] = await Promise.all([
       prisma.user.findMany({
         select: {
@@ -102,6 +103,7 @@ export async function GET(req: Request) {
       prisma.orderItem.findMany(),
       prisma.siteSetting.findMany(),
       prisma.coupon.findMany(),
+      prisma.damageClaim.findMany(),
     ]);
 
     const snapshot = {
@@ -115,6 +117,7 @@ export async function GET(req: Request) {
           orders: orders.length,
           appointments: appointments.length,
           coupons: coupons.length,
+          damageClaims: damageClaims.length,
         },
       },
       users,
@@ -132,6 +135,7 @@ export async function GET(req: Request) {
       orderItems,
       siteSettings,
       coupons,
+      damageClaims,
     };
 
     const now = new Date();

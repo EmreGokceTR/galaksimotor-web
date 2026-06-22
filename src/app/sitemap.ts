@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "", priority: 1.0, freq: "daily" as const },
     { path: "/urunler", priority: 0.9, freq: "daily" as const },
     { path: "/randevu", priority: 0.8, freq: "weekly" as const },
+    { path: "/deger-kaybi", priority: 0.8, freq: "monthly" as const },
     { path: "/blog", priority: 0.8, freq: "weekly" as const },
     { path: "/hakkimizda", priority: 0.6, freq: "monthly" as const },
     { path: "/iletisim", priority: 0.7, freq: "monthly" as const },

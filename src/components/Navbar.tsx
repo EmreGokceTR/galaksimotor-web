@@ -41,11 +41,12 @@ export function Navbar({ settings }: { settings: NavSettings }) {
   const [open, setOpen] = useState(false);
 
   const NAV_LINKS = [
-    { href: "/", settingKey: "nav_home", label: settings.navHome },
-    { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler },
-    { href: "/kategori/motosiklet-yedek-parcalari", settingKey: "nav_yedek_parca", label: settings.navYedekParca },
-    { href: "/kategori/bakim-ve-tamir-urunleri", settingKey: "nav_bakim", label: settings.navBakim },
-    { href: "/randevu", settingKey: "nav_randevu", label: settings.navRandevu },
+    { href: "/", settingKey: "nav_home", label: settings.navHome, editable: true },
+    { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler, editable: true },
+    { href: "/kategori/motosiklet-yedek-parcalari", settingKey: "nav_yedek_parca", label: settings.navYedekParca, editable: true },
+    { href: "/kategori/bakim-ve-tamir-urunleri", settingKey: "nav_bakim", label: settings.navBakim, editable: true },
+    { href: "/randevu", settingKey: "nav_randevu", label: settings.navRandevu, editable: true },
+    { href: "/deger-kaybi", settingKey: "nav_deger_kaybi", label: "Değer Kaybı", editable: false },
   ];
 
   useEffect(() => {
@@ -154,17 +155,21 @@ export function Navbar({ settings }: { settings: NavSettings }) {
                     isActive ? "text-brand-yellow" : "text-white/80 hover:text-white"
                   }`}
                 >
-                  <EditableWrapper
-                    table="siteSetting"
-                    id={link.settingKey}
-                    field="value"
-                    value={link.label}
-                    label={`Menü: ${link.label}`}
-                    revalidatePaths={R}
-                    as="span"
-                  >
-                    {link.label}
-                  </EditableWrapper>
+                  {link.editable === false ? (
+                    <span>{link.label}</span>
+                  ) : (
+                    <EditableWrapper
+                      table="siteSetting"
+                      id={link.settingKey}
+                      field="value"
+                      value={link.label}
+                      label={`Menü: ${link.label}`}
+                      revalidatePaths={R}
+                      as="span"
+                    >
+                      {link.label}
+                    </EditableWrapper>
+                  )}
                   {isActive && (
                     <motion.span
                       layoutId="nav-active"
