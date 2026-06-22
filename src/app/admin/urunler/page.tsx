@@ -18,10 +18,12 @@ export default async function AdminProductsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden rounded-xl border border-white/10 bg-white/[0.025] px-3 py-1.5 text-[11px] text-white/55 backdrop-blur-md md:block">
-            💡 <code className="text-brand-yellow">npm run images</code> ile
-            görsel
-          </div>
+          <a
+            href="/admin/urunler/export"
+            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/75 hover:text-brand-yellow"
+          >
+            ⬇ CSV
+          </a>
           <Link
             href="/admin/urunler/yeni"
             className="rounded-full bg-brand-yellow px-4 py-2 text-sm font-semibold text-brand-black"
