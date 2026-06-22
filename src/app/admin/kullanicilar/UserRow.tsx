@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTransition, useState } from "react";
 import { changeUserRole, deleteUser } from "./actions";
 
@@ -61,10 +62,41 @@ export function UserRow({ user, isSelf }: Props) {
     <tr className={`align-top transition ${pending ? "opacity-50" : ""} ${isDeleted ? "opacity-50" : ""}`}>
       <td className="px-4 py-3">
         <div className="font-medium text-white">
-          {user.name || (isDeleted ? <span className="italic text-white/40">— silinmiş —</span> : <span className="text-white/40">(isimsiz)</span>)}
+          {isDeleted ? (
+            <span className="italic text-white/40">— silinmiş —</span>
+          ) : (
+            <Link
+              href={`/admin/kullanicilar/${user.id}`}
+              className="hover:text-brand-yellow"
+            >
+              {user.name || <span className="text-white/40">(isimsiz)</span>}
+            </Link>
+          )}
         </div>
-        <div className="text-xs text-white/45">{user.email}</div>
-        {user.phone && <div className="text-xs text-white/35">{user.phone}</div>}
+        <div className="flex flex-wrap items-center gap-x-2 text-xs text-white/45">
+          {isDeleted ? (
+            <span>{user.email}</span>
+          ) : (
+            <a href={`mailto:${user.email}`} className="hover:text-brand-yellow">
+              {user.email}
+            </a>
+          )}
+        </div>
+        {user.phone && !isDeleted && (
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-white/35">
+            <a href={`tel:${user.phone.replace(/\s/g, "")}`} className="hover:text-brand-yellow">
+              {user.phone}
+            </a>
+            <a
+              href={`https://wa.me/${user.phone.replace(/\D/g, "").replace(/^0/, "90")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400/70 hover:text-emerald-300"
+            >
+              WhatsApp
+            </a>
+          </div>
+        )}
         {isSelf && (
           <div className="mt-1 inline-flex items-center rounded-full bg-brand-yellow/15 px-2 py-0.5 text-[10px] font-medium text-brand-yellow">
             SEN

@@ -1,25 +1,30 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
+import { AdminNav } from "./AdminNav";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin · Galaksi Motor" };
 
 const NAV = [
   { href: "/admin", label: "Genel Bakış", icon: "📊" },
-  { href: "/admin/motosikletler", label: "Motosikletler", icon: "🏍" },
   { href: "/admin/siparisler", label: "Siparişler", icon: "📦" },
   { href: "/admin/randevular", label: "Randevular", icon: "📅" },
   { href: "/admin/urunler", label: "Ürünler", icon: "🛍" },
+  { href: "/admin/kategoriler", label: "Kategoriler", icon: "🗂" },
+  { href: "/admin/kuponlar", label: "Kuponlar", icon: "🎟" },
+  { href: "/admin/yorumlar", label: "Ürün Yorumları", icon: "💬" },
+  { href: "/admin/motosikletler", label: "İkinci El Motorlar", icon: "🏍" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
   { href: "/admin/hizmetler", label: "Hizmetler", icon: "🔧" },
   { href: "/admin/kullanicilar", label: "Kullanıcılar", icon: "👥" },
   { href: "/admin/ayarlar/iletisim", label: "İletişim Bilgileri", icon: "📍" },
-  { href: "/admin/ayarlar/testimonials", label: "Müşteri Yorumları", icon: "⭐" },
+  { href: "/admin/ayarlar/testimonials", label: "Öne Çıkan Yorumlar", icon: "⭐" },
   { href: "/admin/ayarlar/hakkimizda", label: "Hakkımızda", icon: "ℹ️" },
   { href: "/admin/ayarlar/sss", label: "SSS İçeriği", icon: "❓" },
   { href: "/admin/ayarlar/email", label: "E-Posta Şablonları", icon: "✉️" },
   { href: "/admin/ayarlar/seo", label: "SEO Meta Bilgileri", icon: "🔍" },
   { href: "/admin/ayarlar/tasarim", label: "Yazı Tipi & Boyut", icon: "🎨" },
+  { href: "/admin/islem-gecmisi", label: "İşlem Geçmişi", icon: "🧾" },
   { href: "/admin/yedek", label: "Yedek & Bakım", icon: "💾" },
 ];
 
@@ -55,21 +60,7 @@ export default async function AdminLayout({
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <nav className="rounded-2xl border border-white/10 bg-white/[0.025] p-2 backdrop-blur-md">
-            <ul className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-x-visible">
-              {NAV.map((n) => (
-                <li key={n.href}>
-                  <Link
-                    href={n.href}
-                    className="group flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-white/75 transition hover:bg-white/5 hover:text-brand-yellow"
-                  >
-                    <span className="text-base opacity-80">{n.icon}</span>
-                    {n.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <AdminNav items={NAV} />
         </aside>
 
         <section className="min-w-0">{children}</section>
