@@ -99,6 +99,7 @@ export function CheckoutClient({
             quantity: i.quantity,
           })),
           deliveryType: delivery,
+          paymentMethod: payMethod === "ONLINE" && iyzicoEnabled ? "ONLINE" : "DOOR",
           shipping: { name, phone, address, city },
           invoice: {
             fullName: sameAsShipping ? name : invoiceFullName,

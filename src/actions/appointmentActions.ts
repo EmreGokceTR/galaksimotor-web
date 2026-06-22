@@ -10,6 +10,7 @@ import {
   appointmentAdminAlertTemplate,
 } from "@/lib/email-templates";
 import { logActivity } from "@/lib/activity-log";
+import { rateLimit } from "@/lib/rate-limit";
 import { SITE } from "@/config/site";
 
 type Input = {
@@ -22,10 +23,28 @@ type Input = {
 
 type Result = { ok: true; id: string } | { ok: false; error: string };
 
+// Girdi uzunluk limitleri (DB şeması ile uyumlu, spam/taşma koruması)
+const MAX_BRAND = 50;
+const MAX_MODEL = 80;
+const MAX_NOTE = 500;
+
 export async function createAppointment(input: Input): Promise<Result> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return { ok: false, error: "Önce giriş yapmalısın." };
+  }
+
+  // Rate limit: kullanıcı başına 5 dakikada en fazla 10 randevu denemesi
+  // (bot/spam koruması; yasal kullanıcı bu kadar randevu almaz)
+  const rl = rateLimit(`appointment:${session.user.id}`, {
+    limit: 10,
+    windowMs: 5 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return {
+      ok: false,
+      error: `Çok fazla deneme. ${rl.retryAfterSec} saniye sonra tekrar deneyin.`,
+    };
   }
 
   const { serviceId, scheduledAt: isoStr, motoBrand, motoModel, note } = input;
@@ -34,12 +53,29 @@ export async function createAppointment(input: Input): Promise<Result> {
     return { ok: false, error: "Servis ve tarih zorunlu." };
   }
 
+  // Girdi uzunluk kontrolleri (spam/DB taşma koruması)
+  if (
+    (motoBrand && motoBrand.length > MAX_BRAND) ||
+    (motoModel && motoModel.length > MAX_MODEL) ||
+    (note && note.length > MAX_NOTE)
+  ) {
+    return {
+      ok: false,
+      error: `Metin alanları çok uzun (marka ≤${MAX_BRAND}, model ≤${MAX_MODEL}, not ≤${MAX_NOTE}).`,
+    };
+  }
+
   const date = new Date(isoStr);
   if (isNaN(date.getTime())) {
     return { ok: false, error: "Geçersiz tarih." };
   }
   if (date.getTime() < Date.now()) {
     return { ok: false, error: "Geçmiş bir tarih için randevu alınamaz." };
+  }
+
+  // Pazar günleri kapalıyız — randevu alınamaz (getDay: 0=Pazar)
+  if (date.getDay() === 0) {
+    return { ok: false, error: "Pazar günleri kapalıyız. Lütfen başka bir gün seçin." };
   }
 
   const hour = date.getHours();

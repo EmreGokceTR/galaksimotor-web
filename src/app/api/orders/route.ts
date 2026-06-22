@@ -19,6 +19,13 @@ type IncomingItem = {
 type IncomingBody = {
   items: IncomingItem[];
   deliveryType: "CARGO" | "PICKUP";
+  /**
+   * Ödeme yöntemi. "ONLINE" ise ödeme başarılı olunca (verifyPaymentCallback)
+   * faturalı onay maili gider; bu yüzden burada İKİNCİ bir onay maili
+   * göndermeyiz (çift mail önlenir). "DOOR" (kapıda ödeme) akışında ise ödeme
+   * callback'i olmadığı için onay maili SADECE burada gönderilir.
+   */
+  paymentMethod?: "ONLINE" | "DOOR";
   shipping: {
     name: string;
     phone: string;
@@ -266,7 +273,9 @@ export async function POST(req: Request) {
   );
 
   // ── Müşteriye sipariş onay e-postası ────────────────────────────────────
-  if (session.user.email) {
+  // Online ödemede onay maili ödeme başarılı olunca (faturalı) gönderilir;
+  // burada tekrar göndermeyiz. Kapıda ödemede ise tek bildirim noktası burası.
+  if (session.user.email && body.paymentMethod !== "ONLINE") {
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ??
       new URL(req.url).origin;
