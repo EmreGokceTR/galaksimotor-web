@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettings, st } from "@/lib/site-settings";
+import { getWorkingHours, type WorkingHours } from "@/lib/working-hours";
 import { AppointmentClient } from "./AppointmentClient";
 import { buildPageMetadata } from "@/lib/page-meta";
 import { SITE } from "@/config/site";
@@ -22,8 +23,10 @@ export async function generateMetadata(): Promise<Metadata> {
 /* ── Misafir kullanıcılar için kamuya açık landing sayfası ─────────────── */
 async function RandevuGuestView({
   services,
+  workingHours,
 }: {
   services: { id: string; name: string; description: string | null; duration: number; price: number | null }[];
+  workingHours: WorkingHours;
 }) {
   const fmt = (n: number) =>
     n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
@@ -139,7 +142,7 @@ async function RandevuGuestView({
             {
               icon: "🔧",
               title: "Uzman ekip",
-              desc: `${SITE.hours.weekdays} arası ${SITE.address.district}'de hizmetinizdeyiz.`,
+              desc: `${workingHours.weekdaysText} arası ${SITE.address.district}'de hizmetinizdeyiz.`,
             },
           ].map((f) => (
             <div
@@ -161,7 +164,7 @@ async function RandevuGuestView({
 
 /* ── Ana sayfa bileşeni ──────────────────────────────────────────────────── */
 export default async function RandevuPage() {
-  const [session, services, bag] = await Promise.all([
+  const [session, services, bag, workingHours] = await Promise.all([
     getServerSession(authOptions),
     prisma.service.findMany({
       where: { isActive: true },
@@ -193,12 +196,14 @@ export default async function RandevuPage() {
       "appt_emergency_link",
       "appt_emergency_suffix",
     ]),
+    getWorkingHours(),
   ]);
 
   // Oturum açılmamışsa genel landing sayfası göster (Google indexlenebilir)
   if (!session?.user) {
     return (
       <RandevuGuestView
+        workingHours={workingHours}
         services={services.map((svc) => ({
           id: svc.id,
           name: svc.name,
@@ -212,6 +217,7 @@ export default async function RandevuPage() {
 
   return (
     <AppointmentClient
+      workingHours={workingHours}
       services={services.map((svc) => ({
         id: svc.id,
         slug: svc.slug,

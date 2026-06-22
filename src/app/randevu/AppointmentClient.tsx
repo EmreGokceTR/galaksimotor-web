@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createAppointment } from "@/actions/appointmentActions";
 import { AnimatePresence, motion } from "framer-motion";
 import { InfoPageHero } from "@/components/InfoPageHero";
-import { SITE } from "@/config/site";
+import type { WorkingHours } from "@/lib/working-hours";
 import { EditableWrapper } from "@/components/EditableWrapper";
 import { ServiceEditButton } from "./ServiceEditButton";
 
@@ -57,26 +57,24 @@ const monthNames = [
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
 ];
 
-function getNext30Days() {
+function getNext30Days(openDays: number[]) {
   const arr: Date[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   for (let i = 0; i < 30; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    arr.push(d);
+    // Yalnızca açık günleri göster
+    if (openDays.includes(d.getDay())) arr.push(d);
   }
   return arr;
 }
 
-function buildSlots(date: Date) {
+function buildSlots(date: Date, wh: WorkingHours) {
   const slots: Date[] = [];
-  for (
-    let h = SITE.hours.appointmentStart;
-    h < SITE.hours.appointmentEnd;
-    h++
-  ) {
-    for (let m = 0; m < 60; m += SITE.hours.appointmentSlotMinutes) {
+  const step = wh.slotMinutes > 0 ? wh.slotMinutes : 30;
+  for (let h = wh.start; h < wh.end; h++) {
+    for (let m = 0; m < 60; m += step) {
       const d = new Date(date);
       d.setHours(h, m, 0, 0);
       slots.push(d);
@@ -96,12 +94,17 @@ const ymd = (d: Date) =>
 export function AppointmentClient({
   services,
   settings: s,
+  workingHours,
 }: {
   services: Service[];
   settings: AppointmentSettings;
+  workingHours: WorkingHours;
 }) {
   const router = useRouter();
-  const days = useMemo(() => getNext30Days(), []);
+  const days = useMemo(
+    () => getNext30Days(workingHours.openDays),
+    [workingHours.openDays]
+  );
   const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
   const [day, setDay] = useState<Date>(days[0]);
   const [time, setTime] = useState<Date | null>(null);
@@ -112,7 +115,7 @@ export function AppointmentClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const slots = useMemo(() => buildSlots(day), [day]);
+  const slots = useMemo(() => buildSlots(day, workingHours), [day, workingHours]);
   const selectedService = services.find((svc) => svc.id === serviceId);
 
   useEffect(() => {
@@ -264,7 +267,8 @@ export function AppointmentClient({
                 })}
               </div>
               <p className="mt-3 text-xs text-white/45">
-                Pzt - Cmt: {SITE.hours.weekdays} · Pazar: {SITE.hours.sunday}
+                Hafta içi: {workingHours.weekdaysText} · Cmt:{" "}
+                {workingHours.saturdayText} · Pazar: {workingHours.sundayText}
               </p>
             </Section>
 

@@ -11,6 +11,7 @@ import {
 } from "@/lib/email-templates";
 import { logActivity } from "@/lib/activity-log";
 import { rateLimit } from "@/lib/rate-limit";
+import { getWorkingHours } from "@/lib/working-hours";
 import { SITE } from "@/config/site";
 
 type Input = {
@@ -73,13 +74,14 @@ export async function createAppointment(input: Input): Promise<Result> {
     return { ok: false, error: "Geçmiş bir tarih için randevu alınamaz." };
   }
 
-  // Pazar günleri kapalıyız — randevu alınamaz (getDay: 0=Pazar)
-  if (date.getDay() === 0) {
-    return { ok: false, error: "Pazar günleri kapalıyız. Lütfen başka bir gün seçin." };
+  // Çalışma günleri/saatleri admin'den ayarlanır (yoksa SITE.hours fallback)
+  const wh = await getWorkingHours();
+  if (!wh.openDays.includes(date.getDay())) {
+    return { ok: false, error: "Seçilen gün kapalıyız. Lütfen açık bir gün seçin." };
   }
 
   const hour = date.getHours();
-  if (hour < SITE.hours.appointmentStart || hour >= SITE.hours.appointmentEnd) {
+  if (hour < wh.start || hour >= wh.end) {
     return { ok: false, error: "Seçilen saat çalışma saatleri dışında." };
   }
 

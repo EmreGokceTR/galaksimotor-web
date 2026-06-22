@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { InfoPageHero, InfoCard } from "@/components/InfoPageHero";
 import { SITE, whatsappLink } from "@/config/site";
 import { buildPageMetadata } from "@/lib/page-meta";
+import { getWorkingHours } from "@/lib/working-hours";
 import { ContactForm } from "./ContactForm";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,7 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function IletisimPage() {
+export default async function IletisimPage() {
+  const wh = await getWorkingHours();
   return (
     <>
       <InfoPageHero
@@ -90,17 +92,21 @@ export default function IletisimPage() {
               <ul className="grid gap-2 sm:grid-cols-2">
                 <li className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                   <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    Pazartesi - Cumartesi
+                    Pazartesi - Cuma
                   </div>
-                  <div className="text-sm text-white">
-                    {SITE.hours.weekdays}
-                  </div>
+                  <div className="text-sm text-white">{wh.weekdaysText}</div>
                 </li>
-                <li className="rounded-lg border border-rose-400/20 bg-rose-500/[0.04] p-3">
+                <li className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-white/40">
+                    Cumartesi
+                  </div>
+                  <div className="text-sm text-white">{wh.saturdayText}</div>
+                </li>
+                <li className="rounded-lg border border-rose-400/20 bg-rose-500/[0.04] p-3 sm:col-span-2">
                   <div className="text-[11px] uppercase tracking-wider text-white/40">
                     Pazar
                   </div>
-                  <div className="text-sm text-white">{SITE.hours.sunday}</div>
+                  <div className="text-sm text-white">{wh.sundayText}</div>
                 </li>
               </ul>
             </InfoCard>
