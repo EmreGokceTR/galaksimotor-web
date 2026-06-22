@@ -40,18 +40,41 @@ export default async function AdminBlogPage() {
                 ) : null}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase ${
-                      p.isPublished
-                        ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-400/30"
-                        : "bg-white/10 text-white/55 ring-1 ring-white/15"
-                    }`}
-                  >
-                    {p.isPublished ? "Yayında" : "Taslak"}
-                  </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {(() => {
+                    const scheduled =
+                      p.isPublished &&
+                      p.publishedAt != null &&
+                      p.publishedAt.getTime() > Date.now();
+                    if (scheduled) {
+                      return (
+                        <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-medium uppercase text-sky-300 ring-1 ring-sky-400/30">
+                          Zamanlanmış
+                        </span>
+                      );
+                    }
+                    return (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase ${
+                          p.isPublished
+                            ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-400/30"
+                            : "bg-white/10 text-white/55 ring-1 ring-white/15"
+                        }`}
+                      >
+                        {p.isPublished ? "Yayında" : "Taslak"}
+                      </span>
+                    );
+                  })()}
                   <span className="text-[11px] text-white/40">
-                    {p.createdAt.toLocaleDateString("tr-TR")}
+                    {p.publishedAt
+                      ? p.publishedAt.toLocaleDateString("tr-TR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : p.createdAt.toLocaleDateString("tr-TR")}
                   </span>
                 </div>
                 <h3 className="mt-1 line-clamp-1 text-base font-semibold text-white">

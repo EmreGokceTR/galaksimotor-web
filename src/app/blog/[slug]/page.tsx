@@ -113,7 +113,10 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await prisma.blogPost.findUnique({
     where: { slug: params.slug },
   });
-  if (!post || !post.isPublished) notFound();
+  // Yayında değilse veya planlı yayın tarihi henüz gelmediyse gösterme
+  const scheduledInFuture =
+    post?.publishedAt != null && post.publishedAt.getTime() > Date.now();
+  if (!post || !post.isPublished || scheduledInFuture) notFound();
 
   const R = ["/blog", `/blog/${post.slug}`];
 

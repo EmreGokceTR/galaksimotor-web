@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
     }),
     prisma.blogPost.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, publishedAt: { lte: new Date() } },
       select: { slug: true, updatedAt: true },
     }),
   ]);

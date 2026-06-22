@@ -30,6 +30,14 @@ export async function upsertPost(formData: FormData) {
   const coverUrl = String(formData.get("coverUrl") ?? "").trim() || null;
   const isPublished = formData.get("isPublished") === "on";
 
+  // Planlı yayın: admin ileri bir tarih girebilir. Boşsa "şimdi".
+  const publishedAtRaw = String(formData.get("publishedAt") ?? "").trim();
+  let publishedAt: Date | null = null;
+  if (isPublished) {
+    const parsed = publishedAtRaw ? new Date(publishedAtRaw) : null;
+    publishedAt = parsed && !isNaN(parsed.getTime()) ? parsed : new Date();
+  }
+
   if (!title || !content) throw new Error("Başlık ve içerik zorunlu.");
 
   const data = {
@@ -39,7 +47,7 @@ export async function upsertPost(formData: FormData) {
     content,
     coverUrl,
     isPublished,
-    publishedAt: isPublished ? new Date() : null,
+    publishedAt,
   };
 
   if (id) {

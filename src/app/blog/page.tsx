@@ -5,6 +5,9 @@ import { AddRecordButton } from "@/components/AddRecordButton";
 import { buildPageMetadata } from "@/lib/page-meta";
 import { BlogList, type BlogListItem } from "./BlogList";
 
+// Planlı yayınların zamanı gelince otomatik görünmesi için periyodik yenileme.
+export const revalidate = 1800; // 30 dk
+
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/blog", {
     title: "Blog & Rehber",
@@ -15,7 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function BlogListPage() {
   const posts = await prisma.blogPost.findMany({
-    where: { isPublished: true },
+    // Yayında + yayın tarihi geçmiş olanlar (planlı/ileri tarihli gizli)
+    where: { isPublished: true, publishedAt: { lte: new Date() } },
     orderBy: { publishedAt: "desc" },
   });
 

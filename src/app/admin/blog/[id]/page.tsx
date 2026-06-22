@@ -34,6 +34,7 @@ export default async function EditBlogPostPage({
           content: post.content,
           coverUrl: post.coverUrl,
           isPublished: post.isPublished,
+          publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
         }}
       />
     </div>

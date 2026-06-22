@@ -11,8 +11,16 @@ type Props = {
     content: string;
     coverUrl: string | null;
     isPublished: boolean;
+    publishedAt?: string | null;
   };
 };
+
+function toLocalInput(iso?: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export function PostForm({ post }: Props) {
   return (
@@ -78,6 +86,23 @@ export function PostForm({ post }: Props) {
           <span className="text-xs text-white/50">
             İşaretlenirse herkese açık. Kapalıysa sadece admin görebilir.
           </span>
+        </span>
+      </label>
+
+      <label className="block rounded-xl border border-white/10 bg-white/[0.025] p-4">
+        <span className="mb-1.5 block text-xs uppercase tracking-wider text-white/55">
+          Yayın Tarihi (planlı yayın için)
+        </span>
+        <input
+          type="datetime-local"
+          name="publishedAt"
+          defaultValue={toLocalInput(post?.publishedAt)}
+          className="input-glass w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none sm:w-auto"
+        />
+        <span className="mt-1.5 block text-xs text-white/45">
+          Boş bırakılırsa yayınlandığı an geçerli olur. İleri bir tarih
+          girerseniz, yazı &quot;Yayında&quot; işaretli olsa bile o tarihe kadar
+          sitede görünmez (planlı yayın).
         </span>
       </label>
 
