@@ -171,7 +171,7 @@ const localBusinessJsonLd = {
   ],
   logo: `${SITE.url}/logos/galaksi-motor-logo.jpg`,
   image: `${SITE.url}/logos/galaksi-motor-logo.jpg`,
-  sameAs: [SITE.social.facebook, SITE.social.youtube],
+  // sameAs yalnızca admin gerçek sosyal link girince eklenir (RootLayout'ta).
 };
 
 // WebSite schema — Google sitelinks search box ve site title için.
@@ -215,7 +215,7 @@ const organizationJsonLd = {
     postalCode: SITE.address.postalCode,
     addressCountry: SITE.address.country,
   },
-  sameAs: [SITE.social.facebook, SITE.social.youtube].filter(Boolean),
+  // sameAs yalnızca admin gerçek sosyal link girince eklenir (RootLayout'ta).
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",

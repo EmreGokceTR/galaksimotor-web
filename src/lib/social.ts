@@ -1,5 +1,4 @@
 import { getSettings } from "@/lib/site-settings";
-import { SITE } from "@/config/site";
 
 export type SocialLink = {
   key: string;
@@ -15,24 +14,24 @@ export const SOCIAL_KEYS = [
   "social_tiktok",
 ] as const;
 
-const META: Record<string, { label: string; fallback?: string }> = {
-  social_facebook: { label: "Facebook", fallback: SITE.social.facebook },
+const META: Record<string, { label: string }> = {
+  social_facebook: { label: "Facebook" },
   social_instagram: { label: "Instagram" },
-  social_youtube: { label: "YouTube", fallback: SITE.social.youtube },
+  social_youtube: { label: "YouTube" },
   social_x: { label: "X (Twitter)" },
   social_tiktok: { label: "TikTok" },
 };
 
 /**
- * Sosyal medya linklerini siteSetting'den çek. Boş olanlar dahil edilmez.
- * Ayar hiç girilmemişse SITE.social fallback'ı kullanılır (Facebook/YouTube).
+ * Sosyal medya linklerini siteSetting'den çek. SADECE admin'in girdiği dolu
+ * linkler döner — varsayılan/placeholder link iddia edilmez. Hiç link
+ * girilmemişse boş döner (footer'da gösterilmez, SEO sameAs'a eklenmez).
  */
 export async function getSocialLinks(): Promise<SocialLink[]> {
   const bag = await getSettings([...SOCIAL_KEYS]);
   const links: SocialLink[] = [];
   for (const key of SOCIAL_KEYS) {
-    const raw = bag[key];
-    const url = (raw ?? META[key].fallback ?? "").trim();
+    const url = (bag[key] ?? "").trim();
     if (url) links.push({ key, label: META[key].label, url });
   }
   return links;
@@ -43,7 +42,7 @@ export async function getSocialValues(): Promise<Record<string, string>> {
   const bag = await getSettings([...SOCIAL_KEYS]);
   const out: Record<string, string> = {};
   for (const key of SOCIAL_KEYS) {
-    out[key] = bag[key] ?? META[key].fallback ?? "";
+    out[key] = bag[key] ?? "";
   }
   return out;
 }
