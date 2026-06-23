@@ -82,7 +82,12 @@ export default async function AdminDashboard() {
         createdAt: { gte: start30 },
       },
     }),
-    prisma.user.count({ where: { role: "USER" } }),
+    prisma.user.count({
+      where: {
+        role: "USER",
+        email: { not: { endsWith: "@galaksimotor.local" } },
+      },
+    }),
     prisma.coupon.count({ where: { isActive: true } }),
     prisma.product.findMany({
       where: { isActive: true, stock: { lte: lowStockThreshold } },

@@ -25,6 +25,7 @@ export async function GET(req: Request) {
   const roleFilter = role === "ADMIN" || role === "USER" ? role : undefined;
 
   const where: Prisma.UserWhereInput = {
+    email: { not: { endsWith: "@galaksimotor.local" } },
     ...(roleFilter ? { role: roleFilter } : {}),
     ...(q
       ? {

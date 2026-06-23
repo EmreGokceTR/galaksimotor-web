@@ -24,6 +24,8 @@ export default async function AdminUsersPage({
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
 
   const where: Prisma.UserWhereInput = {
+    // Manuel randevu için açılan walk-in placeholder kayıtlarını gizle
+    email: { not: { endsWith: "@galaksimotor.local" } },
     ...(roleFilter ? { role: roleFilter } : {}),
     ...(q
       ? {
