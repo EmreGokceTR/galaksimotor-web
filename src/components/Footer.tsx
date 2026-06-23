@@ -2,35 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { SITE } from "@/config/site";
 import { getSettings, st } from "@/lib/site-settings";
-import { getSocialLinks } from "@/lib/social";
 import { EditableWrapper } from "./EditableWrapper";
 
 const R = ["/"];
 
-const SOCIAL_ICON: Record<string, React.ReactNode> = {
-  social_facebook: (
-    <path d="M14 9h2V6h-2c-1.7 0-3 1.3-3 3v2H9v3h2v6h3v-6h2.1l.4-3H14v-1.5c0-.3.2-.5.5-.5H14z" />
-  ),
-  social_instagram: (
-    <>
-      <rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" strokeWidth="2" />
-      <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" />
-      <circle cx="17" cy="7" r="1.2" />
-    </>
-  ),
-  social_youtube: (
-    <path d="M21.6 8.2a2.4 2.4 0 0 0-1.7-1.7C18.3 6 12 6 12 6s-6.3 0-7.9.5A2.4 2.4 0 0 0 2.4 8.2C2 9.8 2 12 2 12s0 2.2.4 3.8a2.4 2.4 0 0 0 1.7 1.7C5.7 18 12 18 12 18s6.3 0 7.9-.5a2.4 2.4 0 0 0 1.7-1.7C22 14.2 22 12 22 12s0-2.2-.4-3.8ZM10 15V9l5 3-5 3Z" />
-  ),
-  social_x: (
-    <path d="M4 4h3.5l4 5.5L16 4h4l-6.3 8L20 20h-3.5l-4.3-5.8L7 20H3l6.6-8.4L4 4Z" />
-  ),
-  social_tiktok: (
-    <path d="M14 4c.3 2 1.6 3.6 3.8 3.9v2.4c-1.3 0-2.6-.4-3.8-1.1v5.3a4.7 4.7 0 1 1-4.7-4.7c.3 0 .5 0 .8.1v2.5a2.2 2.2 0 1 0 1.5 2.1V4H14Z" />
-  ),
-};
-
 export async function Footer() {
-  const social = await getSocialLinks();
   const bag = await getSettings([
     "logo_name_part1",
     "logo_name_part2",
@@ -166,27 +142,6 @@ export async function Footer() {
                 </EditableWrapper>
               </div>
             </div>
-
-            {/* Sosyal medya */}
-            {social.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {social.map((s) => (
-                  <a
-                    key={s.key}
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={s.label}
-                    title={s.label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-brand-yellow/50 hover:text-brand-yellow"
-                  >
-                    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor">
-                      {SOCIAL_ICON[s.key] ?? <circle cx="12" cy="12" r="4" />}
-                    </svg>
-                  </a>
-                ))}
-              </div>
-            )}
           </div>
 
           {cols.map((col) => (

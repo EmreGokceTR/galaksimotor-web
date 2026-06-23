@@ -6,16 +6,39 @@ import { prisma } from "@/lib/prisma";
  * Cache TTL: 1 saat. Admin "ayarlar"ı kaydederken `revalidateTag('site-settings')` ile yeniler.
  * Bu fonksiyon "deduplikasyon + persistente cache" sağlar — her render'da DB'ye gitmez.
  */
-const fetchAllSettingsCached = unstable_cache(
-  async (): Promise<Record<string, string>> => {
-    const rows = await prisma.siteSetting.findMany({
-      select: { key: true, value: true },
-    });
-    return Object.fromEntries(rows.map((r) => [r.key, r.value]));
-  },
-  ["site-settings-all"],
-  { revalidate: 3600, tags: ["site-settings"] }
-);
+/**
+ * Ayarları DB'den oku. Geçici bağlantı hatalarına (özellikle build sırasında
+ * Supabase transaction pooler `connection_limit=1` altında yoğun eşzamanlı
+ * statik üretimde görülebilen anlık kopmalar) karşı dayanıklı: 3 kez dener,
+ * yine de başarısız olursa BOŞ döner. Tüm tüketiciler `st(bag, key, varsayılan)`
+ * kullandığı için boş sonuç sayfayı çökertmez — yalnızca varsayılanlara düşer.
+ */
+async function loadAllSettings(): Promise<Record<string, string>> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const rows = await prisma.siteSetting.findMany({
+        select: { key: true, value: true },
+      });
+      return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    } catch (e) {
+      if (attempt === 3) {
+        console.warn(
+          "[site-settings] DB'den okunamadı, varsayılanlara düşülüyor:",
+          e instanceof Error ? e.message : e
+        );
+        return {};
+      }
+      // Kısa artan bekleme — pooler'ın toparlanmasına izin ver
+      await new Promise((r) => setTimeout(r, 150 * attempt));
+    }
+  }
+  return {};
+}
+
+const fetchAllSettingsCached = unstable_cache(loadAllSettings, ["site-settings-all"], {
+  revalidate: 3600,
+  tags: ["site-settings"],
+});
 
 /** Verilen key'leri tek sorguda çek (artık cache'li, DB'ye gitmez). */
 export async function getSettings(
