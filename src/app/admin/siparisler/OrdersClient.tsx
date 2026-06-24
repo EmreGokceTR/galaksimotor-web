@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useMemo } from "react";
 import { OrderStatusSelect } from "./OrderStatusSelect";
 import { TrackingInput } from "./TrackingInput";
@@ -189,9 +190,12 @@ export function OrdersClient({ orders }: { orders: OrderRow[] }) {
                 {filtered.map((o) => (
                   <tr key={o.id} className="hover:bg-white/[0.02]">
                     <td className="px-4 py-3 align-top">
-                      <div className="font-semibold text-brand-yellow">
+                      <Link
+                        href={`/admin/siparisler/${o.id}`}
+                        className="font-semibold text-brand-yellow hover:underline"
+                      >
                         #{o.orderNumber}
-                      </div>
+                      </Link>
                       {o.invoiceNumber && (
                         <div className="text-[11px] text-white/60 font-mono">
                           Fatura: {o.invoiceNumber}
