@@ -90,6 +90,12 @@ export function ProductRow(p: Props) {
       <td className="px-4 py-3 text-right">
         <div className="flex items-center justify-end gap-2">
           <Link
+            href={`/admin/urunler/${p.id}`}
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-white/70 hover:border-brand-yellow/40 hover:text-brand-yellow"
+          >
+            Düzenle
+          </Link>
+          <Link
             href={`/admin/urunler/${p.id}/fitments`}
             className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-white/70 hover:border-brand-yellow/40 hover:text-brand-yellow"
           >
