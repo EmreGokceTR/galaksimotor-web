@@ -8,6 +8,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewSection } from "@/components/ReviewSection";
 import { AdminEditButton } from "@/components/AdminEditButton";
 import { SITE } from "@/config/site";
+import { motoSlug } from "@/lib/moto";
 
 type Props = { params: { slug: string } };
 
@@ -315,7 +316,14 @@ export default async function ProductPage({ params }: Props) {
               <ul className="space-y-1 text-sm text-white/70">
                 {product.fitments.map((f) => (
                   <li key={f.id}>
-                    • {f.motorcycle.brand} {f.motorcycle.model} ({f.motorcycle.year})
+                    •{" "}
+                    <Link
+                      href={`/motosiklet/${motoSlug(f.motorcycle.brand)}/${motoSlug(f.motorcycle.model)}`}
+                      className="hover:text-brand-yellow hover:underline"
+                    >
+                      {f.motorcycle.brand} {f.motorcycle.model}
+                    </Link>{" "}
+                    ({f.motorcycle.year})
                   </li>
                 ))}
               </ul>
