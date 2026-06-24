@@ -25,6 +25,7 @@ export function DamageClaimForm() {
   const [faultStatus, setFaultStatus] = useState("");
   const [description, setDescription] = useState("");
 
+  const [kvkk, setKvkk] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -33,6 +34,10 @@ export function DamageClaimForm() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    if (!kvkk) {
+      setError("Devam etmek için KVKK aydınlatma metnini onaylamanız gerekir.");
+      return;
+    }
     startTransition(async () => {
       const res = await submitDamageClaim({
         type,
@@ -62,6 +67,7 @@ export function DamageClaimForm() {
       setAccidentDate("");
       setFaultStatus("");
       setDescription("");
+      setKvkk(false);
     });
   }
 
@@ -152,16 +158,39 @@ export function DamageClaimForm() {
         )}
       </AnimatePresence>
 
-      <div className="mt-5 flex items-center justify-between gap-3">
+      <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl border border-white/10 bg-white/[0.02] p-3 text-xs leading-relaxed text-white/70">
+        <input
+          type="checkbox"
+          checked={kvkk}
+          onChange={(e) => setKvkk(e.target.checked)}
+          disabled={isPending}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-yellow"
+        />
+        <span>
+          Kişisel verilerimin bu başvuru ve dosya süreci kapsamında işlenmesine
+          ilişkin{" "}
+          <a
+            href="/kvkk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-yellow underline-offset-2 hover:underline"
+          >
+            KVKK Aydınlatma Metni
+          </a>
+          ni okudum, onaylıyorum.
+        </span>
+      </label>
+
+      <div className="mt-4 flex items-center justify-between gap-3">
         <p className="text-[10px] text-white/35">
-          Bilgileriniz yalnızca dosyanız için kullanılır (KVKK).
+          Bilgileriniz yalnızca dosyanız için kullanılır.
         </p>
         <motion.button
           type="submit"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          disabled={isPending}
-          className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-6 py-2.5 text-sm font-semibold text-brand-black shadow-[0_8px_24px_-8px_rgba(255,215,0,0.65)] transition hover:shadow-[0_10px_32px_-6px_rgba(255,215,0,0.85)] disabled:opacity-60"
+          disabled={isPending || !kvkk}
+          className="inline-flex items-center gap-2 rounded-full bg-brand-yellow px-6 py-2.5 text-sm font-semibold text-brand-black shadow-[0_8px_24px_-8px_rgba(255,215,0,0.65)] transition hover:shadow-[0_10px_32px_-6px_rgba(255,215,0,0.85)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Gönderiliyor..." : "Başvuruyu Gönder"}
         </motion.button>

@@ -6,7 +6,6 @@ import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { EditModeToggle } from "@/components/EditModeToggle";
 import { CookieConsent } from "@/components/CookieConsent";
 import { DevBanner } from "@/components/DevBanner";
 import { themeNoFlashScript } from "@/components/ThemeProvider";
@@ -315,7 +314,6 @@ export default async function RootLayout({
           <main className="relative">{children}</main>
           <Footer />
           <WhatsAppButton settings={waSettings} />
-          <EditModeToggle />
           <CookieConsent />
           <GoogleAnalytics />
           <Analytics />

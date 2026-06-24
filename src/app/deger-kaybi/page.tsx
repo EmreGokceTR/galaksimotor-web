@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DamageClaimForm } from "./DamageClaimForm";
 import { SITE } from "@/config/site";
+import { getSettings, st } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "Değer Kaybı & Hasar İhbar Dosyası",
@@ -45,7 +46,7 @@ const FAQS = [
   },
   {
     q: "Hangi durumlarda başvurabilirim?",
-    a: "Kazada %100 kusurlu değilseniz, aracınız pert olmamışsa ve kaza tarihinden itibaren zamanaşımı süresi (genellikle 2 yıl) dolmamışsa başvurabilirsiniz.",
+    a: "Kazada tam (%100) kusurlu değilseniz ve aracınız pert olmamışsa başvurabilirsiniz. Değer kaybı talebinde zamanaşımı genellikle kaza tarihinden itibaren 2 yıldır (bazı durumlarda daha uzun olabilir); yine de en doğru değerlendirme için bizimle iletişime geçin.",
   },
   {
     q: "Süreç ne kadar sürer?",
@@ -57,7 +58,11 @@ const FAQS = [
   },
 ];
 
-export default function DamageClaimPage() {
+export default async function DamageClaimPage() {
+  const bag = await getSettings(["contact_phone", "wa_phone"]);
+  const phone = st(bag, "contact_phone", SITE.phone);
+  const whatsapp = st(bag, "wa_phone", SITE.whatsapp).replace(/\D/g, "");
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-14">
       {/* Hero */}
@@ -76,13 +81,13 @@ export default function DamageClaimPage() {
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <a
-            href={`tel:${SITE.phone.replace(/\s/g, "")}`}
+            href={`tel:${phone.replace(/\s/g, "")}`}
             className="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition hover:border-brand-yellow hover:text-brand-yellow"
           >
-            ☎ {SITE.phone}
+            ☎ {phone}
           </a>
           <a
-            href={`https://wa.me/${SITE.whatsapp}`}
+            href={`https://wa.me/${whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-full bg-emerald-500/90 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
