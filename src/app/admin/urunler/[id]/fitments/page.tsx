@@ -42,7 +42,7 @@ export default async function FitmentPage({ params }: { params: { id: string } }
 
       {motorcycles.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-10 text-center text-sm text-white/45">
-          Henüz veritabanında motosiklet yok. Önce <Link href="/admin/motosikletler" className="text-brand-yellow underline">motosiklet ekle</Link>.
+          Henüz veritabanında motosiklet yok. Önce <Link href="/admin/motor-katalogu" className="text-brand-yellow underline">motosiklet kataloğuna ekle</Link>.
         </div>
       ) : (
         <FitmentClient
