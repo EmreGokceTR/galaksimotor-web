@@ -15,8 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { name: true, description: true },
   });
   if (!cat) return { title: "Kategori bulunamadı" };
-  const title = `${cat.name} - ${SITE.name}`;
-  const description = cat.description ?? `${cat.name} kategorisindeki tüm motosiklet yedek parça ve aksesuarlar.`;
+  const title = `${cat.name} - Motosiklet Yedek Parça | ${SITE.name}`;
+  const description =
+    cat.description ??
+    `${cat.name} kategorisinde orijinal motosiklet yedek parça ve aksesuarlar — Küçükçekmece / İstanbul Galaksi Motor'da uygun fiyat ve hızlı kargo ile.`;
   return {
     title,
     description,
@@ -45,8 +47,30 @@ export default async function CategoryPage({ params }: Props) {
     select: { brand: true },
   });
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Anasayfa", item: SITE.url },
+      { "@type": "ListItem", position: 2, name: "Ürünler", item: `${SITE.url}/urunler` },
+      { "@type": "ListItem", position: 3, name: category.name, item: `${SITE.url}/kategori/${category.slug}` },
+    ],
+  };
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${category.name} — ${SITE.name}`,
+    description:
+      category.description ??
+      `${category.name} kategorisindeki motosiklet yedek parça ve aksesuarlar.`,
+    url: `${SITE.url}/kategori/${category.slug}`,
+    isPartOf: { "@type": "WebSite", name: SITE.name, url: SITE.url },
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }} />
       <h1 className="mb-2 text-3xl font-bold text-brand-yellow">
         {category.name}
       </h1>

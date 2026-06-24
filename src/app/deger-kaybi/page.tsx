@@ -63,8 +63,41 @@ export default async function DamageClaimPage() {
   const phone = st(bag, "contact_phone", SITE.phone);
   const whatsapp = st(bag, "wa_phone", SITE.whatsapp).replace(/\D/g, "");
 
+  // ── JSON-LD: Service (değer kaybı / hasar dosyası) ──
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "Araç Değer Kaybı & Trafik Kazası Hasar İhbar Dosyası",
+    serviceType: "Araç değer kaybı talebi ve hasar ihbar dosyası takibi",
+    description:
+      "Trafik kazası sonrası araç değer kaybının sigorta şirketinden talep edilmesi ve hasar ihbar dosyasının açılıp uçtan uca takip edilmesi hizmeti.",
+    url: `${SITE.url}/deger-kaybi`,
+    areaServed: ["Küçükçekmece", "İstanbul", "Türkiye"].map((name) => ({ "@type": "City", name })),
+    provider: {
+      "@type": "Organization",
+      name: SITE.name,
+      url: SITE.url,
+      telephone: phone,
+      areaServed: "TR",
+    },
+    offers: { "@type": "Offer", price: "0", priceCurrency: "TRY", description: "Ücretsiz ön başvuru ve değerlendirme" },
+  };
+
+  // ── JSON-LD: FAQPage ──
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-14">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       {/* Hero */}
       <header className="mb-12 text-center">
         <span className="text-xs font-medium uppercase tracking-[0.25em] text-brand-yellow/80">

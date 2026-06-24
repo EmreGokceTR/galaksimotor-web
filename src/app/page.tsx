@@ -25,8 +25,9 @@ const R = ["/"];
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/", {
-    title: `${SITE.name} - Yedek Parça, Aksesuar ve Servis`,
-    description: SITE.description,
+    title: `${SITE.name} — Küçükçekmece Motosiklet Yedek Parça, Servis & Tamir`,
+    description:
+      "Küçükçekmece / İstanbul'da motosiklet yedek parça, aksesuar, bakım, onarım ve servis. Orijinal parça, aynı gün kargo, online servis randevusu ve araç değer kaybı / hasar dosyası işlemleri — Galaksi Motor.",
   });
 }
 

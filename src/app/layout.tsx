@@ -82,13 +82,34 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description,
     keywords: [
+      // Yerel + tamir/servis niyeti
+      "Küçükçekmece motosiklet tamircisi",
+      "Küçükçekmece motosiklet servisi",
+      "Küçükçekmece motosiklet yedek parça",
+      "motosiklet tamircisi İstanbul",
+      "motosiklet servisi İstanbul",
+      "İstanbul motosiklet yedek parça",
+      "Halkalı motosiklet tamir",
+      "Avcılar motosiklet servis",
+      // Hizmet / ürün
       "motosiklet yedek parça",
       "motosiklet aksesuar",
-      "motor servisi",
-      "Küçükçekmece motor",
-      "İstanbul motosiklet",
+      "motosiklet bakımı",
+      "motosiklet onarımı",
+      "motor tamiri",
+      "motosiklet servis randevusu",
       "CVT kayışı",
       "fren balatası",
+      "motosiklet yağ değişimi",
+      // Trafik kazası / değer kaybı
+      "araç değer kaybı",
+      "değer kaybı başvurusu",
+      "trafik kazası hasar dosyası",
+      "hasar ihbar dosyası",
+      "Küçükçekmece değer kaybı",
+      // Marka
+      "Galaksi Motor",
+      "Galaksi Motor Küçükçekmece",
     ],
     authors: [{ name: SITE.name }],
     icons: {
@@ -130,16 +151,44 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
-  "@type": "MotorcycleRepair",
+  "@type": ["MotorcycleRepair", "Store", "AutoPartsStore"],
   "@id": SITE.url,
   name: SITE.name,
+  legalName: SITE.name,
   description: SITE.description,
+  slogan: SITE.tagline,
   url: SITE.url,
   telephone: SITE.phone,
   email: SITE.email,
   priceRange: "₺₺",
   currenciesAccepted: "TRY",
   paymentAccepted: "Nakit, Kredi Kartı, Banka Transferi",
+  // Hizmet verilen bölgeler — yerel aramalar için
+  areaServed: [
+    "Küçükçekmece",
+    "Halkalı",
+    "Avcılar",
+    "Başakşehir",
+    "Bağcılar",
+    "Bahçelievler",
+    "Esenyurt",
+    "İstanbul",
+  ].map((name) => ({ "@type": "City", name })),
+  knowsAbout: [
+    "Motosiklet yedek parça",
+    "Motosiklet bakımı ve onarımı",
+    "Motosiklet aksesuarları",
+    "Araç değer kaybı",
+    "Trafik kazası hasar dosyası",
+  ],
+  // Sunulan hizmetler — "tamir / servis / değer kaybı" sorgularıyla eşleşir
+  makesOffer: [
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Motosiklet Bakımı" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Motosiklet Onarımı / Tamiri" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Motosiklet Yedek Parça Satışı" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Motosiklet Aksesuar Satışı" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Araç Değer Kaybı & Hasar İhbar Dosyası" } },
+  ],
   address: {
     "@type": "PostalAddress",
     streetAddress: SITE.address.line,

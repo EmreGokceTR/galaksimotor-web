@@ -14,9 +14,9 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/randevu", {
-    title: "Servis Randevusu - Galaksi Motor",
+    title: "Motosiklet Servisi & Tamir Randevusu — Küçükçekmece | Galaksi Motor",
     description:
-      "Motosikletiniz için online servis randevusu alın — bakım, onarım, kontrol. Küçükçekmece'de uzman ekibimizle.",
+      "Küçükçekmece / İstanbul'da motosiklet bakım, onarım ve tamir için online servis randevusu alın. 10+ yıl tecrübeli uzman ekip, sıra beklemeden randevu.",
   });
 }
 

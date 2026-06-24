@@ -9,8 +9,9 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata("/urunler", {
-    title: "Tüm Ürünler - Galaksi Motor",
-    description: "Motosiklet yedek parça, bakım ürünleri ve aksesuarları.",
+    title: "Motosiklet Yedek Parça & Aksesuar — Tüm Ürünler | Galaksi Motor",
+    description:
+      "Orijinal motosiklet yedek parça, bakım ürünleri ve aksesuarları uygun fiyatla. Küçükçekmece / İstanbul Galaksi Motor — aynı gün kargo, güvenli ödeme.",
   });
 }
 
