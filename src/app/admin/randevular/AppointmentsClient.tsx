@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AppointmentStatus } from "@prisma/client";
 import { AppointmentStatusSelect } from "./AppointmentStatusSelect";
-import { adminCreateAppointment, rescheduleAppointment } from "./actions";
+import { adminCreateAppointment, rescheduleAppointment, deleteAppointment } from "./actions";
 
 export type AppointmentRow = {
   id: string;
@@ -290,7 +290,10 @@ export function AppointmentsClient({
                           <AppointmentStatusSelect id={a.id} status={a.status as AppointmentStatus} />
                         </td>
                         <td className="px-4 py-3 align-top text-right">
-                          <RescheduleControl id={a.id} currentIso={a.scheduledAt} />
+                          <div className="flex flex-col items-end gap-1.5">
+                            <RescheduleControl id={a.id} currentIso={a.scheduledAt} />
+                            <DeleteAppointmentButton id={a.id} />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -464,6 +467,50 @@ function NewAppointmentForm({
 }
 
 // ─── Yeniden planlama kontrolü ───────────────────────────────────────────────
+
+function DeleteAppointmentButton({ id }: { id: string }) {
+  const router = useRouter();
+  const [confirm, setConfirm] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  function onDelete() {
+    startTransition(async () => {
+      await deleteAppointment(id);
+      router.refresh();
+    });
+  }
+
+  if (confirm) {
+    return (
+      <span className="flex items-center gap-1.5">
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={onDelete}
+          className="rounded-full bg-rose-500/20 px-3 py-1 text-[11px] text-rose-300 ring-1 ring-rose-400/30 hover:bg-rose-500/30 disabled:opacity-50"
+        >
+          {isPending ? "…" : "Evet, sil"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirm(false)}
+          className="rounded-full border border-white/15 px-3 py-1 text-[11px] text-white/60 hover:text-white"
+        >
+          İptal
+        </button>
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setConfirm(true)}
+      className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-rose-400/80 hover:text-rose-400"
+    >
+      Sil
+    </button>
+  );
+}
 
 function RescheduleControl({ id, currentIso }: { id: string; currentIso: string }) {
   const router = useRouter();

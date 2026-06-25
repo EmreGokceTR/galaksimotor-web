@@ -46,6 +46,30 @@ export async function updateAppointmentStatus(
   revalidatePath("/hesabim/randevular");
 }
 
+// ─── Admin: randevu sil ──────────────────────────────────────────────────────
+
+export async function deleteAppointment(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { email } = await assertAdminContext();
+  const appt = await prisma.appointment.findUnique({
+    where: { id },
+    select: { id: true, service: { select: { name: true } }, scheduledAt: true },
+  });
+  if (!appt) return { ok: false, error: "Randevu bulunamadı." };
+
+  await prisma.appointment.delete({ where: { id } });
+  await logActivity(email, "appointment_delete", `appointment:${id}`, {
+    service: appt.service?.name,
+    scheduledAt: appt.scheduledAt.toISOString(),
+  });
+
+  revalidatePath("/admin/randevular");
+  revalidatePath("/admin");
+  revalidatePath("/hesabim/randevular");
+  return { ok: true };
+}
+
 // ─── Admin: manuel randevu ekleme (telefonla/şahsen gelen müşteri) ───────────
 
 export type AdminCreateAppointmentInput = {

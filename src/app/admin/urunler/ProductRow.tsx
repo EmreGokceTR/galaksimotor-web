@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { updateProduct } from "./actions";
+import { updateProduct, deleteProduct } from "./actions";
 
 type Props = {
   id: string;
@@ -16,11 +17,27 @@ type Props = {
 };
 
 export function ProductRow(p: Props) {
+  const router = useRouter();
   const [price, setPrice] = useState(p.initialPrice.toString());
   const [stock, setStock] = useState(p.initialStock.toString());
   const [active, setActive] = useState(p.initialActive);
   const [pending, startTransition] = useTransition();
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [delErr, setDelErr] = useState<string | null>(null);
+
+  function handleDelete() {
+    setDelErr(null);
+    startTransition(async () => {
+      const res = await deleteProduct(p.id);
+      if (!res.ok) {
+        setDelErr(res.error);
+        setConfirmDel(false);
+        return;
+      }
+      router.refresh();
+    });
+  }
 
   const dirty =
     Number(price) !== p.initialPrice ||
@@ -108,7 +125,36 @@ export function ProductRow(p: Props) {
           >
             {pending ? "..." : savedAt ? "✓ Kaydedildi" : "Kaydet"}
           </button>
+          {confirmDel ? (
+            <span className="flex items-center gap-1">
+              <button
+                onClick={handleDelete}
+                disabled={pending}
+                className="rounded-full bg-rose-500/20 px-2.5 py-1 text-[11px] text-rose-300 ring-1 ring-rose-400/30 hover:bg-rose-500/30 disabled:opacity-50"
+              >
+                {pending ? "…" : "Evet, sil"}
+              </button>
+              <button
+                onClick={() => setConfirmDel(false)}
+                className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-white/60 hover:text-white"
+              >
+                İptal
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => { setDelErr(null); setConfirmDel(true); }}
+              className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] text-rose-400/80 hover:text-rose-400"
+            >
+              Sil
+            </button>
+          )}
         </div>
+        {delErr && (
+          <p className="mt-1.5 max-w-[260px] text-right text-[10px] leading-snug text-rose-300">
+            {delErr}
+          </p>
+        )}
       </td>
     </tr>
   );
