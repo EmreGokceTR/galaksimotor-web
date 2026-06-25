@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CartButton } from "./CartButton";
+import { SearchBox } from "./SearchBox";
 import { CartDrawer } from "./CartDrawer";
 import { CartHydration } from "./CartHydration";
 import { GarageSelector } from "./GarageSelector";
@@ -185,6 +186,9 @@ export function Navbar({ settings }: { settings: NavSettings }) {
 
         {/* Right side */}
         <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden w-52 lg:block">
+            <SearchBox compact />
+          </div>
           <GarageSelector />
           <CartButton />
           {session?.user ? (
@@ -306,6 +310,9 @@ export function Navbar({ settings }: { settings: NavSettings }) {
             className="overflow-hidden border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden"
           >
             <ul className="mx-auto flex max-w-7xl flex-col px-6 py-3">
+              <li className="mb-2">
+                <SearchBox onNavigate={() => setOpen(false)} />
+              </li>
               {NAV_LINKS.map((link) => {
                 const isActive =
                   link.href === "/" ? pathname === "/" : pathname?.startsWith(link.href);

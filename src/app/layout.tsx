@@ -237,7 +237,7 @@ const webSiteJsonLd = {
     "@type": "SearchAction",
     target: {
       "@type": "EntryPoint",
-      urlTemplate: `${SITE.url}/urunler?search={search_term_string}`,
+      urlTemplate: `${SITE.url}/arama?q={search_term_string}`,
     },
     "query-input": "required name=search_term_string",
   },
