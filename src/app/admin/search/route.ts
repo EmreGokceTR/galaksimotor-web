@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 
   const [products, orders, customers, claims, blog] = await Promise.all([
     prisma.product.findMany({
-      where: { OR: [{ name: like }, { sku: like }] },
+      where: { OR: [{ name: like }, { sku: like }, { oemNo: like }, { compatNo: like }] },
       select: { name: true, slug: true, sku: true, stock: true },
       take: 5,
     }),

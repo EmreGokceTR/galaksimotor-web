@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { trackEvent } from "@/lib/gtag";
 
 export type CartItem = {
   /** Stable composite key: productId or productId:variantId */
@@ -89,6 +90,20 @@ export const useCart = create<CartState>()(
           });
         }
         set({ items, isOpen: true });
+
+        // GA4 — sepete ekleme olayı
+        trackEvent("add_to_cart", {
+          currency: "TRY",
+          value: payload.price * qtyToAdd,
+          items: [
+            {
+              item_id: payload.productId,
+              item_name: payload.name,
+              price: payload.price,
+              quantity: qtyToAdd,
+            },
+          ],
+        });
       },
 
       remove: (key) =>

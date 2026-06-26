@@ -110,7 +110,7 @@ export default async function ProductPage({ params }: Props) {
     description:
       product.description ?? `${product.name} — ${SITE.name} kalitesinde.`,
     sku: product.sku,
-    mpn: product.sku,
+    mpn: product.oemNo ?? product.sku,
     image: product.images.length > 0
       ? product.images.map((img) => img.url)
       : [`${SITE.url}/logos/galaksi-motor-logo.jpg`],
@@ -268,7 +268,11 @@ export default async function ProductPage({ params }: Props) {
               />
             </div>
             <h1 className="text-3xl font-bold text-white">{product.name}</h1>
-            <span className="text-xs text-white/40">SKU: {product.sku}</span>
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-white/40">
+              <span>SKU: {product.sku}</span>
+              {product.oemNo && <span>OEM No: <span className="text-white/60">{product.oemNo}</span></span>}
+              {product.compatNo && <span>Muadil No: <span className="text-white/60">{product.compatNo}</span></span>}
+            </div>
           </div>
 
           <div className="text-3xl font-bold text-brand-yellow">
@@ -277,6 +281,10 @@ export default async function ProductPage({ params }: Props) {
               currency: "TRY",
             })}
           </div>
+          <p className="-mt-2 flex items-center gap-1.5 text-xs text-white/45">
+            <span className="text-emerald-300">💳</span>
+            Kredi/banka kartına 9 taksite kadar — ödeme ekranında görüntülenir.
+          </p>
 
           {product.stock > 0 ? (
             <div className="rounded bg-green-500/20 px-3 py-1 inline-block text-sm text-green-400">

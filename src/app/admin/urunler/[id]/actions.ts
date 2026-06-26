@@ -24,6 +24,8 @@ export async function updateProductDetails(formData: FormData) {
   const sku = String(formData.get("sku") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const brand = String(formData.get("brand") ?? "").trim() || null;
+  const oemNo = String(formData.get("oemNo") ?? "").trim() || null;
+  const compatNo = String(formData.get("compatNo") ?? "").trim() || null;
   const categoryId = String(formData.get("categoryId") ?? "");
   const price = Number(formData.get("price") ?? 0);
   const stock = parseInt(String(formData.get("stock") ?? "0"), 10) || 0;
@@ -44,7 +46,7 @@ export async function updateProductDetails(formData: FormData) {
 
   await prisma.product.update({
     where: { id },
-    data: { name, slug, sku, description, brand, categoryId, price, stock, isActive },
+    data: { name, slug, sku, description, brand, oemNo, compatNo, categoryId, price, stock, isActive },
   });
 
   await logActivity(email, "product_update", `product:${id}`, { name, slug });

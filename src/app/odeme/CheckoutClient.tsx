@@ -9,6 +9,7 @@ import { FreeShippingBar } from "@/components/FreeShippingBar";
 import type { ShippingConfig } from "@/lib/shipping";
 import { computeShippingFromConfig } from "@/lib/shipping";
 import { initPaymentForOrder } from "@/app/_actions/payment";
+import { trackEvent } from "@/lib/gtag";
 
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
@@ -88,6 +89,19 @@ export function CheckoutClient({
     }
 
     setSubmitting(true);
+
+    // GA4 — ödeme akışı başladı
+    trackEvent("begin_checkout", {
+      currency: "TRY",
+      value: total,
+      items: items.map((i) => ({
+        item_id: i.productId,
+        item_name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+      })),
+    });
+
     try {
       const res = await fetch("/api/orders", {
         method: "POST",

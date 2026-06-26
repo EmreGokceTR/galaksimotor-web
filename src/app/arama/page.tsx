@@ -41,7 +41,14 @@ export default async function SearchPage({
       prisma.product.findMany({
         where: {
           isActive: true,
-          OR: [{ name: where }, { sku: where }, { description: where }, { brand: where }],
+          OR: [
+            { name: where },
+            { sku: where },
+            { description: where },
+            { brand: where },
+            { oemNo: where },
+            { compatNo: where },
+          ],
         },
         select: {
           id: true,

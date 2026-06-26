@@ -120,6 +120,10 @@ model Product {
   price       Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
   brand       String?
+  /// Orijinal (OEM) parça numarası — arama ve eşleştirme için
+  oemNo       String?
+  /// Muadil / çapraz referans parça numara(ları)
+  compatNo    String?
   isActive    Boolean  @default(true)
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])

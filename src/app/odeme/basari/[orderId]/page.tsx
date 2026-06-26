@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ClearCartOnMount } from "./ClearCartOnMount";
+import { TrackPurchase } from "./TrackPurchase";
 
 const fmt = (n: number) =>
   n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
@@ -31,6 +32,17 @@ export default async function OrderSuccessPage({
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       <ClearCartOnMount />
+      <TrackPurchase
+        orderNumber={order.orderNumber}
+        value={Number(order.total)}
+        shipping={Number(order.shippingFee)}
+        items={order.items.map((it) => ({
+          item_id: it.productId,
+          item_name: it.name,
+          price: Number(it.price),
+          quantity: it.quantity,
+        }))}
+      />
 
       {/* Success header */}
       <div className="relative overflow-hidden rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/10 via-white/[0.02] to-emerald-500/5 p-10 text-center backdrop-blur-md">
