@@ -95,10 +95,12 @@ export async function POST(req: Request) {
     );
   }
 
-  // TCKN doğrulama (opsiyonel ama doluysa 11 hane olmalı)
-  if (body.invoice?.tcNo && !/^\d{11}$/.test(body.invoice.tcNo.trim())) {
+  // TCKN zorunlu — fatura (e-Arşiv) ve İyzico'ya giden gerçek kimlik numarası
+  // için gerekli; boşsa/placeholder olursa canlı ödeme sağlayıcısına sahte
+  // veri gönderilmiş olur.
+  if (!body.invoice?.tcNo || !/^\d{11}$/.test(body.invoice.tcNo.trim())) {
     return NextResponse.json(
-      { error: "TC Kimlik Numarası 11 haneli olmalı." },
+      { error: "TC Kimlik Numarası zorunlu ve 11 haneli olmalı." },
       { status: 400 }
     );
   }

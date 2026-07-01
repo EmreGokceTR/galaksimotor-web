@@ -254,9 +254,10 @@ export function CheckoutClient({
           <Section title="Fatura Bilgileri" icon="🧾">
             <div className="grid gap-3">
               <Field
-                label="TC Kimlik No (fatura için)"
+                label="TC Kimlik No (fatura ve güvenli ödeme için) *"
                 value={invoiceTcNo}
                 onChange={(v) => setInvoiceTcNo(v.replace(/\D/g, "").slice(0, 11))}
+                required
                 placeholder="11 hane"
                 autoComplete="off"
                 error={invoiceTcNo.length === 11 && !validateTCKN(invoiceTcNo) ? "Geçersiz TC Kimlik No" : undefined}
@@ -445,7 +446,11 @@ export function CheckoutClient({
               <button
                 type="submit"
                 disabled={
-                  submitting || isPending || items.length === 0 || !agreedTerms
+                  submitting ||
+                  isPending ||
+                  items.length === 0 ||
+                  !agreedTerms ||
+                  !validateTCKN(invoiceTcNo)
                 }
                 className="group mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-brand-yellow py-3.5 text-sm font-semibold text-brand-black shadow-[0_18px_40px_-12px_rgba(255,215,0,0.7)] transition hover:shadow-[0_24px_50px_-10px_rgba(255,215,0,0.9)] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
               >
