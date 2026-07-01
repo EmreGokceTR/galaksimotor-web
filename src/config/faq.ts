@@ -21,7 +21,7 @@ export const FAQS = [
   },
   {
     q: "Parçanın motorumla uyumlu olduğunu nasıl anlarım?",
-    a: "Ürün detay sayfasında 'Uyumlu Motosikletler' başlığında o parçanın hangi marka/model/yıl ile uyumlu olduğu listelenir. Garaj modülü ile motorunu kaydedersen sadece sana uygun parçaları gösteririz.",
+    a: "Motosiklet markanı ve modelini /motosiklet sayfasından seçerek o modele uygun tüm parçaları görebilirsin. Garaj modülü ile motorunu kaydedersen sadece sana uygun parçaları gösteririz; emin değilsen WhatsApp'tan bize sorabilirsin.",
   },
   {
     q: "Ödeme güvenliğim nasıl sağlanıyor?",

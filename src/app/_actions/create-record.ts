@@ -61,7 +61,8 @@ export async function createProductRecord(input: {
   const slug = await uniqueSlug(turkishSlug(name), async (s) =>
     Boolean(await prisma.product.findUnique({ where: { slug: s } }))
   );
-  const sku = `SKU-${Date.now().toString(36).toUpperCase()}`;
+  // "yeni ürün" formuyla aynı iç kod şeması — bkz. admin/urunler/yeni/actions.ts
+  const sku = `GM-${slug.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24)}`;
 
   const product = await prisma.product.create({
     data: {

@@ -121,15 +121,15 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
 
     // ── Kalemler tablosu ────────────────────────────────────────────────────
     const tableTop = doc.y;
-    const COL_W = { product: 220, sku: 80, qty: 40, price: 70, vat: 40, total: 70 };
+    const COL_W = { product: 300, qty: 40, price: 70, vat: 40, total: 70 };
     let cx = 50;
 
     // Tablo başlığı
     doc.rect(50, tableTop, W, 18).fill(DARK);
     doc.font(USE_BOLD).fontSize(8).fillColor("#FFFFFF");
-    const headers = ["Ürün", "SKU", "Adet", "Birim Fiyat", "KDV%", "Toplam"];
+    const headers = ["Ürün", "Adet", "Birim Fiyat", "KDV%", "Toplam"];
     const colWidths = Object.values(COL_W);
-    const aligns: ("left"|"right")[] = ["left","left","right","right","right","right"];
+    const aligns: ("left"|"right")[] = ["left","right","right","right","right"];
 
     headers.forEach((h, i) => {
       doc.text(h, cx + 4, tableTop + 4, { width: colWidths[i], align: aligns[i] });
@@ -145,7 +145,6 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       cx = 50;
       const rowData = [
         line.name,
-        line.sku,
         String(line.quantity),
         fmt(line.unitPrice),
         `%${line.vatRate}`,

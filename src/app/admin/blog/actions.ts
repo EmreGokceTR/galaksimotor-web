@@ -51,18 +51,22 @@ export async function upsertPost(formData: FormData) {
   };
 
   if (id) {
+    const before = await prisma.blogPost.findUnique({ where: { id }, select: { slug: true } });
     await prisma.blogPost.update({ where: { id }, data });
+    if (before && before.slug !== slug) revalidatePath(`/blog/${before.slug}`);
   } else {
     await prisma.blogPost.create({ data });
   }
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
   redirect("/admin/blog");
 }
 
 export async function deletePost(id: string) {
   await assertAdmin();
-  await prisma.blogPost.delete({ where: { id } });
+  const post = await prisma.blogPost.delete({ where: { id } });
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
+  revalidatePath(`/blog/${post.slug}`);
 }

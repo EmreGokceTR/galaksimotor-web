@@ -49,12 +49,18 @@ export async function upsertCategory(input: {
 
   try {
     if (input.id) {
+      const before = await prisma.category.findUnique({
+        where: { id: input.id },
+        select: { slug: true },
+      });
       await prisma.category.update({
         where: { id: input.id },
         data: { name, slug, description: input.description?.trim() || null, parentId },
       });
       await logActivity(email, "category_update", `category:${input.id}`, { name, slug });
       for (const p of R) revalidatePath(p);
+      revalidatePath(`/kategori/${slug}`);
+      if (before && before.slug !== slug) revalidatePath(`/kategori/${before.slug}`);
       return { ok: true, id: input.id };
     }
     const created = await prisma.category.create({
@@ -62,6 +68,7 @@ export async function upsertCategory(input: {
     });
     await logActivity(email, "category_create", `category:${created.id}`, { name, slug });
     for (const p of R) revalidatePath(p);
+    revalidatePath(`/kategori/${slug}`);
     return { ok: true, id: created.id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Kaydedilemedi." };
@@ -76,7 +83,7 @@ export async function deleteCategory(
   const [productCount, childCount, category] = await Promise.all([
     prisma.product.count({ where: { categoryId: id } }),
     prisma.category.count({ where: { parentId: id } }),
-    prisma.category.findUnique({ where: { id }, select: { name: true } }),
+    prisma.category.findUnique({ where: { id }, select: { name: true, slug: true } }),
   ]);
 
   if (!category) return { ok: false, error: "Kategori bulunamadı." };
@@ -96,5 +103,6 @@ export async function deleteCategory(
   await prisma.category.delete({ where: { id } });
   await logActivity(email, "category_delete", `category:${id}`, { name: category.name });
   for (const p of R) revalidatePath(p);
+  revalidatePath(`/kategori/${category.slug}`);
   return { ok: true };
 }
