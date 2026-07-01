@@ -42,6 +42,59 @@ function splitName(full: string): { name: string; surname: string } {
   };
 }
 
+type OrderWithItems = {
+  items: { id: string; name: string; price: unknown; quantity: number }[];
+  subtotal: unknown;
+  shippingFee: unknown;
+  discountAmount: unknown;
+};
+
+/**
+ * Iyzico basket item fiyat toplamı `price`/`paidPrice` alanına birebir eşit
+ * olmalı (aksi halde istek reddedilir). İndirim kalemler arasında oransal
+ * dağıtılır, yuvarlama farkı son kaleme eklenir, kargo ayrı kalem olarak
+ * eklenir — böylece toplam her zaman order.total ile eşleşir.
+ */
+function buildBasketItems(order: OrderWithItems) {
+  const subtotal = Number(order.subtotal);
+  const shippingFee = Number(order.shippingFee);
+  const discount = order.discountAmount ? Number(order.discountAmount) : 0;
+  const discountRatio = subtotal > 0 ? discount / subtotal : 0;
+
+  let allocated = 0;
+  const items = order.items.map((it) => {
+    const lineTotal = Number(it.price) * it.quantity;
+    const discounted = Math.round((lineTotal - lineTotal * discountRatio) * 100) / 100;
+    allocated += discounted;
+    return {
+      id: it.id,
+      name: it.name.slice(0, 60),
+      category1: "Motosiklet",
+      itemType: "PHYSICAL" as "PHYSICAL" | "VIRTUAL",
+      price: discounted,
+    };
+  });
+
+  // Yuvarlama artığını son kaleme ekle — toplam kuruşuna kadar tutmalı
+  const targetAfterDiscount = Math.round((subtotal - discount) * 100) / 100;
+  const remainder = Math.round((targetAfterDiscount - allocated) * 100) / 100;
+  if (remainder !== 0 && items.length > 0) {
+    items[items.length - 1].price += remainder;
+  }
+
+  const basketItems = items.map((it) => ({ ...it, price: it.price.toFixed(2) }));
+  if (shippingFee > 0) {
+    basketItems.push({
+      id: "shipping",
+      name: "Kargo Ücreti",
+      category1: "Kargo",
+      itemType: "VIRTUAL" as const,
+      price: shippingFee.toFixed(2),
+    });
+  }
+  return basketItems;
+}
+
 // ─── Iyzico Checkout Form Init ───────────────────────────────────────────────
 
 export type InitPaymentResult =
@@ -138,13 +191,7 @@ export async function initPaymentForOrder(
         order.invoiceAddress ?? order.shippingAddress ?? "Mağazadan teslim",
       zipCode: "34000",
     },
-    basketItems: order.items.map((it) => ({
-      id: it.id,
-      name: it.name.slice(0, 60),
-      category1: "Motosiklet",
-      itemType: "PHYSICAL",
-      price: (Number(it.price) * it.quantity).toFixed(2),
-    })),
+    basketItems: buildBasketItems(order),
   };
 
   const client = getIyzico();
@@ -251,11 +298,29 @@ export async function verifyPaymentCallback(
   });
   if (!order) return { ok: false, error: "Sipariş bulunamadı." };
 
+  // İdempotency — Iyzico callback'i (tarayıcı geri tuşu, ağ tekrar denemesi vb.
+  // nedeniyle) aynı token için birden fazla tetiklenebilir. Zaten PAID ise
+  // faturayı/e-postaları tekrar üretmeden mevcut sonucu döndür.
+  if (order.paymentStatus === "PAID") {
+    return { ok: true, orderId: order.id, orderNumber: order.orderNumber };
+  }
+
   if (!result.paid) {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { paymentStatus: "FAILED" },
-    });
+    // Aynı nedenle: zaten FAILED işaretliyse stoğu ikinci kez iade etme.
+    if (order.paymentStatus !== "FAILED") {
+      await prisma.$transaction([
+        prisma.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: "FAILED" },
+        }),
+        ...order.items.map((it) =>
+          prisma.product.update({
+            where: { id: it.productId },
+            data: { stock: { increment: it.quantity } },
+          })
+        ),
+      ]);
+    }
     return { ok: false, error: "Ödeme reddedildi veya iptal edildi." };
   }
 

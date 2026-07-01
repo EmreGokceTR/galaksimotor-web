@@ -185,7 +185,7 @@ export async function refundOrder(orderId: string): Promise<RefundResult> {
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { user: true },
+    include: { user: true, items: true },
   });
 
   if (!order) return { ok: false, error: "Sipariş bulunamadı." };
@@ -234,11 +234,20 @@ export async function refundOrder(orderId: string): Promise<RefundResult> {
     return { ok: false, error: result.error };
   }
 
-  // ✅ İade başarılı — sipariş durumunu güncelle
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { paymentStatus: PaymentStatus.REFUNDED, status: OrderStatus.CANCELLED },
-  });
+  // ✅ İade başarılı — sipariş durumunu güncelle + iade edilen ürünlerin
+  // stoğunu geri ver (satış geri alındığı için envanterde tekrar sayılmalı).
+  await prisma.$transaction([
+    prisma.order.update({
+      where: { id: orderId },
+      data: { paymentStatus: PaymentStatus.REFUNDED, status: OrderStatus.CANCELLED },
+    }),
+    ...order.items.map((it) =>
+      prisma.product.update({
+        where: { id: it.productId },
+        data: { stock: { increment: it.quantity } },
+      })
+    ),
+  ]);
 
   await logActivity(email, "order_refund", `order:${orderId}`, {
     orderNumber: order.orderNumber,
