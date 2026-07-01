@@ -30,7 +30,6 @@ export default async function NewProductPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Ürün Adı *" name="name" required placeholder="CVT Kayışı Honda PCX" />
           <Field label="Slug (URL) *" name="slug" required placeholder="cvt-kayisi-honda-pcx" />
-          <Field label="SKU *" name="sku" required placeholder="CVT-XYZ-001" />
           <Field label="Marka" name="brand" placeholder="Honda / Bajaj / vs." />
           <Field label="OEM Parça No" name="oemNo" placeholder="Orijinal parça numarası" />
           <Field label="Muadil No" name="compatNo" placeholder="Çapraz referans / muadil no" />

@@ -89,9 +89,6 @@ export function CartContent({ shipping }: { shipping: ShippingConfig }) {
                         {it.variantLabel}
                       </p>
                     )}
-                    <p className="mt-0.5 text-xs text-white/30">
-                      SKU · {it.sku}
-                    </p>
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex items-center rounded-full border border-white/15 bg-white/5">
                         <button

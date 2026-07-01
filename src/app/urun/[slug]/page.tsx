@@ -37,15 +37,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       stock: true,
       brand: true,
       images: { take: 1, orderBy: { position: "asc" } },
+      category: { select: { name: true } },
     },
   });
   if (!p) return { title: "Ürün bulunamadı" };
   const title = `${p.name} - ${SITE.name}`;
-  const description = p.description ?? `${p.name} — ${SITE.name}'da satın al.`;
+  // Arama motoru snippet'i sayfada görünen (kısa) açıklamadan bağımsız — marka,
+  // kategori, fiyat ve yerel anahtar kelimelerle zenginleştirilmiş, insanlar
+  // Google'da ararken doğrudan bu sonucu görsün diye.
+  const fmtPrice = Number(p.price).toLocaleString("tr-TR", {
+    style: "currency",
+    currency: "TRY",
+  });
+  const description = `${p.name}${p.brand ? ` — ${p.brand} marka` : ""}, ${p.category.name.toLocaleLowerCase("tr")} kategorisinde ${fmtPrice} fiyatına ${SITE.name}'da satışta. Küçükçekmece / İstanbul'dan aynı gün kargo, güvenli ödeme ile hemen satın alın.`;
+  const keywords = [p.name, p.brand, p.category.name, "motosiklet yedek parça", "Küçükçekmece motosiklet", SITE.name]
+    .filter(Boolean)
+    .join(", ");
   const image = p.images[0]?.url;
   return {
     title,
     description,
+    keywords,
     alternates: { canonical: `${SITE.url}/urun/${params.slug}` },
     openGraph: {
       // Facebook/WhatsApp/Twitter: "ürün" tipi link önizleme — fiyat ve durum gösterir
@@ -280,11 +292,12 @@ export default async function ProductPage({ params }: Props) {
               />
             </div>
             <h1 className="text-3xl font-bold text-white">{product.name}</h1>
-            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-white/40">
-              <span>SKU: {product.sku}</span>
-              {product.oemNo && <span>OEM No: <span className="text-white/60">{product.oemNo}</span></span>}
-              {product.compatNo && <span>Muadil No: <span className="text-white/60">{product.compatNo}</span></span>}
-            </div>
+            {(product.oemNo || product.compatNo) && (
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-white/40">
+                {product.oemNo && <span>OEM No: <span className="text-white/60">{product.oemNo}</span></span>}
+                {product.compatNo && <span>Muadil No: <span className="text-white/60">{product.compatNo}</span></span>}
+              </div>
+            )}
           </div>
 
           <div className="text-3xl font-bold text-brand-yellow">

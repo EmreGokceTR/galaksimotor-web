@@ -91,7 +91,6 @@ export default async function OrderSuccessPage({
                 <div className="line-clamp-1 text-sm font-medium text-white">
                   {it.name}
                 </div>
-                <div className="text-xs text-white/40">SKU · {it.sku}</div>
               </div>
               <div className="flex items-center gap-4 text-sm">
                 <span className="text-white/55">×{it.quantity}</span>

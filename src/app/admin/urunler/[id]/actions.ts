@@ -23,7 +23,6 @@ export async function updateProductDetails(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
-  const sku = String(formData.get("sku") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const brand = String(formData.get("brand") ?? "").trim() || null;
   const oemNo = String(formData.get("oemNo") ?? "").trim() || null;
@@ -34,22 +33,21 @@ export async function updateProductDetails(formData: FormData) {
   const isActive = formData.getAll("isActive").includes("1");
 
   if (!id) throw new Error("Ürün kimliği eksik.");
-  if (!name || !slug || !sku || !categoryId || !price) {
-    throw new Error("Ad, slug, SKU, kategori ve fiyat zorunlu.");
+  if (!name || !slug || !categoryId || !price) {
+    throw new Error("Ad, slug, kategori ve fiyat zorunlu.");
   }
 
-  // Slug / SKU benzersizliği (kendisi hariç)
-  const [slugClash, skuClash, before] = await Promise.all([
+  // Slug benzersizliği (kendisi hariç). SKU artık admin'den düzenlenmiyor
+  // (müşteriye gösterilmeyen, oluşturmada otomatik atanan iç kayıt kodu).
+  const [slugClash, before] = await Promise.all([
     prisma.product.findUnique({ where: { slug }, select: { id: true } }),
-    prisma.product.findUnique({ where: { sku }, select: { id: true } }),
     prisma.product.findUnique({ where: { id }, select: { price: true } }),
   ]);
   if (slugClash && slugClash.id !== id) throw new Error(`"${slug}" slug'ı başka üründe kullanılıyor.`);
-  if (skuClash && skuClash.id !== id) throw new Error(`"${sku}" SKU'su başka üründe kullanılıyor.`);
 
   await prisma.product.update({
     where: { id },
-    data: { name, slug, sku, description, brand, oemNo, compatNo, categoryId, price, stock, isActive },
+    data: { name, slug, description, brand, oemNo, compatNo, categoryId, price, stock, isActive },
   });
 
   await logActivity(email, "product_update", `product:${id}`, { name, slug });

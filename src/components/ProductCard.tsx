@@ -117,7 +117,6 @@ export function ProductCard({
           <h3 className="line-clamp-2 min-h-[2.75rem] text-[15px] font-semibold leading-snug text-white transition-colors group-hover:text-brand-yellow">
             {product.name}
           </h3>
-          <span className="text-[11px] text-white/30">SKU · {product.sku}</span>
 
           <div className="mt-3 flex items-end justify-between border-t border-white/5 pt-3">
             <div className="flex flex-col">

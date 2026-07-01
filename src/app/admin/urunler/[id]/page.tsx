@@ -61,7 +61,6 @@ export default async function EditProductPage({
         <div className="grid gap-4 sm:grid-cols-2">
           <L label="Ürün Adı *"><input name="name" required defaultValue={product.name} className={inputCls} /></L>
           <L label="Slug (URL) *"><input name="slug" required defaultValue={product.slug} className={inputCls} /></L>
-          <L label="SKU *"><input name="sku" required defaultValue={product.sku} className={inputCls} /></L>
           <L label="Marka"><input name="brand" defaultValue={product.brand ?? ""} className={inputCls} /></L>
           <L label="OEM Parça No"><input name="oemNo" defaultValue={product.oemNo ?? ""} placeholder="Orijinal parça no" className={inputCls} /></L>
           <L label="Muadil No"><input name="compatNo" defaultValue={product.compatNo ?? ""} placeholder="Çapraz referans / muadil" className={inputCls} /></L>

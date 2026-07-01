@@ -10,7 +10,6 @@ export async function createProduct(formData: FormData) {
 
   const slug = String(formData.get("slug") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
-  const sku = String(formData.get("sku") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const brand = String(formData.get("brand") ?? "").trim() || null;
   const oemNo = String(formData.get("oemNo") ?? "").trim() || null;
@@ -20,9 +19,13 @@ export async function createProduct(formData: FormData) {
   const stock = parseInt(String(formData.get("stock") ?? "0"), 10);
   const imageUrl = String(formData.get("imageUrl") ?? "").trim();
 
-  if (!slug || !name || !sku || !categoryId || !price) {
-    throw new Error("Slug, isim, SKU, kategori ve fiyat zorunlu.");
+  if (!slug || !name || !categoryId || !price) {
+    throw new Error("Slug, isim, kategori ve fiyat zorunlu.");
   }
+
+  // Ürün kodu artık müşteriye gösterilmiyor — sadece iç kayıt bütünlüğü
+  // (benzersizlik) için slug'dan otomatik üretilir, admin bir şey girmez.
+  const sku = `GM-${slug.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24)}`;
 
   const product = await prisma.product.create({
     data: {
