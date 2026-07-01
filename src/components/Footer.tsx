@@ -41,7 +41,6 @@ export async function Footer() {
       title: col1Title,
       items: [
         { key: "footer_col1_l1", label: st(bag, "footer_col1_l1", "Tüm Ürünler"), href: "/urunler" },
-        { key: "footer_col1_l2", label: st(bag, "footer_col1_l2", "Yedek Parça"), href: "/kategori/motosiklet-yedek-parcalari" },
         { key: "footer_col1_l3", label: st(bag, "footer_col1_l3", "Bakım & Tamir"), href: "/kategori/bakim-ve-tamir-urunleri" },
         { key: "footer_col1_l4", label: st(bag, "footer_col1_l4", "Aksesuarlar"), href: "/kategori/aksesuarlar" },
         { key: "footer_col1_l5", label: "Motosiklet Modelleri", href: "/motosiklet" },

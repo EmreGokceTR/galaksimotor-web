@@ -19,7 +19,6 @@ export const SECTIONS: Section[] = [
     fields: [
       { key: "nav_home", label: "Anasayfa", def: "Anasayfa" },
       { key: "nav_urunler", label: "Ürünler", def: "Ürünler" },
-      { key: "nav_yedek_parca", label: "Yedek Parça", def: "Yedek Parça" },
       { key: "nav_bakim", label: "Bakım", def: "Bakım" },
       { key: "nav_randevu", label: "Randevu", def: "Randevu" },
       { key: "nav_auth_account", label: "Hesabım", def: "Hesabım" },
@@ -114,7 +113,6 @@ export const SECTIONS: Section[] = [
       { key: "footer_brand_desc", label: "Marka açıklaması", type: "textarea", def: "Küçükçekmece İnönü Mahallesi'nde motosikletinizin ihtiyacı olan orijinal yedek parça, bakım ürünü ve aksesuarlar — uzman servis ekibiyle." },
       { key: "footer_col1_title", label: "Sütun 1 — başlık", def: "Mağaza" },
       { key: "footer_col1_l1", label: "Sütun 1 — link 1", def: "Tüm Ürünler" },
-      { key: "footer_col1_l2", label: "Sütun 1 — link 2", def: "Yedek Parça" },
       { key: "footer_col1_l3", label: "Sütun 1 — link 3", def: "Bakım & Tamir" },
       { key: "footer_col1_l4", label: "Sütun 1 — link 4", def: "Aksesuarlar" },
       { key: "footer_col2_title", label: "Sütun 2 — başlık", def: "Hesap" },

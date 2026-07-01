@@ -104,6 +104,12 @@ const nextConfig = {
         destination: "https://galaksimotor.com/:path*",
         permanent: true,
       },
+      // "Yedek Parça" artık ayrı bir sekme/sayfa değil — tüm ürünler /urunler altında.
+      {
+        source: "/kategori/motosiklet-yedek-parcalari",
+        destination: "/urunler",
+        permanent: true,
+      },
     ];
   },
 };

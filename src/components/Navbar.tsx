@@ -44,7 +44,6 @@ export function Navbar({ settings }: { settings: NavSettings }) {
   const NAV_LINKS = [
     { href: "/", settingKey: "nav_home", label: settings.navHome, editable: true },
     { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler, editable: true },
-    { href: "/kategori/motosiklet-yedek-parcalari", settingKey: "nav_yedek_parca", label: settings.navYedekParca, editable: true },
     { href: "/kategori/bakim-ve-tamir-urunleri", settingKey: "nav_bakim", label: settings.navBakim, editable: true },
     { href: "/randevu", settingKey: "nav_randevu", label: settings.navRandevu, editable: true },
     { href: "/deger-kaybi", settingKey: "nav_deger_kaybi", label: "Değer Kaybı", editable: false },

@@ -33,10 +33,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   // Categories first — need slugs for dynamic icon setting keys
-  const categories = await prisma.category.findMany({
-    where: { parentId: null },
-    orderBy: { name: "asc" },
-  });
+  // "motosiklet-yedek-parcalari" artık kendi sekmesi/kartı olarak gösterilmiyor —
+  // tüm ürünler tek "Ürünler" sekmesi altında (bkz. /kategori/[slug] yönlendirmesi).
+  const categories = (
+    await prisma.category.findMany({
+      where: { parentId: null },
+      orderBy: { name: "asc" },
+    })
+  ).filter((c) => c.slug !== "motosiklet-yedek-parcalari");
 
   const [featured, latestPosts, bag] = await Promise.all([
     prisma.product.findMany({

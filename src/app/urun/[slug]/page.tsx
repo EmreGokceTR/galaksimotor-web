@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductPurchasePanel } from "@/components/ProductPurchasePanel";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { ShareButton } from "@/components/ShareButton";
+import { PriceAlertButton } from "@/components/PriceAlertButton";
 import { ReviewSection } from "@/components/ReviewSection";
 import { AdminEditButton } from "@/components/AdminEditButton";
 import { SITE } from "@/config/site";
@@ -300,7 +302,15 @@ export default async function ProductPage({ params }: Props) {
             <p className="text-white/80 leading-relaxed">{product.description}</p>
           )}
 
-          <FavoriteButton productId={product.id} variant="pill" />
+          <div className="flex flex-wrap items-center gap-2">
+            <FavoriteButton productId={product.id} variant="pill" />
+            <ShareButton
+              title={product.name}
+              text={`${product.name} — ${SITE.name}`}
+              url={`${SITE.url}/urun/${product.slug}`}
+            />
+            <PriceAlertButton productId={product.id} />
+          </div>
 
           <ProductPurchasePanel
             productId={product.id}

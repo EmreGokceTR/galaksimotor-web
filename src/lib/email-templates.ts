@@ -568,3 +568,45 @@ export function contactAdminAlertTemplate(input: {
     }),
   };
 }
+
+// ─── Fiyat Düşüşü Bildirimi (İndirime Girince Haber Ver) ────────────────────
+
+export function priceAlertNotificationTemplate(input: {
+  productName: string;
+  productSlug: string;
+  productImage?: string | null;
+  oldPrice: number;
+  newPrice: number;
+}): { subject: string; html: string } {
+  const discountPct = Math.round(
+    ((input.oldPrice - input.newPrice) / input.oldPrice) * 100
+  );
+  const body = `
+    <div style="background:#0a0a0a;border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:18px 16px;margin-bottom:18px">
+      ${
+        input.productImage
+          ? `<img src="${input.productImage}" alt="${escapeHtml(input.productName)}" width="120" style="display:block;border-radius:10px;margin-bottom:14px;max-width:120px;height:auto" />`
+          : ""
+      }
+      <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:10px">${escapeHtml(input.productName)}</div>
+      <div>
+        <span style="font-size:14px;color:rgba(255,255,255,0.4);text-decoration:line-through;margin-right:10px">${fmtTRY(input.oldPrice)}</span>
+        <span style="font-size:22px;font-weight:800;color:#FFD700;margin-right:10px">${fmtTRY(input.newPrice)}</span>
+        ${discountPct > 0 ? `<span style="font-size:12px;font-weight:700;color:#34d399;background:rgba(52,211,153,0.12);border-radius:999px;padding:2px 10px">%${discountPct} indirim</span>` : ""}
+      </div>
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.6)">
+      Takip ettiğin ürünün fiyatı düştü! Stoklar tükenmeden hemen incele.
+    </p>
+  `;
+  return {
+    subject: `Fiyatı düştü: ${input.productName} artık ${fmtTRY(input.newPrice)}`,
+    html: shell({
+      preheader: `${input.productName} şimdi ${fmtTRY(input.newPrice)} — takip ettiğin fiyat düştü.`,
+      heading: "Takip ettiğin ürün ucuzladı 🎉",
+      body,
+      ctaUrl: `${SITE.url}/urun/${input.productSlug}`,
+      ctaLabel: "Ürünü Görüntüle",
+    }),
+  };
+}

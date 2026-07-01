@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { logActivity } from "@/lib/activity-log";
+import { sendEmail } from "@/lib/mail";
+import { priceAlertNotificationTemplate } from "@/lib/email-templates";
 
 function revalidateProduct(id: string, slug?: string) {
   revalidatePath("/admin/urunler");
@@ -37,9 +39,10 @@ export async function updateProductDetails(formData: FormData) {
   }
 
   // Slug / SKU benzersizliği (kendisi hariç)
-  const [slugClash, skuClash] = await Promise.all([
+  const [slugClash, skuClash, before] = await Promise.all([
     prisma.product.findUnique({ where: { slug }, select: { id: true } }),
     prisma.product.findUnique({ where: { sku }, select: { id: true } }),
+    prisma.product.findUnique({ where: { id }, select: { price: true } }),
   ]);
   if (slugClash && slugClash.id !== id) throw new Error(`"${slug}" slug'ı başka üründe kullanılıyor.`);
   if (skuClash && skuClash.id !== id) throw new Error(`"${sku}" SKU'su başka üründe kullanılıyor.`);
@@ -50,8 +53,58 @@ export async function updateProductDetails(formData: FormData) {
   });
 
   await logActivity(email, "product_update", `product:${id}`, { name, slug });
+
+  const oldPrice = before ? Number(before.price) : null;
+  if (oldPrice !== null && price < oldPrice) {
+    void notifyPriceDrop(id, slug, name, oldPrice, price);
+  }
+
   revalidateProduct(id, slug);
   redirect(`/admin/urunler/${id}`);
+}
+
+/** Fiyat düştüğünde bu ürünü takip eden "İndirime girince haber ver" abonelerine mail atar. */
+async function notifyPriceDrop(
+  productId: string,
+  slug: string,
+  name: string,
+  oldPrice: number,
+  newPrice: number
+) {
+  const alerts = await prisma.priceAlert.findMany({
+    where: { productId, notifiedAt: null },
+    select: { id: true, email: true },
+  });
+  if (alerts.length === 0) return;
+
+  const image = await prisma.productImage.findFirst({
+    where: { productId },
+    orderBy: { position: "asc" },
+    select: { url: true },
+  });
+
+  const { subject, html } = priceAlertNotificationTemplate({
+    productName: name,
+    productSlug: slug,
+    productImage: image?.url ?? null,
+    oldPrice,
+    newPrice,
+  });
+
+  for (const alert of alerts) {
+    void sendEmail({
+      to: alert.email,
+      subject,
+      html,
+      category: "price_alert",
+      actor: "system",
+    });
+  }
+
+  await prisma.priceAlert.updateMany({
+    where: { id: { in: alerts.map((a) => a.id) } },
+    data: { notifiedAt: new Date() },
+  });
 }
 
 // ─── Görseller ───────────────────────────────────────────────────────────────

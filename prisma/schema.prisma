@@ -61,6 +61,7 @@ model User {
   favorites     Favorite[]
   motorcycles   UserMotorcycle[]
   reviews       Review[]
+  priceAlerts   PriceAlert[]
 }
 
 model Account {
@@ -134,12 +135,30 @@ model Product {
   orderItems  OrderItem[]
   favorites   Favorite[]
   reviews     Review[]
+  priceAlerts PriceAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([categoryId])
   @@index([brand])
+}
+
+/// "İndirime girince haber ver" abonelikleri — hem üye hem misafir (email ile) kullanabilir.
+model PriceAlert {
+  id         String    @id @default(cuid())
+  productId  String
+  email      String
+  userId     String?
+  lastPrice  Decimal   @db.Decimal(10, 2)
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, email])
+  @@index([productId])
 }
 
 model ProductImage {

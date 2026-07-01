@@ -37,19 +37,39 @@ export default async function SearchPage({
 
   if (q.length >= 2) {
     const where = { contains: q, mode: "insensitive" as const };
+    // Çok kelimeli aramalar (ör. "rks balata", "vrs fren balata") için her
+    // kelime ayrı ayrı AND'lenir; her kelime kendi içinde ürün alanlarına
+    // OR ile bakar. Böylece kelimeler farklı alanlarda/sırada geçse de bulunur.
+    const words = q.split(/\s+/).filter(Boolean);
+    const productWhere =
+      words.length > 1
+        ? {
+            isActive: true,
+            AND: words.map((w) => ({
+              OR: [
+                { name: { contains: w, mode: "insensitive" as const } },
+                { sku: { contains: w, mode: "insensitive" as const } },
+                { description: { contains: w, mode: "insensitive" as const } },
+                { brand: { contains: w, mode: "insensitive" as const } },
+                { oemNo: { contains: w, mode: "insensitive" as const } },
+                { compatNo: { contains: w, mode: "insensitive" as const } },
+              ],
+            })),
+          }
+        : {
+            isActive: true,
+            OR: [
+              { name: where },
+              { sku: where },
+              { description: where },
+              { brand: where },
+              { oemNo: where },
+              { compatNo: where },
+            ],
+          };
     const [prodRows, catRows, blogRows, motoRows] = await Promise.all([
       prisma.product.findMany({
-        where: {
-          isActive: true,
-          OR: [
-            { name: where },
-            { sku: where },
-            { description: where },
-            { brand: where },
-            { oemNo: where },
-            { compatNo: where },
-          ],
-        },
+        where: productWhere,
         select: {
           id: true,
           slug: true,

@@ -51,12 +51,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.6,
     })),
-    ...categories.map((c) => ({
-      url: `${SITE.url}/kategori/${c.slug}`,
-      lastModified: c.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
+    // "motosiklet-yedek-parcalari" artık kendi sayfası değil — /urunler'e 308 yönlenir
+    ...categories
+      .filter((c) => c.slug !== "motosiklet-yedek-parcalari")
+      .map((c) => ({
+        url: `${SITE.url}/kategori/${c.slug}`,
+        lastModified: c.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      })),
     ...blog.map((b) => ({
       url: `${SITE.url}/blog/${b.slug}`,
       lastModified: b.updatedAt,
