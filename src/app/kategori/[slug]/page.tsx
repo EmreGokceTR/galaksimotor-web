@@ -6,8 +6,20 @@ import { SITE } from "@/config/site";
 
 // ISR — kategori sayfası 60 saniyede bir yenilenir
 export const revalidate = 60;
+export const dynamicParams = true;
 
 type Props = { params: { slug: string } };
+
+// Tüm kategorileri build zamanında statik HTML olarak üretir — açılışta
+// veritabanına gidilmez, edge'den anında servis edilir.
+export async function generateStaticParams() {
+  const categories = await prisma.category.findMany({ select: { slug: true } });
+  // "motosiklet-yedek-parcalari" artık next.config.js'de 308 ile /urunler'e
+  // yönlendiriliyor — bu sayfayı build'de üretmeye gerek yok.
+  return categories
+    .filter((c) => c.slug !== "motosiklet-yedek-parcalari")
+    .map((c) => ({ slug: c.slug }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cat = await prisma.category.findUnique({

@@ -13,6 +13,20 @@ import { SITE } from "@/config/site";
 
 type Props = { params: { slug: string } };
 
+// Tüm aktif ürünleri build zamanında statik HTML olarak üretir — sayfa açılışında
+// veritabanına gidilmez, edge'den anında servis edilir. Yeni eklenen ürünler
+// ilk ziyarette dinamik render edilip ISR ile önbelleğe alınır (dynamicParams=true).
+export async function generateStaticParams() {
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    select: { slug: true },
+  });
+  return products.map((p) => ({ slug: p.slug }));
+}
+
+export const revalidate = 300;
+export const dynamicParams = true;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await prisma.product.findUnique({
     where: { slug: params.slug },
@@ -67,15 +81,13 @@ export default async function ProductPage({ params }: Props) {
       images: { orderBy: { position: "asc" } },
       variants: true,
       category: true,
+      // Yorumlar rating aggregation için — ayrı sorgu yerine tek round-trip'te
+      reviews: { select: { rating: true } },
     },
   });
   if (!product) notFound();
 
-  // Yorumları çek (rating aggregation için)
-  const reviews = await prisma.review.findMany({
-    where: { productId: product.id },
-    select: { rating: true },
-  });
+  const reviews = product.reviews;
   const reviewCount = reviews.length;
   const avgRating =
     reviewCount > 0

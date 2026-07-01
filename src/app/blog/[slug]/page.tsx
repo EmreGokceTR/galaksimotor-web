@@ -7,6 +7,20 @@ import { SITE } from "@/config/site";
 
 type Props = { params: { slug: string } };
 
+// Yayındaki yazıları build zamanında statik HTML olarak üretir. Zamanlanmış
+// (ileri tarihli) yazılar hariç tutulur; yayın saati gelince ilk ziyarette
+// dinamik render edilip ISR ile önbelleğe alınır.
+export async function generateStaticParams() {
+  const posts = await prisma.blogPost.findMany({
+    where: { isPublished: true, publishedAt: { lte: new Date() } },
+    select: { slug: true },
+  });
+  return posts.map((p) => ({ slug: p.slug }));
+}
+
+export const revalidate = 1800;
+export const dynamicParams = true;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await prisma.blogPost.findUnique({
     where: { slug: params.slug },
