@@ -129,11 +129,6 @@ export function ProductPurchasePanel({
             +
           </button>
         </div>
-        {stock > 0 && stock <= 5 && (
-          <span className="text-xs text-rose-300">
-            Son {stock} adet
-          </span>
-        )}
       </div>
 
       <motion.button
