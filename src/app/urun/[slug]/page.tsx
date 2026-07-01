@@ -10,7 +10,6 @@ import { PriceAlertButton } from "@/components/PriceAlertButton";
 import { ReviewSection } from "@/components/ReviewSection";
 import { AdminEditButton } from "@/components/AdminEditButton";
 import { SITE } from "@/config/site";
-import { motoSlug } from "@/lib/moto";
 
 type Props = { params: { slug: string } };
 
@@ -68,7 +67,6 @@ export default async function ProductPage({ params }: Props) {
       images: { orderBy: { position: "asc" } },
       variants: true,
       category: true,
-      fitments: { include: { motorcycle: true } },
     },
   });
   if (!product) notFound();
@@ -283,18 +281,13 @@ export default async function ProductPage({ params }: Props) {
               currency: "TRY",
             })}
           </div>
-          <p className="-mt-2 flex items-center gap-1.5 text-xs text-white/45">
-            <span className="text-emerald-300">💳</span>
-            Kredi/banka kartına 9 taksite kadar — ödeme ekranında görüntülenir.
-          </p>
-
           {product.stock > 0 ? (
             <div className="rounded bg-green-500/20 px-3 py-1 inline-block text-sm text-green-400">
-              Stokta ({product.stock} adet)
+              Stokta
             </div>
           ) : (
             <div className="rounded bg-red-500/20 px-3 py-1 inline-block text-sm text-red-400">
-              Tükendi
+              Stokta Yok
             </div>
           )}
 
@@ -325,28 +318,6 @@ export default async function ProductPage({ params }: Props) {
               options: items.map((i) => ({ id: i.id, value: i.value, sku: i.sku })),
             }))}
           />
-
-          {product.fitments.length > 0 && (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-              <h3 className="mb-2 text-sm font-semibold text-brand-yellow">
-                Uyumlu Motosikletler
-              </h3>
-              <ul className="space-y-1 text-sm text-white/70">
-                {product.fitments.map((f) => (
-                  <li key={f.id}>
-                    •{" "}
-                    <Link
-                      href={`/motosiklet/${motoSlug(f.motorcycle.brand)}/${motoSlug(f.motorcycle.model)}`}
-                      className="hover:text-brand-yellow hover:underline"
-                    >
-                      {f.motorcycle.brand} {f.motorcycle.model}
-                    </Link>{" "}
-                    ({f.motorcycle.year})
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
 
