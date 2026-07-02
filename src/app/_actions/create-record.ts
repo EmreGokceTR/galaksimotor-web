@@ -125,6 +125,8 @@ export async function createMotorcycleListingRecord(input: {
   if (!input.fiyat || isNaN(input.fiyat) || input.fiyat <= 0)
     throw new Error("Geçerli bir fiyat girin.");
 
+  const gorsel = input.gorsel?.trim();
+
   const listing = await prisma.motorcycleListing.create({
     data: {
       marka,
@@ -132,7 +134,7 @@ export async function createMotorcycleListingRecord(input: {
       yil: input.yil,
       cc: input.cc && !isNaN(input.cc) ? input.cc : null,
       fiyat: input.fiyat,
-      gorsel: input.gorsel?.trim() || null,
+      images: gorsel ? [gorsel] : [],
       aciklama: input.aciklama?.trim() || null,
     },
   });

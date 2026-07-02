@@ -364,15 +364,20 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
+/// Vitrin — satılık motosiklet ilanları. Salt bilgilendirme amaçlı (fotoğraf,
+/// özellik, fiyat, açıklama); site üzerinden ödeme/satın alma akışı yoktur —
+/// satış mağazada elden, noter huzurunda yapılır.
 model MotorcycleListing {
   id         String   @id @default(cuid())
   marka      String
   model      String
   yil        Int
   cc         Int?
+  km         Int?
+  renk       String?
   fiyat      Decimal  @db.Decimal(10, 2)
   stokDurumu Boolean  @default(true)
-  gorsel     String?
+  images     String[] @default([])
   aciklama   String?  @db.Text
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())

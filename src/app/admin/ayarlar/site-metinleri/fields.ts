@@ -163,7 +163,6 @@ export const SECTIONS: Section[] = [
       { key: "account_nav_orders", label: "Menü — Siparişlerim", def: "Siparişlerim" },
       { key: "account_nav_appointments", label: "Menü — Randevularım", def: "Randevularım" },
       { key: "account_nav_favorites", label: "Menü — Favorilerim", def: "Favorilerim" },
-      { key: "account_nav_garage", label: "Menü — Garajım", def: "🏍 Garajım" },
       { key: "garage_title", label: "Garaj başlığı", def: "Garajım" },
       { key: "garage_subtitle", label: "Garaj alt metni", def: "Motorlarını ekle — sadece sana uygun parçaları gösterelim." },
       { key: "garage_add_btn", label: "Garaj — ekle butonu", def: "+ Motor Ekle" },

@@ -9,9 +9,9 @@ import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CartButton } from "./CartButton";
 import { SearchBox } from "./SearchBox";
+import { HeaderSearch } from "./HeaderSearch";
 import { CartDrawer } from "./CartDrawer";
 import { CartHydration } from "./CartHydration";
-import { GarageSelector } from "./GarageSelector";
 import { EditableWrapper } from "./EditableWrapper";
 
 // Admin-only — dynamically imported to exclude from non-admin bundles
@@ -45,6 +45,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
     { href: "/", settingKey: "nav_home", label: settings.navHome, editable: true },
     { href: "/urunler", settingKey: "nav_urunler", label: settings.navUrunler, editable: true },
     { href: "/kategori/bakim-ve-tamir-urunleri", settingKey: "nav_bakim", label: settings.navBakim, editable: true },
+    { href: "/motosikletler", settingKey: "nav_vitrin", label: "Vitrin", editable: false },
     { href: "/randevu", settingKey: "nav_randevu", label: settings.navRandevu, editable: true },
     { href: "/deger-kaybi", settingKey: "nav_deger_kaybi", label: "Değer Kaybı", editable: false },
   ];
@@ -185,10 +186,7 @@ export function Navbar({ settings }: { settings: NavSettings }) {
 
         {/* Right side */}
         <div className="hidden items-center gap-3 md:flex">
-          <div className="hidden w-52 lg:block">
-            <SearchBox compact />
-          </div>
-          <GarageSelector />
+          <HeaderSearch />
           <CartButton />
           {session?.user ? (
             <>

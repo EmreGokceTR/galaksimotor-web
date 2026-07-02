@@ -44,6 +44,7 @@ export async function Footer() {
         { key: "footer_col1_l3", label: st(bag, "footer_col1_l3", "Bakım & Tamir"), href: "/kategori/bakim-ve-tamir-urunleri" },
         { key: "footer_col1_l4", label: st(bag, "footer_col1_l4", "Aksesuarlar"), href: "/kategori/aksesuarlar" },
         { key: "footer_col1_l5", label: "Motosiklet Modelleri", href: "/motosiklet" },
+        { key: "footer_col1_l6", label: "Vitrin — Satılık Motosikletler", href: "/motosikletler" },
       ],
     },
     {

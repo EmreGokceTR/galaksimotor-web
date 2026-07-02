@@ -24,7 +24,6 @@ export default async function AccountLayout({
     "account_nav_orders",
     "account_nav_favorites",
     "account_nav_appointments",
-    "account_nav_garage",
   ]);
 
   const title = st(bag, "account_title", "Hesabım");
@@ -34,7 +33,6 @@ export default async function AccountLayout({
     { href: "/hesabim/siparislerim", key: "account_nav_orders", label: st(bag, "account_nav_orders", "Siparişlerim") },
     { href: "/hesabim/favoriler", key: "account_nav_favorites", label: st(bag, "account_nav_favorites", "Favorilerim") },
     { href: "/hesabim/randevular", key: "account_nav_appointments", label: st(bag, "account_nav_appointments", "Randevularım") },
-    { href: "/hesabim/garaj", key: "account_nav_garage", label: st(bag, "account_nav_garage", "🏍 Garajım") },
   ];
 
   return (

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { createMotorcycleListing, deleteMotorcycleListing } from "./actions";
+import { MultiImageUploader } from "@/components/MultiImageUploader";
 
-export const metadata = { title: "Motosikletler - Admin" };
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Vitrin (Satılık Motosikletler) - Admin" };
 
 export default async function AdminMotorcyclesPage() {
   const listings = await prisma.motorcycleListing.findMany({
@@ -12,7 +14,12 @@ export default async function AdminMotorcyclesPage() {
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Motosiklet İlanları</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Vitrin — Satılık Motosikletler</h1>
+          <p className="mt-1 text-sm text-white/50">
+            Yalnızca bilgilendirme amaçlı ilan panosu — site üzerinden ödeme alınmaz, satış mağazada elden ve noter huzurunda yapılır.
+          </p>
+        </div>
         <Link
           href="/motosikletler"
           className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70 hover:border-brand-yellow/50 hover:text-brand-yellow"
@@ -46,6 +53,14 @@ export default async function AdminMotorcyclesPage() {
             <input name="cc" type="number" min={0} className="input-glass w-full mt-1" placeholder="500" />
           </label>
           <label className="block">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Kilometre</span>
+            <input name="km" type="number" min={0} className="input-glass w-full mt-1" placeholder="12000" />
+          </label>
+          <label className="block">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Renk</span>
+            <input name="renk" className="input-glass w-full mt-1" placeholder="Kırmızı" />
+          </label>
+          <label className="block">
             <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Fiyat (₺) *</span>
             <input name="fiyat" type="number" required min={0} step={0.01} className="input-glass w-full mt-1" placeholder="150000" />
           </label>
@@ -53,16 +68,22 @@ export default async function AdminMotorcyclesPage() {
             <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Stok Durumu</span>
             <select name="stokDurumu" className="input-glass w-full mt-1">
               <option value="true">Stokta</option>
-              <option value="false">Tükendi</option>
+              <option value="false">Satıldı</option>
             </select>
           </label>
-          <label className="block sm:col-span-2 lg:col-span-3">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Görsel URL</span>
-            <input name="gorsel" className="input-glass w-full mt-1" placeholder="https://..." />
+          <label className="block">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Yayın Durumu</span>
+            <select name="isActive" className="input-glass w-full mt-1">
+              <option value="true">Yayında</option>
+              <option value="false">Gizli (taslak)</option>
+            </select>
           </label>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <MultiImageUploader name="images" folder="motosikletler" label="Görseller (ilk görsel kapak olur)" />
+          </div>
           <label className="block sm:col-span-2 lg:col-span-3">
             <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">Açıklama</span>
-            <textarea name="aciklama" rows={2} className="input-glass w-full mt-1 resize-none" />
+            <textarea name="aciklama" rows={3} className="input-glass w-full mt-1 resize-none" placeholder="Bakım geçmişi, donanım, dikkat çeken özellikler..." />
           </label>
         </div>
         <button
@@ -83,9 +104,9 @@ export default async function AdminMotorcyclesPage() {
               <tr className="border-b border-white/10 bg-white/5 text-left text-[11px] uppercase tracking-wider text-white/40">
                 <th className="px-4 py-3">Araç</th>
                 <th className="px-4 py-3">Yıl</th>
-                <th className="px-4 py-3">CC</th>
                 <th className="px-4 py-3">Fiyat</th>
                 <th className="px-4 py-3">Stok</th>
+                <th className="px-4 py-3">Yayın</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -93,10 +114,17 @@ export default async function AdminMotorcyclesPage() {
               {listings.map((m) => (
                 <tr key={m.id} className="bg-white/[0.015] hover:bg-white/[0.03] transition-colors">
                   <td className="px-4 py-3 font-medium text-white">
-                    {m.marka} {m.model}
+                    <div className="flex items-center gap-3">
+                      {m.images[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.images[0]} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-white/10" />
+                      )}
+                      {m.marka} {m.model}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-white/60">{m.yil}</td>
-                  <td className="px-4 py-3 text-white/60">{m.cc ?? "—"}</td>
                   <td className="px-4 py-3 font-semibold text-brand-yellow">
                     {Number(m.fiyat).toLocaleString("tr-TR", { style: "currency", currency: "TRY" })}
                   </td>
@@ -106,11 +134,26 @@ export default async function AdminMotorcyclesPage() {
                         ? "bg-emerald-500/15 text-emerald-300 ring-emerald-400/20"
                         : "bg-rose-500/15 text-rose-300 ring-rose-400/20"
                     }`}>
-                      {m.stokDurumu ? "Stokta" : "Tükendi"}
+                      {m.stokDurumu ? "Stokta" : "Satıldı"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ${
+                      m.isActive
+                        ? "bg-white/10 text-white/70 ring-white/15"
+                        : "bg-amber-500/15 text-amber-300 ring-amber-400/20"
+                    }`}>
+                      {m.isActive ? "Yayında" : "Gizli"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/admin/motosikletler/${m.id}`}
+                        className="text-xs text-white/50 hover:text-brand-yellow"
+                      >
+                        Düzenle
+                      </Link>
                       <Link
                         href={`/motosikletler/${m.id}`}
                         target="_blank"

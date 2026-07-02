@@ -17,7 +17,7 @@ const NAV = [
   { href: "/admin/motor-katalogu", label: "Motosiklet Kataloğu", icon: "🏍" },
   { href: "/admin/kuponlar", label: "Kuponlar", icon: "🎟" },
   { href: "/admin/yorumlar", label: "Ürün Yorumları", icon: "💬" },
-  { href: "/admin/motosikletler", label: "İkinci El Motorlar", icon: "🏷" },
+  { href: "/admin/motosikletler", label: "Vitrin (Satılık Motorlar)", icon: "🏷" },
   { href: "/admin/blog", label: "Blog", icon: "✍️" },
   { href: "/admin/hizmetler", label: "Hizmetler", icon: "🔧" },
   { href: "/admin/kullanicilar", label: "Kullanıcılar", icon: "👥" },

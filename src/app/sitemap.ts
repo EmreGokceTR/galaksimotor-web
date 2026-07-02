@@ -5,7 +5,7 @@ import { getMotoBrands } from "@/lib/moto";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const motoBrands = await getMotoBrands();
-  const [products, categories, blog] = await Promise.all([
+  const [products, categories, blog, listings] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true },
       select: { slug: true, updatedAt: true },
@@ -17,6 +17,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { isPublished: true, publishedAt: { lte: new Date() } },
       select: { slug: true, updatedAt: true },
     }),
+    prisma.motorcycleListing.findMany({
+      where: { isActive: true },
+      select: { id: true, updatedAt: true },
+    }),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -24,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/urunler", priority: 0.9, freq: "daily" as const },
     { path: "/randevu", priority: 0.8, freq: "weekly" as const },
     { path: "/motosiklet", priority: 0.7, freq: "weekly" as const },
+    { path: "/motosikletler", priority: 0.6, freq: "daily" as const },
     { path: "/deger-kaybi", priority: 0.8, freq: "monthly" as const },
     { path: "/blog", priority: 0.8, freq: "weekly" as const },
     { path: "/hakkimizda", priority: 0.6, freq: "monthly" as const },
@@ -65,6 +70,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: b.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.5,
+    })),
+    ...listings.map((l) => ({
+      url: `${SITE.url}/motosikletler/${l.id}`,
+      lastModified: l.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
     })),
     // Motosiklet marka + model açılış sayfaları (modele göre yedek parça SEO)
     ...motoBrands.flatMap((b) => [
