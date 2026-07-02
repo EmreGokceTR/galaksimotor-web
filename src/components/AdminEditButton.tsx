@@ -12,7 +12,6 @@ type ProductSnapshot = {
   price: number;
   stock: number;
   image: string | null;
-  sku?: string;
   brand?: string | null;
   description?: string | null;
 };

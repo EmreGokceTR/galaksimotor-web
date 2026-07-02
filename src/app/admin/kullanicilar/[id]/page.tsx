@@ -135,7 +135,7 @@ export default async function CustomerDetailPage({
                   <li key={o.id} className="flex items-center justify-between gap-2 py-2.5">
                     <div className="min-w-0">
                       <Link
-                        href="/admin/siparisler"
+                        href={`/admin/siparisler/${o.id}`}
                         className="font-mono text-sm text-white hover:text-brand-yellow"
                       >
                         #{o.orderNumber}

@@ -41,7 +41,7 @@ export async function updateProductDetails(formData: FormData) {
   // (müşteriye gösterilmeyen, oluşturmada otomatik atanan iç kayıt kodu).
   const [slugClash, before] = await Promise.all([
     prisma.product.findUnique({ where: { slug }, select: { id: true } }),
-    prisma.product.findUnique({ where: { id }, select: { price: true } }),
+    prisma.product.findUnique({ where: { id }, select: { price: true, slug: true } }),
   ]);
   if (slugClash && slugClash.id !== id) throw new Error(`"${slug}" slug'ı başka üründe kullanılıyor.`);
 
@@ -58,6 +58,9 @@ export async function updateProductDetails(formData: FormData) {
   }
 
   revalidateProduct(id, slug);
+  // Slug değiştiyse eski önbelleklenmiş sayfa da temizlensin (ISR ile 5 dk
+  // eski içerik kalmasın diye).
+  if (before?.slug && before.slug !== slug) revalidatePath(`/urun/${before.slug}`);
   redirect(`/admin/urunler/${id}`);
 }
 

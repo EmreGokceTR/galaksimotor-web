@@ -12,7 +12,6 @@ export async function inlineUpdateProduct(
     stock: number;
     imageUrl: string | null;
     slug: string;
-    sku?: string;
     brand?: string | null;
     description?: string | null;
   }
@@ -26,7 +25,6 @@ export async function inlineUpdateProduct(
         name: data.name,
         price: data.price,
         stock: data.stock,
-        ...(data.sku !== undefined && { sku: data.sku }),
         ...(data.brand !== undefined && { brand: data.brand }),
         ...(data.description !== undefined && { description: data.description }),
       },

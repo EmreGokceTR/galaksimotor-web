@@ -106,49 +106,6 @@ export async function createProductRecord(input: {
   return { id: product.id, slug: product.slug };
 }
 
-// ─── MotorcycleListing ───────────────────────────────────────────────────────
-
-export async function createMotorcycleListingRecord(input: {
-  marka: string;
-  model: string;
-  yil: number;
-  fiyat: number;
-  cc?: number;
-  gorsel?: string;
-  aciklama?: string;
-}): Promise<{ id: string }> {
-  const { email } = await assertAdminContext();
-  const marka = input.marka.trim();
-  const model = input.model.trim();
-  if (!marka || !model) throw new Error("Marka ve model zorunlu.");
-  if (!input.yil || isNaN(input.yil)) throw new Error("Yıl zorunlu.");
-  if (!input.fiyat || isNaN(input.fiyat) || input.fiyat <= 0)
-    throw new Error("Geçerli bir fiyat girin.");
-
-  const gorsel = input.gorsel?.trim();
-
-  const listing = await prisma.motorcycleListing.create({
-    data: {
-      marka,
-      model,
-      yil: input.yil,
-      cc: input.cc && !isNaN(input.cc) ? input.cc : null,
-      fiyat: input.fiyat,
-      images: gorsel ? [gorsel] : [],
-      aciklama: input.aciklama?.trim() || null,
-    },
-  });
-
-  await logActivity(email, "create", `motorcycleListing:${listing.id}`, {
-    marka,
-    model,
-    yil: input.yil,
-  });
-
-  revalidatePath("/motosikletler");
-  return { id: listing.id };
-}
-
 // ─── BlogPost ────────────────────────────────────────────────────────────────
 
 export async function createBlogPostRecord(input: {

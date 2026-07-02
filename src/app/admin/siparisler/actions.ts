@@ -260,5 +260,12 @@ export async function refundOrder(orderId: string): Promise<RefundResult> {
   revalidatePath("/admin");
   revalidatePath("/hesabim/siparislerim");
 
+  // Stoğu geri gelen ürünlerin kendi (önbelleklenmiş) sayfaları da yenilensin.
+  const refundedProducts = await prisma.product.findMany({
+    where: { id: { in: order.items.map((it) => it.productId) } },
+    select: { slug: true },
+  });
+  for (const p of refundedProducts) revalidatePath(`/urun/${p.slug}`);
+
   return { ok: true };
 }

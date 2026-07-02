@@ -285,7 +285,6 @@ export default async function ProductPage({ params }: Props) {
                   price: Number(product.price),
                   stock: product.stock,
                   image: product.images[0]?.url ?? null,
-                  sku: product.sku,
                   brand: product.brand,
                   description: product.description,
                 }}

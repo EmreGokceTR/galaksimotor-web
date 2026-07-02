@@ -17,7 +17,7 @@ export async function deleteProduct(
 
   const product = await prisma.product.findUnique({
     where: { id },
-    select: { name: true, _count: { select: { orderItems: true } } },
+    select: { name: true, slug: true, _count: { select: { orderItems: true } } },
   });
   if (!product) return { ok: false, error: "Ürün bulunamadı." };
 
@@ -35,6 +35,7 @@ export async function deleteProduct(
     revalidatePath("/admin/urunler");
     revalidatePath("/admin");
     revalidatePath("/urunler");
+    revalidatePath(`/urun/${product.slug}`);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Silinemedi." };
@@ -46,15 +47,17 @@ export async function updateProduct(
   data: { price?: number; stock?: number; isActive?: boolean }
 ) {
   await assertAdmin();
-  await prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
     data: {
       ...(typeof data.price === "number" ? { price: data.price } : {}),
       ...(typeof data.stock === "number" ? { stock: data.stock } : {}),
       ...(typeof data.isActive === "boolean" ? { isActive: data.isActive } : {}),
     },
+    select: { slug: true },
   });
   revalidatePath("/admin/urunler");
   revalidatePath("/admin");
   revalidatePath("/urunler");
+  revalidatePath(`/urun/${updated.slug}`);
 }

@@ -11,6 +11,7 @@ export default async function MotorCatalogPage() {
   const motorcycles = await prisma.motorcycle.findMany({
     orderBy: [{ brand: "asc" }, { model: "asc" }, { year: "desc" }],
     include: { _count: { select: { fitments: true, userOwnerships: true } } },
+    take: 500,
   });
 
   const data = motorcycles.map((m) => ({

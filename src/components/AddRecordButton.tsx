@@ -14,7 +14,6 @@ import { useEditMode } from "@/context/EditModeContext";
 import { ImageUploader } from "@/components/ImageUploader";
 import {
   createProductRecord,
-  createMotorcycleListingRecord,
   createBlogPostRecord,
 } from "@/app/_actions/create-record";
 
@@ -26,11 +25,6 @@ export type AddRecordButtonProps =
   | {
       kind: "product";
       categories: CategoryOpt[];
-      label?: string;
-      className?: string;
-    }
-  | {
-      kind: "motorcycle";
       label?: string;
       className?: string;
     }
@@ -102,16 +96,6 @@ export function AddRecordButton(props: AddRecordButtonProps) {
             imageUrl: form.imageUrl,
             categoryId: form.categoryId ?? props.categories[0]?.id ?? "",
           });
-        } else if (props.kind === "motorcycle") {
-          await createMotorcycleListingRecord({
-            marka: form.marka ?? "",
-            model: form.model ?? "",
-            yil: parseInt(form.yil ?? "0", 10),
-            fiyat: parseFloat(form.fiyat ?? "0"),
-            cc: form.cc ? parseInt(form.cc, 10) : undefined,
-            gorsel: form.gorsel,
-            aciklama: form.aciklama,
-          });
         } else {
           await createBlogPostRecord({
             title: form.title ?? "",
@@ -133,7 +117,6 @@ export function AddRecordButton(props: AddRecordButtonProps) {
 
   const titleByKind: Record<string, string> = {
     product: "Yeni Ürün",
-    motorcycle: "Yeni Motosiklet İlanı",
     blog: "Yeni Blog Yazısı",
   };
 
@@ -255,67 +238,6 @@ export function AddRecordButton(props: AddRecordButtonProps) {
                       label="Açıklama"
                       value={form.description ?? ""}
                       onChange={(v) => setField("description", v)}
-                      disabled={isPending}
-                    />
-                  </>
-                )}
-
-                {/* Motosiklet */}
-                {props.kind === "motorcycle" && (
-                  <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <FieldText
-                        label="Marka *"
-                        value={form.marka ?? ""}
-                        onChange={(v) => setField("marka", v)}
-                        disabled={isPending}
-                        required
-                      />
-                      <FieldText
-                        label="Model *"
-                        value={form.model ?? ""}
-                        onChange={(v) => setField("model", v)}
-                        disabled={isPending}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <FieldText
-                        label="Yıl *"
-                        type="number"
-                        value={form.yil ?? ""}
-                        onChange={(v) => setField("yil", v)}
-                        disabled={isPending}
-                        required
-                      />
-                      <FieldText
-                        label="CC"
-                        type="number"
-                        value={form.cc ?? ""}
-                        onChange={(v) => setField("cc", v)}
-                        disabled={isPending}
-                      />
-                    </div>
-                    <FieldText
-                      label="Fiyat (₺) *"
-                      type="number"
-                      value={form.fiyat ?? ""}
-                      onChange={(v) => setField("fiyat", v)}
-                      disabled={isPending}
-                      required
-                    />
-                    <ImageUploader
-                      label="Motosiklet Görseli"
-                      value={form.gorsel ?? ""}
-                      onChange={(v) => setField("gorsel", v)}
-                      folder="motorcycles"
-                      size="small"
-                      compact
-                    />
-                    <FieldTextarea
-                      label="Açıklama"
-                      value={form.aciklama ?? ""}
-                      onChange={(v) => setField("aciklama", v)}
                       disabled={isPending}
                     />
                   </>
@@ -457,44 +379,6 @@ function FieldTextarea({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
       />
-    </Wrap>
-  );
-}
-
-function FieldImage({
-  label,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  disabled: boolean;
-}) {
-  return (
-    <Wrap label={label}>
-      <input
-        className="input-glass w-full"
-        type="text"
-        placeholder="https://..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-      />
-      {value.trim() && (
-        <div className="mt-2 h-24 w-24 overflow-hidden rounded-lg border border-white/10">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={value}
-            alt="önizleme"
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        </div>
-      )}
     </Wrap>
   );
 }

@@ -30,7 +30,7 @@ export async function GET(req: Request) {
       where: {
         OR: [{ orderNumber: like }, { shippingName: like }, { shippingPhone: like }],
       },
-      select: { orderNumber: true, shippingName: true, total: true },
+      select: { id: true, orderNumber: true, shippingName: true, total: true },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
@@ -79,7 +79,7 @@ export async function GET(req: Request) {
       items: orders.map((o) => ({
         label: `#${o.orderNumber}`,
         sub: `${o.shippingName ?? ""} · ${Number(o.total).toLocaleString("tr-TR")} ₺`,
-        href: `/admin/siparisler`,
+        href: `/admin/siparisler/${o.id}`,
       })),
     });
 

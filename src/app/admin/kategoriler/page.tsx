@@ -13,6 +13,7 @@ export default async function AdminCategoriesPage() {
     include: {
       _count: { select: { products: true, children: true } },
     },
+    take: 500,
   });
 
   const data = categories.map((c) => ({

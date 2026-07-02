@@ -4,8 +4,15 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertAdminContext } from "@/lib/admin";
 import { logActivity } from "@/lib/activity-log";
+import { motoSlug } from "@/lib/moto";
 
-const R = ["/admin/motor-katalogu"];
+const R = ["/admin/motor-katalogu", "/motosiklet"];
+
+function revalidateMotoPages(brand: string, model: string) {
+  const brandSlug = motoSlug(brand);
+  revalidatePath(`/motosiklet/${brandSlug}`);
+  revalidatePath(`/motosiklet/${brandSlug}/${motoSlug(model)}`);
+}
 
 export async function upsertMotorcycle(input: {
   id?: string | null;
@@ -34,7 +41,12 @@ export async function upsertMotorcycle(input: {
   }
 
   try {
+    let before: { brand: string; model: string } | null = null;
     if (input.id) {
+      before = await prisma.motorcycle.findUnique({
+        where: { id: input.id },
+        select: { brand: true, model: true },
+      });
       await prisma.motorcycle.update({
         where: { id: input.id },
         data: { brand, model, year },
@@ -44,6 +56,10 @@ export async function upsertMotorcycle(input: {
     }
     await logActivity(email, input.id ? "motorcycle_update" : "motorcycle_create", `motorcycle:${input.id ?? "new"}`, { brand, model, year });
     for (const p of R) revalidatePath(p);
+    revalidateMotoPages(brand, model);
+    if (before && (before.brand !== brand || before.model !== model)) {
+      revalidateMotoPages(before.brand, before.model);
+    }
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Kaydedilemedi." };
@@ -73,5 +89,6 @@ export async function deleteMotorcycle(
     removedFitments: fitmentCount,
   });
   for (const p of R) revalidatePath(p);
+  revalidateMotoPages(moto.brand, moto.model);
   return { ok: true };
 }
